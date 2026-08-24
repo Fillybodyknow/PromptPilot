@@ -21,6 +21,8 @@ export const baseEntrySchema = z.object({
   status: statusEnum,
   /** จุดเด่น/จุดอ่อน หรือคำอธิบายสั้น */
   summary: z.string().min(1),
+  /** ลิงก์ไปหน้าทางการของเครื่องมือ/โมเดลนี้ — ถ้ามีจะทำให้ชื่อในตารางคลิกได้ */
+  url: z.url().optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -154,10 +156,17 @@ export const promptTemplateSchema = z.object({
   why: z.string().min(1),
 });
 
+export const accessLinkSchema = z.object({
+  label: z.string().min(1),
+  url: z.url(),
+});
+
 export const categoryGuideSchema = z.object({
   categoryKey: z.string().min(1),
   howToUse: z.string().min(1),
   accessMethod: accessMethodEnum,
+  /** ลิงก์ทางการที่พาไปเริ่มใช้งานได้เลย (เช่น claude.ai, chatgpt.com) */
+  links: z.array(accessLinkSchema).optional(),
   installSteps: z.array(z.string()).optional(),
   dataHandlingNote: z.string().min(1),
   promptTemplates: z.array(promptTemplateSchema).min(1),

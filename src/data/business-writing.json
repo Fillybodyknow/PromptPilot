@@ -6,6 +6,7 @@
     "sourceLabel": "community",
     "verifiedAt": "2026-08-24",
     "status": "active",
+    "url": "https://claude.ai",
     "strength": "ร่างอีเมล/รายงานยาวที่โทนเป็นธรรมชาติ อ่านแล้วไม่รู้สึกเหมือน AI เขียน",
     "summary": "ชุมชนยกให้เขียนยาวและโทนธรรมชาติดีที่สุด เหมาะรายงาน/อีเมลทางการ"
   },
@@ -16,6 +17,7 @@
     "sourceLabel": "community",
     "verifiedAt": "2026-08-24",
     "status": "active",
+    "url": "https://chatgpt.com",
     "strength": "ร่างข้อความการตลาด, brainstorm หัวข้อ, พาดหัวประกาศ",
     "summary": "เด่นงาน copywriting และ brainstorm เชิงการตลาด"
   },
@@ -26,6 +28,7 @@
     "sourceLabel": "community",
     "verifiedAt": "2026-08-24",
     "status": "active",
+    "url": "https://gemini.google.com",
     "strength": "ภาษาไทยลื่นไหลที่สุดในกลุ่มสากล + context ยาว เหมาะสรุปเอกสารภาษาไทยยาวๆ",
     "summary": "ตัวเลือกแนะนำสำหรับงานเอกสารภาษาไทยขององค์กร"
   }

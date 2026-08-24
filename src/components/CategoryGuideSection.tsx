@@ -22,6 +22,21 @@ export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
         <span className="inline-block rounded px-2 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400">
           {ACCESS_METHOD_LABEL[guide.accessMethod] ?? guide.accessMethod}
         </span>
+        {guide.links && guide.links.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {guide.links.map((link) => (
+              <a
+                key={link.url}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-200 transition hover:border-neutral-500 hover:bg-neutral-800"
+              >
+                {link.label} ↗
+              </a>
+            ))}
+          </div>
+        ) : null}
         {guide.installSteps && guide.installSteps.length > 0 ? (
           <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-neutral-300">
             {guide.installSteps.map((step, i) => (

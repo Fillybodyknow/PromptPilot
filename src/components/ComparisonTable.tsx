@@ -50,7 +50,20 @@ export function ComparisonTable({ entries, columns }: ComparisonTableProps) {
             return (
               <tr key={String(entry.id)} className="border-t border-neutral-800 align-top">
                 <td className="px-4 py-3 font-medium text-neutral-100">
-                  <div>{String(entry.name)}</div>
+                  <div>
+                    {typeof entry.url === "string" && entry.url ? (
+                      <a
+                        href={entry.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline decoration-neutral-600 underline-offset-2 hover:text-white hover:decoration-neutral-400"
+                      >
+                        {String(entry.name)} ↗
+                      </a>
+                    ) : (
+                      String(entry.name)
+                    )}
+                  </div>
                   <span className="mt-1 inline-block rounded px-1.5 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400">
                     {sourceLabel}
                   </span>
