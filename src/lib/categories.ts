@@ -12,16 +12,24 @@ export interface CategoryMeta {
   key: string;
   titleTh: string;
   descriptionTh: string;
+  /** ใช้จัดกลุ่มหมวดที่เกี่ยวข้องกันในหน้าแรก/nav (เช่น coding-models + coding-tools) */
+  group: string;
   schema: z.ZodTypeAny;
   columns: ColumnDef[];
 }
 
+/**
+ * 11 หมวดที่จำเป็นในองค์กร (จาก 16 หมวดของเว็บสาธารณะเดิม ตัดหมวดเชิงศิลป์/บันเทิง
+ * ที่ไม่จำเป็นต่องานองค์กรทั่วไปออก — วิดีโอเชิงศิลป์, เพลง, 3D/เกม, browser agent
+ * ทดลอง — และเพิ่มหมวดที่องค์กรต้องใช้แต่เว็บสาธารณะไม่มี: งานนำเสนอ, งานประชุม/ถอดเสียง)
+ */
 export const CATEGORIES: CategoryMeta[] = [
   {
-    key: "llm-core",
-    titleTh: "LLM หลัก / Reasoning",
-    descriptionTh: "โมเดลภาษาหลักสำหรับงานคิดวิเคราะห์ซับซ้อนและ agentic",
-    schema: schemas.llmCoreSchema,
+    key: "general-assistant",
+    titleTh: "ผู้ช่วยสนทนา/ถามตอบทั่วไป",
+    descriptionTh: "ถาม-ตอบ, brainstorm, ช่วยตัดสินใจเบื้องต้น — งานพื้นฐานที่ใช้บ่อยสุดในทุกแผนก",
+    group: "ผู้ช่วยทั่วไป",
+    schema: schemas.generalAssistantSchema,
     columns: [
       { key: "benchmark", labelTh: "Benchmark" },
       { key: "priceUsdIn", labelTh: "ราคา Input (USD/1M token)" },
@@ -30,16 +38,30 @@ export const CATEGORIES: CategoryMeta[] = [
     ],
   },
   {
-    key: "writing",
-    titleTh: "งานเขียนบทความ / Creative",
-    descriptionTh: "เขียนบทความ, copywriting, งานสร้างสรรค์",
-    schema: schemas.writingSchema,
+    key: "business-writing",
+    titleTh: "งานเอกสาร/เขียนธุรกิจ",
+    descriptionTh: "อีเมล, รายงาน, proposal, สรุปการประชุมเป็นลายลักษณ์อักษร",
+    group: "งานเอกสาร",
+    schema: schemas.businessWritingSchema,
     columns: [{ key: "strength", labelTh: "จุดเด่น" }],
+  },
+  {
+    key: "presentations",
+    titleTh: "งานนำเสนอ/สไลด์",
+    descriptionTh: "เจนสไลด์ประชุมภายในและนำเสนอลูกค้า",
+    group: "งานเอกสาร",
+    schema: schemas.designUiSchema,
+    columns: [
+      { key: "strength", labelTh: "จุดเด่น" },
+      { key: "pricing", labelTh: "ราคา" },
+      { key: "integration", labelTh: "เชื่อมต่อกับ" },
+    ],
   },
   {
     key: "coding-models",
     titleTh: "เขียนโปรแกรม — โมเดล",
     descriptionTh: "โมเดลที่ใช้เป็น backend งานวิศวกรรมซอฟต์แวร์",
+    group: "งานพัฒนาระบบ",
     schema: schemas.codingModelsSchema,
     columns: [
       { key: "sweBenchVerified", labelTh: "SWE-bench Verified" },
@@ -49,7 +71,8 @@ export const CATEGORIES: CategoryMeta[] = [
   {
     key: "coding-tools",
     titleTh: "เขียนโปรแกรม — เครื่องมือ/IDE/Agent",
-    descriptionTh: "IDE, CLI agent, ปลั๊กอิน สำหรับงานโค้ด",
+    descriptionTh: "IDE, CLI agent, ปลั๊กอิน สำหรับทีม dev/IT",
+    group: "งานพัฒนาระบบ",
     schema: schemas.codingToolsSchema,
     columns: [
       { key: "toolType", labelTh: "ประเภท" },
@@ -58,9 +81,29 @@ export const CATEGORIES: CategoryMeta[] = [
     ],
   },
   {
+    key: "data-analysis",
+    titleTh: "งานวิเคราะห์ข้อมูล/รายงาน (BI)",
+    descriptionTh: "EDA, กราฟ, สรุปเชิงสถิติ, spreadsheet",
+    group: "งานข้อมูล",
+    schema: schemas.dataAnalysisSchema,
+    columns: [{ key: "strength", labelTh: "จุดเด่น" }],
+  },
+  {
+    key: "research-docs",
+    titleTh: "งานวิจัย/สรุปเอกสารยาว",
+    descriptionTh: "อ่านสัญญา/นโยบาย, สรุปเอกสารยาว, ค้นข้อมูลภายในองค์กร",
+    group: "งานข้อมูล",
+    schema: schemas.researchDocsSchema,
+    columns: [
+      { key: "strength", labelTh: "จุดเด่น" },
+      { key: "pricing", labelTh: "ราคา" },
+    ],
+  },
+  {
     key: "image-gen",
-    titleTh: "งานเจนรูป",
-    descriptionTh: "Text-to-image และ image editing",
+    titleTh: "งานออกแบบ/สื่อการตลาด — ภาพ",
+    descriptionTh: "Text-to-image และ image editing สำหรับสื่อองค์กร",
+    group: "งานออกแบบ",
     schema: schemas.imageGenSchema,
     columns: [
       { key: "pricePerThousand", labelTh: "ราคา/1,000 รูป" },
@@ -69,41 +112,10 @@ export const CATEGORIES: CategoryMeta[] = [
     ],
   },
   {
-    key: "video-gen",
-    titleTh: "งานเจนวิดีโอ",
-    descriptionTh: "Text-to-video และ image-to-video",
-    schema: schemas.videoGenSchema,
-    columns: [
-      { key: "strength", labelTh: "จุดเด่น" },
-      { key: "audioSupport", labelTh: "มีเสียง" },
-      { key: "priceAccess", labelTh: "ราคา/การเข้าถึง" },
-    ],
-  },
-  {
-    key: "audio",
-    titleTh: "งานเสียง (TTS / เพลง / STT)",
-    descriptionTh: "Text-to-speech, voice cloning, เจนเพลง, speech-to-text",
-    schema: schemas.audioSchema,
-    columns: [
-      { key: "type", labelTh: "ประเภท" },
-      { key: "pricing", labelTh: "ราคา" },
-      { key: "licenseNote", labelTh: "License/พาณิชย์" },
-    ],
-  },
-  {
-    key: "research-docs",
-    titleTh: "งานเอกสาร / วิจัย",
-    descriptionTh: "สรุปเอกสาร, systematic review, deep research",
-    schema: schemas.researchDocsSchema,
-    columns: [
-      { key: "strength", labelTh: "จุดเด่น" },
-      { key: "pricing", labelTh: "ราคา" },
-    ],
-  },
-  {
     key: "design-ui",
-    titleTh: "งานออกแบบ UI/UX + กราฟิก",
-    descriptionTh: "Text-to-UI, component generation, งานออกแบบ",
+    titleTh: "งานออกแบบ/สื่อการตลาด — UI/กราฟิก",
+    descriptionTh: "Text-to-UI, component generation, งานออกแบบทั่วไป",
+    group: "งานออกแบบ",
     schema: schemas.designUiSchema,
     columns: [
       { key: "strength", labelTh: "จุดเด่น" },
@@ -112,16 +124,22 @@ export const CATEGORIES: CategoryMeta[] = [
     ],
   },
   {
-    key: "data-analysis",
-    titleTh: "งานวิเคราะห์ข้อมูล / BI",
-    descriptionTh: "EDA, กราฟ, สรุปเชิงสถิติ, spreadsheet",
-    schema: schemas.dataAnalysisSchema,
-    columns: [{ key: "strength", labelTh: "จุดเด่น" }],
+    key: "meetings-transcription",
+    titleTh: "งานประชุม/ถอดเสียง",
+    descriptionTh: "ถอดเสียงประชุม, สรุป meeting notes อัตโนมัติ",
+    group: "งานสื่อสาร",
+    schema: schemas.meetingsSchema,
+    columns: [
+      { key: "capability", labelTh: "ความสามารถ" },
+      { key: "integration", labelTh: "เชื่อมต่อกับ" },
+      { key: "pricing", labelTh: "ราคา" },
+    ],
   },
   {
     key: "translation",
-    titleTh: "งานแปล / Subtitle",
-    descriptionTh: "แปลภาษาสากลและไทย↔อังกฤษเฉพาะทาง",
+    titleTh: "งานแปลภาษา",
+    descriptionTh: "สื่อสารข้ามภาษา, เอกสารสองภาษา, ไทย↔อังกฤษเฉพาะทาง",
+    group: "งานสื่อสาร",
     schema: schemas.translationSchema,
     columns: [
       { key: "strength", labelTh: "จุดเด่น" },
@@ -130,8 +148,9 @@ export const CATEGORIES: CategoryMeta[] = [
   },
   {
     key: "automation",
-    titleTh: "Automation / เชื่อมระบบ",
-    descriptionTh: "Workflow automation และ MCP",
+    titleTh: "Automation/เชื่อมระบบภายใน",
+    descriptionTh: "เชื่อม AI เข้ากับระบบองค์กร (ERP, CRM, ฐานข้อมูล) ผ่าน workflow/MCP",
+    group: "งานระบบ",
     schema: schemas.automationSchema,
     columns: [
       { key: "strength", labelTh: "จุดเด่น" },
@@ -140,30 +159,10 @@ export const CATEGORIES: CategoryMeta[] = [
     ],
   },
   {
-    key: "browser-agents",
-    titleTh: "Browser / Computer-use Agents",
-    descriptionTh: "Agent ที่คุมเบราว์เซอร์/หน้าจอ",
-    schema: schemas.browserAgentsSchema,
-    columns: [
-      { key: "strength", labelTh: "จุดเด่น" },
-      { key: "maturity", labelTh: "ความพร้อมใช้งาน" },
-    ],
-  },
-  {
-    key: "threed-gaming",
-    titleTh: "งาน 3D / เกม",
-    descriptionTh: "สร้างโมเดล 3D สำหรับเกมและงานออกแบบ",
-    schema: schemas.threedGamingSchema,
-    columns: [
-      { key: "license", labelTh: "License" },
-      { key: "strength", labelTh: "จุดเด่น" },
-      { key: "freeTierLicense", labelTh: "License free tier" },
-    ],
-  },
-  {
-    key: "open-weight-selfhosted",
-    titleTh: "Open-weight Self-hosted",
-    descriptionTh: "โมเดลรันเองตาม tier ฮาร์ดแวร์",
+    key: "self-hosted",
+    titleTh: "โมเดล Self-hosted/On-prem",
+    descriptionTh: "สำหรับข้อมูลอ่อนไหว (การเงิน/กฎหมาย/ลูกค้า) ที่ห้ามส่งออกนอกองค์กร",
+    group: "งานระบบ",
     schema: schemas.openWeightSelfhostedSchema,
     columns: [
       { key: "vramTier", labelTh: "Tier ฮาร์ดแวร์" },
@@ -171,20 +170,22 @@ export const CATEGORIES: CategoryMeta[] = [
       { key: "licenseNote", labelTh: "License" },
     ],
   },
-  {
-    key: "thai-models",
-    titleTh: "โมเดลภาษาไทยโดยเฉพาะ",
-    descriptionTh: "โมเดลที่พัฒนา/ปรับแต่งเฉพาะภาษาไทย",
-    schema: schemas.thaiModelsSchema,
-    columns: [
-      { key: "modelId", labelTh: "Model ID" },
-      { key: "baseModel", labelTh: "ฐาน/ขนาด" },
-      { key: "benchmark", labelTh: "Benchmark" },
-      { key: "license", labelTh: "License" },
-    ],
-  },
 ];
 
 export function getCategory(key: string): CategoryMeta | undefined {
   return CATEGORIES.find((c) => c.key === key);
+}
+
+/** จัดหมวดเป็นกลุ่มตาม `group` เพื่อแสดงบนหน้าแรก */
+export function getCategoriesGrouped(): { group: string; categories: CategoryMeta[] }[] {
+  const groups: { group: string; categories: CategoryMeta[] }[] = [];
+  for (const category of CATEGORIES) {
+    let bucket = groups.find((g) => g.group === category.group);
+    if (!bucket) {
+      bucket = { group: category.group, categories: [] };
+      groups.push(bucket);
+    }
+    bucket.categories.push(category);
+  }
+  return groups;
 }

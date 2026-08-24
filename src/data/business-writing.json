@@ -1,0 +1,32 @@
+[
+  {
+    "id": "claude-business-writing",
+    "name": "Claude (Opus 5 / Sonnet 5)",
+    "vendor": "Anthropic",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "ร่างอีเมล/รายงานยาวที่โทนเป็นธรรมชาติ อ่านแล้วไม่รู้สึกเหมือน AI เขียน",
+    "summary": "ชุมชนยกให้เขียนยาวและโทนธรรมชาติดีที่สุด เหมาะรายงาน/อีเมลทางการ"
+  },
+  {
+    "id": "gpt-5-6-business-writing",
+    "name": "GPT-5.6",
+    "vendor": "OpenAI",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "ร่างข้อความการตลาด, brainstorm หัวข้อ, พาดหัวประกาศ",
+    "summary": "เด่นงาน copywriting และ brainstorm เชิงการตลาด"
+  },
+  {
+    "id": "gemini-3-1-pro-business-writing",
+    "name": "Gemini 3.1 Pro",
+    "vendor": "Google",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "ภาษาไทยลื่นไหลที่สุดในกลุ่มสากล + context ยาว เหมาะสรุปเอกสารภาษาไทยยาวๆ",
+    "summary": "ตัวเลือกแนะนำสำหรับงานเอกสารภาษาไทยขององค์กร"
+  }
+]

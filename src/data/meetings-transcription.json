@@ -1,0 +1,62 @@
+[
+  {
+    "id": "otter-ai",
+    "name": "Otter.ai",
+    "vendor": "Otter.ai",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "capability": "transcription",
+    "integration": "Zoom, Google Meet, Microsoft Teams",
+    "pricing": "ฟรีจำกัดนาที, Business ~$20/ผู้ใช้/เดือน",
+    "summary": "ถอดเสียงประชุมสด + สรุป action item อัตโนมัติ"
+  },
+  {
+    "id": "fireflies-ai",
+    "name": "Fireflies.ai",
+    "vendor": "Fireflies.ai",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "capability": "meeting-summary",
+    "integration": "Zoom, Google Meet, Microsoft Teams, CRM ต่างๆ",
+    "pricing": "ฟรีจำกัด, Business ~$19/ผู้ใช้/เดือน",
+    "summary": "เด่นด้านเชื่อมสรุปประชุมเข้า CRM/workflow อัตโนมัติ"
+  },
+  {
+    "id": "teams-copilot-recap",
+    "name": "Microsoft Teams Premium/Copilot Recap",
+    "vendor": "Microsoft",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "capability": "meeting-summary",
+    "integration": "Microsoft Teams",
+    "pricing": "รวมใน Teams Premium / M365 Copilot license",
+    "summary": "เหมาะองค์กรที่ใช้ Teams อยู่แล้ว — ไม่ต้องติดตั้งเพิ่ม"
+  },
+  {
+    "id": "google-meet-gemini-notes",
+    "name": "Google Meet + Gemini Notes",
+    "vendor": "Google",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "capability": "live-notes",
+    "integration": "Google Meet, Google Docs",
+    "pricing": "รวมใน Google Workspace แผนที่มี Gemini",
+    "summary": "จด note สดระหว่างประชุมและสรุปลง Docs อัตโนมัติ"
+  },
+  {
+    "id": "whisper-transcription",
+    "name": "Whisper (self-host)",
+    "vendor": "OpenAI",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "capability": "transcription",
+    "integration": "ต้องต่อ pipeline เอง (ไม่มี UI สำเร็จรูป)",
+    "pricing": "ฟรี open source",
+    "summary": "ตัวเลือกสำหรับองค์กรที่ห้ามส่งเสียงประชุมออกนอกระบบ — รันเองได้"
+  }
+]

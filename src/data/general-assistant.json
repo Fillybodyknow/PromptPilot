@@ -11,8 +11,8 @@
     "benchmark": "AAII 63 (#1); SWE-bench Verified 97.0% (Vals AI)",
     "priceUsdIn": 5,
     "priceUsdOut": 25,
-    "bestFor": "งานคิดวิเคราะห์ซับซ้อน/โค้ด — default งานวิศวกรรมซอฟต์แวร์",
-    "summary": "reasoning + agentic ยาว; แพง"
+    "bestFor": "งานตัดสินใจ/วิเคราะห์ซับซ้อนของผู้บริหารและทีมที่ต้องการ agentic ยาว",
+    "summary": "reasoning + agentic ยาว; แพงกว่าตัวอื่นในกลุ่ม"
   },
   {
     "id": "claude-fable-5",
@@ -26,7 +26,7 @@
     "benchmark": "AAII 62",
     "priceUsdIn": null,
     "priceUsdOut": null,
-    "bestFor": "งานที่ต้องการพลังสูง แต่ Opus 5 คุ้มค่ากว่าในราคาถูกกว่า",
+    "bestFor": "ทีมที่ต้องการพลังสูง แต่ Opus 5 คุ้มค่ากว่าในราคาถูกกว่าสำหรับงานส่วนใหญ่",
     "summary": "แรง แต่คะแนน < Opus 5 ทั้งที่แพงกว่า (~2×); เคยถูกระงับ export-control 12 มิ.ย.–1 ก.ค. 2026"
   },
   {
@@ -41,8 +41,8 @@
     "benchmark": "AAII ~57; SWE-bench ~80%",
     "priceUsdIn": 2,
     "priceUsdOut": 12,
-    "bestFor": "งานทั่วไปคุ้มค่า + ภาษาไทยดี",
-    "summary": "คุ้มค่าสุดกลุ่ม frontier, ภาษาไทยดี"
+    "bestFor": "ผู้ช่วยประจำวันของพนักงานทั่วไป — คุ้มค่าสุด + ภาษาไทยดี",
+    "summary": "คุ้มค่าสุดกลุ่ม frontier, ภาษาไทยดี — ตัวเลือก default ที่แนะนำสำหรับพนักงานทั่วไป"
   },
   {
     "id": "gpt-5-6-sol",
@@ -56,7 +56,7 @@
     "benchmark": "GPQA Diamond ~94.6% (llm-stats)",
     "priceUsdIn": null,
     "priceUsdOut": null,
-    "bestFor": "งานคิดวิเคราะห์ซับซ้อน/โค้ด",
+    "bestFor": "งานวิเคราะห์เชิงลึกที่ต้องการ reasoning สูง",
     "summary": "reasoning ลึก; ราคาสูงกว่า Gemini"
   },
   {
@@ -71,7 +71,7 @@
     "benchmark": "AAII ~60.9",
     "priceUsdIn": null,
     "priceUsdOut": null,
-    "bestFor": "งานที่ต้องการ context ยาว งบกลาง",
+    "bestFor": "งานที่ต้องอ้างอิงเอกสารยาว/บทสนทนายาวต่อเนื่อง งบกลาง",
     "summary": "ถูกในกลุ่ม top 10; context ยาว"
   },
   {
@@ -85,35 +85,7 @@
     "benchmark": "open-weight ดีที่สุดในกลุ่ม",
     "priceUsdIn": null,
     "priceUsdOut": null,
-    "bestFor": "งบจำกัด/องค์กรที่อยากรันเอง",
-    "summary": "ถูกกว่ามาก; ตัวเลือก self-host/คุ้มค่า"
-  },
-  {
-    "id": "kimi-k3",
-    "name": "Kimi K3",
-    "vendor": "Moonshot AI",
-    "releaseDate": "2026",
-    "sourceLabel": "community",
-    "verifiedAt": "2026-08-22",
-    "status": "active",
-    "benchmark": "open-weight ดีที่สุดในกลุ่ม",
-    "priceUsdIn": null,
-    "priceUsdOut": null,
-    "bestFor": "งบจำกัด/องค์กรที่อยากรันเอง",
-    "summary": "ถูกกว่ามาก; ตัวเลือก self-host/คุ้มค่า"
-  },
-  {
-    "id": "deepseek-v4",
-    "name": "DeepSeek V4",
-    "vendor": "DeepSeek",
-    "releaseDate": "2026",
-    "sourceLabel": "community",
-    "verifiedAt": "2026-08-22",
-    "status": "active",
-    "benchmark": "open-weight ดีที่สุดในกลุ่ม",
-    "priceUsdIn": null,
-    "priceUsdOut": null,
-    "bestFor": "งบจำกัด/องค์กรที่อยากรันเอง",
+    "bestFor": "องค์กรที่งบจำกัดหรือมีนโยบายรันโมเดลเองภายใน",
     "summary": "ถูกกว่ามาก; ตัวเลือก self-host/คุ้มค่า"
   }
 ]

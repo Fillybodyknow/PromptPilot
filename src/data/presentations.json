@@ -1,0 +1,50 @@
+[
+  {
+    "id": "gamma",
+    "name": "Gamma",
+    "vendor": "Gamma",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "เจนสไลด์จาก prompt/outline เดียวได้ทั้งชุด ปรับ theme อัตโนมัติ",
+    "pricing": "ฟรีจำกัดจำนวน, Plus ~$10-20/เดือน",
+    "integration": "export เป็น PPTX/PDF",
+    "summary": "เร็วที่สุดสำหรับสร้างสไลด์ฉบับร่างจากไอเดียเปล่า"
+  },
+  {
+    "id": "copilot-powerpoint",
+    "name": "Microsoft Copilot for PowerPoint",
+    "vendor": "Microsoft",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "ทำงานในไฟล์ PowerPoint เดิมขององค์กรได้ทันที ใช้ template บริษัท",
+    "pricing": "รวมใน Microsoft 365 Copilot license",
+    "integration": "PowerPoint, Word, Outlook (M365 ecosystem)",
+    "summary": "เหมาะองค์กรที่ใช้ M365 อยู่แล้ว — ต่อยอดจาก template เดิมได้เลย"
+  },
+  {
+    "id": "gemini-slides",
+    "name": "Google Slides + Gemini",
+    "vendor": "Google",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "สร้าง/แก้สไลด์ใน Google Workspace โดยตรง",
+    "pricing": "รวมใน Google Workspace แผนที่มี Gemini",
+    "integration": "Google Slides, Docs, Sheets",
+    "summary": "เหมาะองค์กรที่ใช้ Google Workspace"
+  },
+  {
+    "id": "beautiful-ai",
+    "name": "Beautiful.ai",
+    "vendor": "Beautiful.ai",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "layout ปรับอัตโนมัติให้สวยเสมอ เหมาะทีมที่ไม่มี designer",
+    "pricing": "จาก ~$12/เดือน",
+    "integration": "export PPTX/PDF",
+    "summary": "เน้นดีไซน์สวยอัตโนมัติโดยไม่ต้องจัด layout เอง"
+  }
+]

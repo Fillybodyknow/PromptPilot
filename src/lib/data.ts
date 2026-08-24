@@ -1,44 +1,54 @@
 import { z } from "zod";
-import { CATEGORIES, getCategory, type CategoryMeta } from "./categories";
+import { categoryGuideSchema, type CategoryGuide } from "./schema";
+import {
+  CATEGORIES,
+  getCategory,
+  getCategoriesGrouped,
+  type CategoryMeta,
+} from "./categories";
 
-import llmCore from "@/data/llm-core.json";
-import writing from "@/data/writing.json";
+import generalAssistant from "@/data/general-assistant.json";
+import businessWriting from "@/data/business-writing.json";
+import presentations from "@/data/presentations.json";
 import codingModels from "@/data/coding-models.json";
 import codingTools from "@/data/coding-tools.json";
-import imageGen from "@/data/image-gen.json";
-import videoGen from "@/data/video-gen.json";
-import audio from "@/data/audio.json";
-import researchDocs from "@/data/research-docs.json";
-import designUi from "@/data/design-ui.json";
 import dataAnalysis from "@/data/data-analysis.json";
+import researchDocs from "@/data/research-docs.json";
+import imageGen from "@/data/image-gen.json";
+import designUi from "@/data/design-ui.json";
+import meetingsTranscription from "@/data/meetings-transcription.json";
 import translation from "@/data/translation.json";
 import automation from "@/data/automation.json";
-import browserAgents from "@/data/browser-agents.json";
-import threedGaming from "@/data/threed-gaming.json";
 import openWeightSelfhosted from "@/data/open-weight-selfhosted.json";
-import thaiModels from "@/data/thai-models.json";
+
+import businessWritingGuide from "@/data/guides/business-writing.json";
 
 /**
  * แมป category key -> raw JSON (ยังไม่ validate)
  * ไฟล์ JSON เหล่านี้คือ "แหล่งข้อมูลตั้งต้น" ที่ auto-update pipeline / admin จะแก้ไขในอนาคต
  */
 const RAW_DATA: Record<string, unknown[]> = {
-  "llm-core": llmCore,
-  writing: writing,
+  "general-assistant": generalAssistant,
+  "business-writing": businessWriting,
+  presentations: presentations,
   "coding-models": codingModels,
   "coding-tools": codingTools,
-  "image-gen": imageGen,
-  "video-gen": videoGen,
-  audio: audio,
-  "research-docs": researchDocs,
-  "design-ui": designUi,
   "data-analysis": dataAnalysis,
+  "research-docs": researchDocs,
+  "image-gen": imageGen,
+  "design-ui": designUi,
+  "meetings-transcription": meetingsTranscription,
   translation: translation,
   automation: automation,
-  "browser-agents": browserAgents,
-  "threed-gaming": threedGaming,
-  "open-weight-selfhosted": openWeightSelfhosted,
-  "thai-models": thaiModels,
+  "self-hosted": openWeightSelfhosted,
+};
+
+/**
+ * แมป category key -> raw guide JSON (ยังไม่ validate) — ไม่ใช่ทุกหมวดจะมี guide
+ * ตอนนี้มีแค่ business-writing เป็นตัวอย่าง หมวดอื่นจะทยอยเพิ่ม
+ */
+const RAW_GUIDES: Record<string, unknown> = {
+  "business-writing": businessWritingGuide,
 };
 
 /**
@@ -70,6 +80,27 @@ export function getCategoryEntries<T = unknown>(key: string): T[] {
   return result.data as T[];
 }
 
+/**
+ * อ่าน + validate guide ("วิธีใช้งาน" + "เขียน prompt" + "ติดตั้ง") ของหมวดเดียว
+ * คืน null ถ้าหมวดนั้นยังไม่มี guide (ยังไม่ error — เพราะไม่ใช่ทุกหมวดต้องมี)
+ */
+export function getCategoryGuide(key: string): CategoryGuide | null {
+  const raw = RAW_GUIDES[key];
+  if (!raw) return null;
+
+  const result = categoryGuideSchema.safeParse(raw);
+  if (!result.success) {
+    const issues = result.error.issues
+      .map((issue) => `  - [${issue.path.join(".")}] ${issue.message}`)
+      .join("\n");
+    throw new Error(
+      `Guide ของหมวด "${key}" (src/data/guides/${key}.json) ไม่ตรง schema:\n${issues}`
+    );
+  }
+
+  return result.data;
+}
+
 export interface CategoryWithEntries extends CategoryMeta {
   entries: Record<string, unknown>[];
 }
@@ -82,4 +113,4 @@ export function getAllCategoriesWithEntries(): CategoryWithEntries[] {
   }));
 }
 
-export { CATEGORIES, getCategory };
+export { CATEGORIES, getCategory, getCategoriesGrouped };

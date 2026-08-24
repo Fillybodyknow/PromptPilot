@@ -27,9 +27,9 @@ export const baseEntrySchema = z.object({
 export type BaseEntry = z.infer<typeof baseEntrySchema>;
 
 // ---------------------------------------------------------------------------
-// หมวด 1 — LLM หลัก / reasoning / งานซับซ้อน
+// ผู้ช่วยสนทนา/ถามตอบทั่วไป (general-assistant)
 // ---------------------------------------------------------------------------
-export const llmCoreSchema = baseEntrySchema.extend({
+export const generalAssistantSchema = baseEntrySchema.extend({
   modelId: z.string().optional(),
   releaseDate: z.string().optional(),
   benchmark: z.string(),
@@ -39,14 +39,14 @@ export const llmCoreSchema = baseEntrySchema.extend({
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 2 — งานเขียนบทความ / creative / copywriting
+// งานเอกสาร/เขียนธุรกิจ (business-writing)
 // ---------------------------------------------------------------------------
-export const writingSchema = baseEntrySchema.extend({
+export const businessWritingSchema = baseEntrySchema.extend({
   strength: z.string(),
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 3ก — งานเขียนโปรแกรม: โมเดล
+// เขียนโปรแกรม — โมเดล (coding-models)
 // ---------------------------------------------------------------------------
 export const codingModelsSchema = baseEntrySchema.extend({
   sweBenchVerified: z.string(),
@@ -54,7 +54,7 @@ export const codingModelsSchema = baseEntrySchema.extend({
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 3ข — งานเขียนโปรแกรม: เครื่องมือ/IDE/agent
+// เขียนโปรแกรม — เครื่องมือ/IDE/agent (coding-tools)
 // ---------------------------------------------------------------------------
 export const codingToolsSchema = baseEntrySchema.extend({
   toolType: z.enum(["ide", "cli-agent", "plugin", "cloud-agent"]),
@@ -63,7 +63,7 @@ export const codingToolsSchema = baseEntrySchema.extend({
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 4 — งานเจนรูป
+// งานออกแบบ/สื่อการตลาด — ภาพ (image-gen)
 // ---------------------------------------------------------------------------
 export const imageGenSchema = baseEntrySchema.extend({
   pricePerThousand: z.string().optional(),
@@ -72,33 +72,7 @@ export const imageGenSchema = baseEntrySchema.extend({
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 5 — งานเจนวิดีโอ
-// ---------------------------------------------------------------------------
-export const videoGenSchema = baseEntrySchema.extend({
-  strength: z.string(),
-  audioSupport: z.boolean(),
-  priceAccess: z.string(),
-});
-
-// ---------------------------------------------------------------------------
-// หมวด 6 — งานเสียง (TTS / voice cloning / เพลง / STT)
-// ---------------------------------------------------------------------------
-export const audioSchema = baseEntrySchema.extend({
-  type: z.enum(["tts", "voice-clone", "music", "stt"]),
-  pricing: z.string(),
-  licenseNote: z.string().optional(),
-});
-
-// ---------------------------------------------------------------------------
-// หมวด 7 — งานเอกสาร / วิจัย
-// ---------------------------------------------------------------------------
-export const researchDocsSchema = baseEntrySchema.extend({
-  strength: z.string(),
-  pricing: z.string(),
-});
-
-// ---------------------------------------------------------------------------
-// หมวด 8 — งานออกแบบ UI/UX + กราฟิก
+// งานออกแบบ/สื่อการตลาด — UI/กราฟิก/สไลด์ (design-ui, presentations)
 // ---------------------------------------------------------------------------
 export const designUiSchema = baseEntrySchema.extend({
   strength: z.string(),
@@ -107,14 +81,31 @@ export const designUiSchema = baseEntrySchema.extend({
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 9 — งานวิเคราะห์ข้อมูล / spreadsheet / BI
+// งานวิเคราะห์ข้อมูล/รายงาน (data-analysis)
 // ---------------------------------------------------------------------------
 export const dataAnalysisSchema = baseEntrySchema.extend({
   strength: z.string(),
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 10 — งานแปล / subtitle
+// งานวิจัย/สรุปเอกสารยาว (research-docs)
+// ---------------------------------------------------------------------------
+export const researchDocsSchema = baseEntrySchema.extend({
+  strength: z.string(),
+  pricing: z.string(),
+});
+
+// ---------------------------------------------------------------------------
+// งานประชุม/ถอดเสียง (meetings-transcription)
+// ---------------------------------------------------------------------------
+export const meetingsSchema = baseEntrySchema.extend({
+  capability: z.enum(["transcription", "meeting-summary", "live-notes"]),
+  integration: z.string(),
+  pricing: z.string(),
+});
+
+// ---------------------------------------------------------------------------
+// งานแปลภาษา (translation)
 // ---------------------------------------------------------------------------
 export const translationSchema = baseEntrySchema.extend({
   strength: z.string(),
@@ -122,7 +113,7 @@ export const translationSchema = baseEntrySchema.extend({
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 11 — Automation / เชื่อมระบบ
+// Automation / เชื่อมระบบภายใน (automation)
 // ---------------------------------------------------------------------------
 export const automationSchema = baseEntrySchema.extend({
   strength: z.string(),
@@ -131,24 +122,7 @@ export const automationSchema = baseEntrySchema.extend({
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 12 — Browser / computer-use agents
-// ---------------------------------------------------------------------------
-export const browserAgentsSchema = baseEntrySchema.extend({
-  strength: z.string(),
-  maturity: z.string(),
-});
-
-// ---------------------------------------------------------------------------
-// หมวด 13 — งาน 3D / เกม
-// ---------------------------------------------------------------------------
-export const threedGamingSchema = baseEntrySchema.extend({
-  license: z.string(),
-  strength: z.string(),
-  freeTierLicense: z.string(),
-});
-
-// ---------------------------------------------------------------------------
-// หมวด 14 — Open-weight self-hosted
+// โมเดล Self-hosted/On-prem (self-hosted)
 // ---------------------------------------------------------------------------
 export const openWeightSelfhostedSchema = baseEntrySchema.extend({
   vramTier: z.string(),
@@ -157,12 +131,37 @@ export const openWeightSelfhostedSchema = baseEntrySchema.extend({
 });
 
 // ---------------------------------------------------------------------------
-// หมวด 15 — โมเดลภาษาไทยโดยเฉพาะ
+// Category Guide — เนื้อหา "วิธีใช้งาน / เขียน prompt / ติดตั้ง" ต่อ 1 หมวด
+// (แยกจาก tool catalog ด้านบน — 1 หมวดมี guide เดียว ไม่ใช่ 1 ต่อเครื่องมือ)
 // ---------------------------------------------------------------------------
-export const thaiModelsSchema = baseEntrySchema.extend({
-  modelId: z.string(),
-  baseModel: z.string(),
-  sizeParams: z.string(),
-  benchmark: z.string(),
-  license: z.string(),
+export const accessMethodEnum = z.enum([
+  "web",
+  "browser-extension",
+  "desktop-installer",
+  "cli",
+  "self-hosted",
+  "sso-license",
+]);
+
+export const promptTemplateSchema = z.object({
+  /** โจทย์/งานที่ prompt นี้ใช้ทำ */
+  task: z.string().min(1),
+  /** ตัวอย่าง prompt ที่ไม่ดี (optional — ใส่เพื่อสอนผ่าน before/after) */
+  badPrompt: z.string().optional(),
+  /** ตัวอย่าง prompt ที่ดี พร้อมใช้ (copy ไปวางได้เลย) */
+  goodPrompt: z.string().min(1),
+  /** อธิบายว่าทำไม prompt นี้ถึงได้ผล */
+  why: z.string().min(1),
 });
+
+export const categoryGuideSchema = z.object({
+  categoryKey: z.string().min(1),
+  howToUse: z.string().min(1),
+  accessMethod: accessMethodEnum,
+  installSteps: z.array(z.string()).optional(),
+  dataHandlingNote: z.string().min(1),
+  promptTemplates: z.array(promptTemplateSchema).min(1),
+});
+
+export type CategoryGuide = z.infer<typeof categoryGuideSchema>;
+export type PromptTemplate = z.infer<typeof promptTemplateSchema>;
