@@ -1,0 +1,61 @@
+[
+  {
+    "id": "elevenlabs",
+    "name": "ElevenLabs",
+    "vendor": "ElevenLabs",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "type": "tts",
+    "pricing": "ฟรี 10,000 ตัวอักษร/เดือน, Starter $6/เดือน (30,000 credits + commercial license)",
+    "licenseNote": "ราคาปรับขึ้นจาก $5 ก่อนปี 2026",
+    "summary": "TTS/voice cloning คุณภาพสูงสุดในกลุ่ม"
+  },
+  {
+    "id": "suno-v5",
+    "name": "Suno v5",
+    "vendor": "Suno",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "type": "music",
+    "pricing": "ฟรี + ~$8/เดือน",
+    "licenseNote": "free tier หลัง settle ห้ามใช้พาณิชย์; Sony/UMG ยังฟ้องอยู่",
+    "summary": "เจนเพลงเต็มเพลง Elo ~1,293 ผู้นำด้านคุณภาพ"
+  },
+  {
+    "id": "udio",
+    "name": "Udio",
+    "vendor": "Udio",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "type": "music",
+    "pricing": "หลากหลาย",
+    "licenseNote": "Universal–Udio settle 29 ต.ค. 2025",
+    "summary": "เด่น instrumental/electronic, fidelity สูง (48kHz)"
+  },
+  {
+    "id": "eleven-music",
+    "name": "ElevenLabs Music (Eleven Music)",
+    "vendor": "ElevenLabs",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "type": "music",
+    "pricing": "รวมใน ElevenLabs plan",
+    "licenseNote": "เทรนบนข้อมูลมีสิทธิ์ — ปลอดภัยพาณิชย์",
+    "summary": "เน้นความปลอดภัยเชิงพาณิชย์ เทรนบนข้อมูลมีสิทธิ์"
+  },
+  {
+    "id": "whisper",
+    "name": "Whisper",
+    "vendor": "OpenAI",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "type": "stt",
+    "pricing": "ฟรี open source",
+    "summary": "speech-to-text ฟรี open source รองรับ 100+ ภาษา"
+  }
+]

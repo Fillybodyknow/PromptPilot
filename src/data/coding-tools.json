@@ -1,0 +1,98 @@
+[
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "vendor": "Anthropic",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "toolType": "cli-agent",
+    "price": "~$20/เดือน (Pro)",
+    "bestFor": "refactor/migration หลายไฟล์, งาน autonomous",
+    "summary": "terminal/CLI agent สำหรับงาน autonomous ข้ามหลายไฟล์"
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "vendor": "Anysphere",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "toolType": "ide",
+    "price": "~$20/เดือน (Pro)",
+    "bestFor": "flow ในเอดิเตอร์, ผู้มาจาก VS Code",
+    "summary": "AI IDE เหมาะกับ flow ในเอดิเตอร์"
+  },
+  {
+    "id": "openai-codex",
+    "name": "OpenAI Codex",
+    "vendor": "OpenAI",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "toolType": "cloud-agent",
+    "price": "รวมใน ChatGPT plan",
+    "bestFor": "งาน background/parallel, PR อัตโนมัติ",
+    "summary": "agent ผ่าน ChatGPT/CLI/cloud เหมาะงาน background/parallel"
+  },
+  {
+    "id": "github-copilot",
+    "name": "GitHub Copilot",
+    "vendor": "GitHub",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "toolType": "plugin",
+    "price": "~$10/เดือน (ถูกสุด)",
+    "bestFor": "ทีมใน GitHub/VS Code/JetBrains",
+    "summary": "inline + agent mode ราคาถูกสุดในกลุ่ม"
+  },
+  {
+    "id": "devin-desktop",
+    "name": "Windsurf → Devin Desktop",
+    "vendor": "Cognition",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "toolType": "ide",
+    "price": "~$15/เดือน",
+    "bestFor": "จัดการหลาย agent, งบจำกัด",
+    "summary": "agentic IDE เปลี่ยนชื่อจาก Windsurf เมื่อ 2 มิ.ย. 2026"
+  },
+  {
+    "id": "google-antigravity",
+    "name": "Google Antigravity",
+    "vendor": "Google",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "toolType": "ide",
+    "price": "หลากหลาย",
+    "bestFor": "ตัวเลือกเสริม",
+    "summary": "agent/IDE ตัวเลือกเสริมจาก Google"
+  },
+  {
+    "id": "kiro",
+    "name": "Kiro",
+    "vendor": "AWS",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "toolType": "ide",
+    "price": "หลากหลาย",
+    "bestFor": "ตัวเลือกเสริม",
+    "summary": "agent/IDE ตัวเลือกเสริมจาก AWS"
+  },
+  {
+    "id": "cline",
+    "name": "Cline",
+    "vendor": "open-source",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "toolType": "plugin",
+    "price": "open-source",
+    "bestFor": "ตัวเลือกเสริมแบบ open-source",
+    "summary": "ปลั๊กอิน agent แบบ open-source"
+  }
+]

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "google-stitch",
+    "name": "Google Stitch",
+    "vendor": "Google",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "text-to-UI, export หลาย framework",
+    "pricing": "ฟรี (350 gen/เดือน)",
+    "integration": "มี MCP เชื่อม Claude Code/Cursor",
+    "summary": "text-to-UI ฟรี อัปเดตใหญ่ 19 มี.ค. 2026"
+  },
+  {
+    "id": "v0-vercel",
+    "name": "v0 by Vercel",
+    "vendor": "Vercel",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "React/Next.js component generation",
+    "pricing": "~$20/เดือน",
+    "summary": "เจน component React/Next.js โดยตรง"
+  },
+  {
+    "id": "lovable",
+    "name": "Lovable",
+    "vendor": "Lovable",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "full-stack app (chat-first)",
+    "pricing": "~$25/เดือน",
+    "summary": "สร้างแอป full-stack แบบ chat-first"
+  },
+  {
+    "id": "bolt-new",
+    "name": "Bolt.new",
+    "vendor": "StackBlitz",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "rapid prototype full-stack",
+    "pricing": "หลากหลาย",
+    "summary": "เหมาะ prototype full-stack แบบเร็ว"
+  },
+  {
+    "id": "figma-make",
+    "name": "Figma Make / Figma AI",
+    "vendor": "Figma",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "เชื่อมกับ workflow ออกแบบเดิม",
+    "pricing": "ต้องมี Figma plan (Professional+)",
+    "summary": "ต้องมี Figma plan ระดับ Professional ขึ้นไป"
+  },
+  {
+    "id": "uizard-relume-recraft-firefly",
+    "name": "Uizard, Relume, Recraft (vector), Adobe Firefly",
+    "vendor": "หลายราย",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "เครื่องมือเสริม",
+    "pricing": "หลากหลาย",
+    "summary": "ตัวเลือกเสริมนอกเหนือจากผู้นำหมวด"
+  }
+]

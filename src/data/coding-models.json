@@ -1,0 +1,46 @@
+[
+  {
+    "id": "claude-opus-5-coding",
+    "name": "Claude Opus 5",
+    "vendor": "Anthropic",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-19",
+    "status": "active",
+    "sweBenchVerified": "97.0% (#1)",
+    "note": "default งานวิศวกรรมซอฟต์แวร์",
+    "summary": "อันดับ 1 SWE-bench Verified บน Vals AI (harness bash-tool-only)"
+  },
+  {
+    "id": "gpt-5-6-sol-coding",
+    "name": "GPT-5.6 Sol",
+    "vendor": "OpenAI",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-19",
+    "status": "active",
+    "sweBenchVerified": "~96%",
+    "note": "เด่น terminal/agentic; SWE-bench Pro ตกกว่ามาก",
+    "summary": "เด่น terminal/agentic แต่ SWE-bench Pro (ยากกว่า) คะแนนตกกว่ามาก"
+  },
+  {
+    "id": "glm-5-2-coding",
+    "name": "GLM-5.2",
+    "vendor": "Z.ai",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-19",
+    "status": "active",
+    "sweBenchVerified": "open-weight ดีที่สุด",
+    "note": "คุ้มค่า self-host",
+    "summary": "open-weight ดีที่สุดในกลุ่ม เหมาะ self-host"
+  },
+  {
+    "id": "kimi-k3-coding",
+    "name": "Kimi K3",
+    "vendor": "Moonshot AI",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-19",
+    "status": "active",
+    "sweBenchVerified": "เด่น frontend/UI (นำ Frontend Code Arena)",
+    "note": "open model",
+    "summary": "เด่นงาน frontend/UI นำ Frontend Code Arena"
+  }
+]

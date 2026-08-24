@@ -1,0 +1,46 @@
+[
+  {
+    "id": "deepl",
+    "name": "DeepL",
+    "vendor": "DeepL",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "แปลภาษาสากลคุณภาพสูง",
+    "scope": "international",
+    "summary": "เหมาะแปลภาษาสากลทั่วไป"
+  },
+  {
+    "id": "gemini-translation",
+    "name": "Gemini",
+    "vendor": "Google",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "แปลสากล + ภาษาไทยดี",
+    "scope": "international",
+    "summary": "แปลได้ทั้งสากลและภาษาไทยในตัวเดียว"
+  },
+  {
+    "id": "gpt-translation",
+    "name": "GPT",
+    "vendor": "OpenAI",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "แปลภาษาสากล",
+    "scope": "international",
+    "summary": "เหมาะแปลภาษาสากลทั่วไป"
+  },
+  {
+    "id": "typhoon-translate-1-5",
+    "name": "Typhoon-Translate v1.5",
+    "vendor": "SCB 10X",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "ไทย↔อังกฤษ คุณภาพสูง เฉพาะทาง (4B)",
+    "scope": "thai",
+    "summary": "เฉพาะทางไทย↔อังกฤษ; ตรวจ license ก่อนใช้ (card ระบุไม่ชัด)"
+  }
+]

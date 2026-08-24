@@ -1,0 +1,42 @@
+[
+  {
+    "id": "chatgpt-ada",
+    "name": "ChatGPT Advanced Data Analysis",
+    "vendor": "OpenAI",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "EDA, กราฟ, สรุปเชิงสถิติ",
+    "summary": "รันโค้ดวิเคราะห์ข้อมูลในตัว เหมาะ EDA และกราฟ"
+  },
+  {
+    "id": "claude-data-analysis",
+    "name": "Claude (วิเคราะห์+โค้ด)",
+    "vendor": "Anthropic",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "วิเคราะห์ข้อมูลพร้อมเขียนโค้ดอธิบาย",
+    "summary": "วิเคราะห์ข้อมูลพร้อมโค้ดประกอบคำอธิบาย"
+  },
+  {
+    "id": "julius-ai",
+    "name": "Julius AI",
+    "vendor": "Julius",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "เฉพาะทางข้อมูล",
+    "summary": "เครื่องมือเฉพาะทางสำหรับงานข้อมูลโดยตรง"
+  },
+  {
+    "id": "gemini-sheets",
+    "name": "Gemini in Google Sheets",
+    "vendor": "Google",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "ทำงานในสเปรดชีตโดยตรง",
+    "summary": "ผนวกเข้ากับ Google Sheets โดยตรง"
+  }
+]

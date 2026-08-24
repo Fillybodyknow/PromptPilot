@@ -1,0 +1,57 @@
+[
+  {
+    "id": "notebooklm",
+    "name": "NotebookLM",
+    "vendor": "Google",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "source-grounded chat + audio overview + mind maps",
+    "pricing": "มีแผนฟรี",
+    "summary": "เด่นสุดด้าน audio overview; ชุมชนบ่นเรื่อง citation หน้าสุ่มช่วง เม.ย. 2026"
+  },
+  {
+    "id": "elicit",
+    "name": "Elicit",
+    "vendor": "Elicit",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "systematic review/สกัดข้อมูล paper แบบตาราง",
+    "pricing": "จาก ~$49/เดือน (ฟรี 5 paper/query)",
+    "summary": "เหมาะงาน systematic review และสกัดข้อมูลจาก paper"
+  },
+  {
+    "id": "consensus",
+    "name": "Consensus",
+    "vendor": "Consensus",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "ตอบจาก peer-reviewed + Consensus Meter",
+    "pricing": "จาก ~$12/เดือน",
+    "summary": "ตอบคำถามจากงาน peer-reviewed พร้อม Consensus Meter"
+  },
+  {
+    "id": "perplexity",
+    "name": "Perplexity",
+    "vendor": "Perplexity",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "ค้นเว็บสด + Deep Research",
+    "pricing": "Comet browser ฟรีตั้งแต่ 18 มี.ค. 2026",
+    "summary": "ค้นเว็บสด + Deep Research; citation ผิด 37% (น้อยสุดในกลุ่มที่ทดสอบ)"
+  },
+  {
+    "id": "deep-research-suite",
+    "name": "ChatGPT / Gemini / Claude Deep Research",
+    "vendor": "หลายราย",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "สังเคราะห์ข้ามแหล่ง",
+    "pricing": "รวมใน plan หลัก",
+    "summary": "ฟีเจอร์ deep research ในตัวของแต่ละค่าย"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "n8n",
+    "name": "n8n",
+    "vendor": "n8n",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "MCP server native, ~70 AI/LangChain nodes",
+    "pricingModel": "self-host ได้, ถูกที่ volume สูง (บิลต่อ workflow run)",
+    "selfHost": true,
+    "summary": "เหมาะทีมเทคนิค; MCP server native (public preview เม.ย. 2026)"
+  },
+  {
+    "id": "zapier",
+    "name": "Zapier",
+    "vendor": "Zapier",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "9,000+ แอป, ง่ายสุด, มี Agents + MCP",
+    "pricingModel": "แพงที่ volume สูง",
+    "selfHost": false,
+    "summary": "ง่ายที่สุด รองรับแอปเยอะสุด แต่แพงเมื่อ volume สูง"
+  },
+  {
+    "id": "make",
+    "name": "Make",
+    "vendor": "Make",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "visual, คุ้มค่า, EU data center, มี Maia + AI Agents",
+    "pricingModel": "คุ้มค่า",
+    "selfHost": false,
+    "summary": "visual builder คุ้มค่า มี EU data center"
+  },
+  {
+    "id": "mcp-protocol",
+    "name": "MCP (Model Context Protocol)",
+    "vendor": "Anthropic",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "มาตรฐานเปิดเชื่อม AI กับ tools",
+    "pricingModel": "open standard",
+    "selfHost": true,
+    "summary": "รองรับทั้ง 3 แพลตฟอร์มแล้ว — สัญญาณ future-proof ที่ดีกว่าจำนวนแอป"
+  }
+]

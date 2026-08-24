@@ -1,0 +1,50 @@
+[
+  {
+    "id": "tier-8gb",
+    "name": "Gemma 4 9B / Llama 5.1 8B / Phi-4 / gpt-oss-20b",
+    "vendor": "หลายราย",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "vramTier": "≤8GB VRAM",
+    "recommendedRunner": "Ollama หรือ LM Studio",
+    "licenseNote": "Gemma = Gemma Terms (ไม่ใช่ Apache)",
+    "summary": "รันบนโน้ตบุ๊ก/การ์ดจอเล็กได้"
+  },
+  {
+    "id": "tier-24gb",
+    "name": "Qwen 3.6 32B / DeepSeek V4 Flash / Gemma 3 27B",
+    "vendor": "หลายราย",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "vramTier": "24GB (RTX 4090)",
+    "recommendedRunner": "Ollama หรือ LM Studio",
+    "licenseNote": "ตรวจ license เฉพาะรุ่น",
+    "summary": "all-rounder รันได้ด้วยการ์ดจอเดียว"
+  },
+  {
+    "id": "tier-128gb",
+    "name": "gpt-oss-120b / Nemotron 3 Super / Qwen3-Coder-Next",
+    "vendor": "หลายราย",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "vramTier": "128GB+ / Mac Ultra",
+    "recommendedRunner": "Ollama หรือ LM Studio",
+    "licenseNote": "ตรวจ license เฉพาะรุ่น",
+    "summary": "frontier MoE ระดับที่การ์ดจอทั่วไปยังเอื้อมไม่ถึง"
+  },
+  {
+    "id": "tier-server",
+    "name": "GLM-5.2 (744B) / Kimi K3 (~1T) / DeepSeek V4 Pro (1.6T) / MiniMax M3",
+    "vendor": "หลายราย",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "vramTier": "server / rented H100",
+    "recommendedRunner": "Ollama หรือ LM Studio (OpenAI-compatible endpoint)",
+    "licenseNote": "DeepSeek/MiniMax มี license เฉพาะ — ตรวจก่อนใช้",
+    "summary": "ระดับ frontier open ต้องเช่า/มี server H100"
+  }
+]

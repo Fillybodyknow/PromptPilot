@@ -1,0 +1,82 @@
+[
+  {
+    "id": "gpt-image-2",
+    "name": "GPT Image 2",
+    "vendor": "OpenAI",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "pricePerThousand": "~$211 (high)",
+    "strength": "#1 Text-to-Image; prompt adherence, ข้อความในรูป",
+    "licenseNote": "ผ่าน API/ChatGPT",
+    "summary": "#1 Artificial Analysis Image Arena ด้าน text-to-image"
+  },
+  {
+    "id": "nano-banana-2",
+    "name": "Nano Banana 2 / Pro",
+    "vendor": "Google",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "pricePerThousand": "~$67",
+    "strength": "#1 Image Editing, character consistency",
+    "licenseNote": "ตรวจ Google terms",
+    "summary": "#1 ด้าน image editing และ character consistency"
+  },
+  {
+    "id": "seedream-4-5",
+    "name": "Seedream 4.5",
+    "vendor": "ByteDance",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "pricePerThousand": "~$30 (4.0)",
+    "strength": "text rendering, 4K, งานสินค้า",
+    "licenseNote": "ตรวจ terms",
+    "summary": "เด่น text rendering และงานภาพสินค้าความละเอียด 4K"
+  },
+  {
+    "id": "flux-2-max",
+    "name": "FLUX.2 [max]",
+    "vendor": "Black Forest Labs",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "photorealism, open weights",
+    "licenseNote": "ตรวจ license แต่ละ tier",
+    "summary": "photorealism สูง มี open weights ให้เลือก"
+  },
+  {
+    "id": "midjourney-v7-v8",
+    "name": "Midjourney V7/V8",
+    "vendor": "Midjourney",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "คุณภาพศิลป์สูงสุด",
+    "licenseNote": "ต้อง subscription เชิงพาณิชย์",
+    "summary": "ไม่ติด top 12 preference arena แต่ยังเป็นอันดับต้นด้านคุณภาพเชิงศิลป์"
+  },
+  {
+    "id": "adobe-firefly-image-5",
+    "name": "Adobe Firefly Image 5",
+    "vendor": "Adobe",
+    "sourceLabel": "official",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "IP-safe (เทรนบนข้อมูลมีสิทธิ์)",
+    "licenseNote": "ปลอดภัยงานพาณิชย์สุด",
+    "summary": "IP-safe ปลอดภัยสำหรับงานพาณิชย์มากที่สุด"
+  },
+  {
+    "id": "recraft-ideogram",
+    "name": "Recraft, Ideogram",
+    "vendor": "หลายราย",
+    "sourceLabel": "community",
+    "verifiedAt": "2026-08-24",
+    "status": "active",
+    "strength": "vector / typography",
+    "licenseNote": "ตรวจ terms",
+    "summary": "เด่นงาน vector และ typography เฉพาะทาง"
+  }
+]
