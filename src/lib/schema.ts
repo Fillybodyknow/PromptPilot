@@ -164,11 +164,26 @@ export const promptTemplateSchema = z
     testedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "testedAt ต้องเป็นรูปแบบ YYYY-MM-DD").optional(),
     /** ต้องใส่คู่กับ tested: true — ชื่อโมเดล/เครื่องมือที่ใช้ทดสอบ เช่น ["Claude Opus 5"] */
     testedWith: z.array(z.string().min(1)).optional(),
+    /**
+     * หลักฐานที่ 1: ตัวอย่าง output จริงจากการรัน goodPrompt (ใช้ input สมมติ ไม่ใช่ข้อมูลจริงขององค์กร)
+     * ต้องใส่คู่กับ tested: true — คือหลักฐานว่า prompt นี้ให้ผลลัพธ์แบบที่ "why" อธิบายไว้จริง
+     */
+    sampleOutput: z.string().optional(),
+    /**
+     * หลักฐานที่ 2: ลิงก์อ้างอิงแหล่งที่มาของหลักการที่ใช้ใน "why" (เช่น prompt engineering guide
+     * ของผู้พัฒนาโมเดล) — ใส่ได้ไม่ว่า tested จะเป็น true/false เพราะเป็นหลักฐานเชิงหลักการ
+     * ไม่ใช่หลักฐานว่า prompt นี้เจาะจงถูกทดสอบแล้ว
+     */
+    sourceUrl: z.url().optional(),
   })
-  .refine((data) => !data.tested || (!!data.testedAt && !!data.testedWith?.length), {
-    message: "ถ้า tested เป็น true ต้องระบุ testedAt และ testedWith อย่างน้อย 1 รายการ",
-    path: ["tested"],
-  });
+  .refine(
+    (data) => !data.tested || (!!data.testedAt && !!data.testedWith?.length && !!data.sampleOutput),
+    {
+      message:
+        "ถ้า tested เป็น true ต้องระบุ testedAt, testedWith อย่างน้อย 1 รายการ, และ sampleOutput เป็นหลักฐาน",
+      path: ["tested"],
+    }
+  );
 
 export const accessLinkSchema = z.object({
   label: z.string().min(1),

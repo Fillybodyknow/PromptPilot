@@ -54,8 +54,11 @@ export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
       <div>
         <h2 className="mb-1 text-lg font-medium text-neutral-100">การเขียน Prompt ที่ได้ผล</h2>
         <p className="mb-4 text-xs text-neutral-500">
-          ตัวอย่างที่มีป้าย <span className="text-amber-400">⚠️ ยังไม่ทดสอบผลจริง</span> เขียนจากหลักการ
-          prompt engineering ทั่วไป ยังไม่ได้ลองรันจริงกับโมเดล — ควรทดสอบกับงานจริงก่อนแนะนำใช้งานเป็นวงกว้าง
+          ป้าย <span className="text-emerald-400">✅ ทดสอบแล้ว</span> แปลว่ามีคนรัน goodPrompt จริงและแนบ
+          output เป็นหลักฐานไว้ (ดูได้จากช่อง &ldquo;หลักฐาน&rdquo; ท้ายแต่ละตัวอย่าง) — แต่ถ้าเป็นการ
+          self-test เพียงครั้งเดียว ยังไม่ผ่านการรีวิวจากพนักงานจริงในหลายๆ เคส ก็ควรทดสอบซ้ำกับงานจริงของ
+          องค์กรก่อนแนะนำใช้งานเป็นวงกว้าง ส่วนป้าย <span className="text-amber-400">⚠️ ยังไม่ทดสอบผลจริง</span>{" "}
+          คือตัวอย่างที่เขียนจากหลักการทั่วไปเท่านั้น ยังไม่มีใครลองรันจริง
         </p>
         <div className="space-y-6">
           {guide.promptTemplates.map((template, i) => (
@@ -102,10 +105,34 @@ export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
                 </p>
               </div>
 
-              <p className="text-xs leading-relaxed text-neutral-500">
+              <p className="mb-3 text-xs leading-relaxed text-neutral-500">
                 <span className="font-medium text-neutral-400">ทำไมถึงได้ผล: </span>
                 {template.why}
+                {template.sourceUrl ? (
+                  <>
+                    {" "}
+                    <a
+                      href={template.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline decoration-neutral-600 underline-offset-2 hover:text-neutral-300"
+                    >
+                      (แหล่งอ้างอิง ↗)
+                    </a>
+                  </>
+                ) : null}
               </p>
+
+              {template.sampleOutput ? (
+                <details className="rounded border border-neutral-800 bg-neutral-950/60">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-neutral-400 hover:text-neutral-200">
+                    📄 หลักฐาน: ตัวอย่าง output จริงจากการทดสอบ
+                  </summary>
+                  <p className="whitespace-pre-wrap border-t border-neutral-800 px-3 py-2 text-xs leading-relaxed text-neutral-400">
+                    {template.sampleOutput}
+                  </p>
+                </details>
+              ) : null}
             </div>
           ))}
         </div>
