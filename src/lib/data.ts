@@ -22,6 +22,10 @@ import automation from "@/data/automation.json";
 import openWeightSelfhosted from "@/data/open-weight-selfhosted.json";
 
 import businessWritingGuide from "@/data/guides/business-writing.json";
+import generalAssistantGuide from "@/data/guides/general-assistant.json";
+import codingToolsGuide from "@/data/guides/coding-tools.json";
+import researchDocsGuide from "@/data/guides/research-docs.json";
+import dataAnalysisGuide from "@/data/guides/data-analysis.json";
 
 /**
  * แมป category key -> raw JSON (ยังไม่ validate)
@@ -49,6 +53,10 @@ const RAW_DATA: Record<string, unknown[]> = {
  */
 const RAW_GUIDES: Record<string, unknown> = {
   "business-writing": businessWritingGuide,
+  "general-assistant": generalAssistantGuide,
+  "coding-tools": codingToolsGuide,
+  "research-docs": researchDocsGuide,
+  "data-analysis": dataAnalysisGuide,
 };
 
 /**
