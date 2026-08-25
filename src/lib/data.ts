@@ -26,6 +26,13 @@ import generalAssistantGuide from "@/data/guides/general-assistant.json";
 import codingToolsGuide from "@/data/guides/coding-tools.json";
 import researchDocsGuide from "@/data/guides/research-docs.json";
 import dataAnalysisGuide from "@/data/guides/data-analysis.json";
+import presentationsGuide from "@/data/guides/presentations.json";
+import translationGuide from "@/data/guides/translation.json";
+import automationGuide from "@/data/guides/automation.json";
+import meetingsTranscriptionGuide from "@/data/guides/meetings-transcription.json";
+import designUiGuide from "@/data/guides/design-ui.json";
+import imageGenGuide from "@/data/guides/image-gen.json";
+import selfHostedGuide from "@/data/guides/self-hosted.json";
 
 /**
  * แมป category key -> raw JSON (ยังไม่ validate)
@@ -57,6 +64,13 @@ const RAW_GUIDES: Record<string, unknown> = {
   "coding-tools": codingToolsGuide,
   "research-docs": researchDocsGuide,
   "data-analysis": dataAnalysisGuide,
+  presentations: presentationsGuide,
+  translation: translationGuide,
+  automation: automationGuide,
+  "meetings-transcription": meetingsTranscriptionGuide,
+  "design-ui": designUiGuide,
+  "image-gen": imageGenGuide,
+  "self-hosted": selfHostedGuide,
 };
 
 /**
