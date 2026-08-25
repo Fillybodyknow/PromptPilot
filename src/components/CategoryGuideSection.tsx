@@ -52,11 +52,35 @@ export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
       </div>
 
       <div>
-        <h2 className="mb-4 text-lg font-medium text-neutral-100">การเขียน Prompt ที่ได้ผล</h2>
+        <h2 className="mb-1 text-lg font-medium text-neutral-100">การเขียน Prompt ที่ได้ผล</h2>
+        <p className="mb-4 text-xs text-neutral-500">
+          ตัวอย่างที่มีป้าย <span className="text-amber-400">⚠️ ยังไม่ทดสอบผลจริง</span> เขียนจากหลักการ
+          prompt engineering ทั่วไป ยังไม่ได้ลองรันจริงกับโมเดล — ควรทดสอบกับงานจริงก่อนแนะนำใช้งานเป็นวงกว้าง
+        </p>
         <div className="space-y-6">
           {guide.promptTemplates.map((template, i) => (
             <div key={i} className="rounded-lg border border-neutral-800 p-5">
-              <h3 className="mb-3 font-medium text-neutral-100">{template.task}</h3>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h3 className="font-medium text-neutral-100">{template.task}</h3>
+                {template.tested ? (
+                  <span
+                    className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs ring-1 ring-inset ring-emerald-800 bg-emerald-950/40 text-emerald-300"
+                    title={`ทดสอบล่าสุด ${template.testedAt} กับ ${template.testedWith?.join(", ")}`}
+                  >
+                    ✅ ทดสอบแล้ว · {template.testedAt}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs ring-1 ring-inset ring-amber-800 bg-amber-950/40 text-amber-300">
+                    ⚠️ ยังไม่ทดสอบผลจริง
+                  </span>
+                )}
+              </div>
+
+              {template.tested && template.testedWith?.length ? (
+                <p className="mb-3 text-xs text-neutral-500">
+                  ทดสอบกับ: {template.testedWith.join(", ")}
+                </p>
+              ) : null}
 
               {template.badPrompt ? (
                 <div className="mb-3">

@@ -145,16 +145,30 @@ export const accessMethodEnum = z.enum([
   "sso-license",
 ]);
 
-export const promptTemplateSchema = z.object({
-  /** โจทย์/งานที่ prompt นี้ใช้ทำ */
-  task: z.string().min(1),
-  /** ตัวอย่าง prompt ที่ไม่ดี (optional — ใส่เพื่อสอนผ่าน before/after) */
-  badPrompt: z.string().optional(),
-  /** ตัวอย่าง prompt ที่ดี พร้อมใช้ (copy ไปวางได้เลย) */
-  goodPrompt: z.string().min(1),
-  /** อธิบายว่าทำไม prompt นี้ถึงได้ผล */
-  why: z.string().min(1),
-});
+export const promptTemplateSchema = z
+  .object({
+    /** โจทย์/งานที่ prompt นี้ใช้ทำ */
+    task: z.string().min(1),
+    /** ตัวอย่าง prompt ที่ไม่ดี (optional — ใส่เพื่อสอนผ่าน before/after) */
+    badPrompt: z.string().optional(),
+    /** ตัวอย่าง prompt ที่ดี พร้อมใช้ (copy ไปวางได้เลย) */
+    goodPrompt: z.string().min(1),
+    /** อธิบายว่าทำไม prompt นี้ถึงได้ผล (หลักการ — ไม่ได้แปลว่าทดสอบผลจริงแล้ว) */
+    why: z.string().min(1),
+    /**
+     * true = มีคนลองรันจริงกับโมเดลที่ระบุใน testedWith แล้วได้ผลตามคาด
+     * false = เป็นตัวอย่างที่เขียนจากหลักการทั่วไป ยังไม่ได้ทดสอบผลจริง — ต้องระวังก่อนแนะนำใช้งานจริง
+     */
+    tested: z.boolean(),
+    /** ต้องใส่คู่กับ tested: true — วันที่ทดสอบล่าสุด รูปแบบ YYYY-MM-DD */
+    testedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "testedAt ต้องเป็นรูปแบบ YYYY-MM-DD").optional(),
+    /** ต้องใส่คู่กับ tested: true — ชื่อโมเดล/เครื่องมือที่ใช้ทดสอบ เช่น ["Claude Opus 5"] */
+    testedWith: z.array(z.string().min(1)).optional(),
+  })
+  .refine((data) => !data.tested || (!!data.testedAt && !!data.testedWith?.length), {
+    message: "ถ้า tested เป็น true ต้องระบุ testedAt และ testedWith อย่างน้อย 1 รายการ",
+    path: ["tested"],
+  });
 
 export const accessLinkSchema = z.object({
   label: z.string().min(1),
