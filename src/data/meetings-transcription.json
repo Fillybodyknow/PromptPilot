@@ -29,14 +29,15 @@
     "url": "https://fireflies.ai",
     "capability": "meeting-summary",
     "integration": "Zoom, Google Meet, Microsoft Teams, CRM ต่างๆ",
-    "pricing": "ฟรีจำกัด, Business ~$19/ผู้ใช้/เดือน",
+    "pricing": "Free ตลอดไป (400 นาที/ทีม), Pro $10/ที่นั่ง/เดือน, Business $19/ที่นั่ง/เดือน, Enterprise $39/ที่นั่ง/เดือน (จ่ายรายปี)",
     "summary": "เด่นด้านเชื่อมสรุปประชุมเข้า CRM/workflow อัตโนมัติ",
     "accessMethod": "browser-extension",
     "installSteps": [
       "เข้า fireflies.ai กด 'Get Started' เพื่อล็อกอินที่ app.fireflies.ai/login",
       "ติดตั้ง Chrome Extension เพื่อบันทึก Google Meet อัตโนมัติ หรือให้ 'AI Note Taker Bot' เข้าร่วมประชุมอัตโนมัติผ่านปฏิทินที่เชื่อมไว้",
-      "ดูรายละเอียดการเชื่อมต่อ Zoom/Teams/CRM (Salesforce, HubSpot ฯลฯ) เพิ่มเติมที่หน้า fireflies.ai/integrations/videoconferencing",
-      "⚠️ หมายเหตุความแม่นยำ: หน้าราคาโดยละเอียด (fireflies.ai/pricing) ไม่สามารถดึงมา verify ได้ตอนเขียนข้อมูลนี้ — เช็คตัวเลขราคาจริงอีกครั้งก่อนสมัคร"
+      "แผน Free: เก็บบันทึกได้ 400 นาที/ทีม ถอดเสียง+สรุปไม่จำกัด — Pro ($10/ที่นั่ง/เดือน จ่ายรายปี, $18 จ่ายรายเดือน): เก็บได้ 8,000 นาที/ที่นั่ง + บันทึกวิดีโอ + ผู้ช่วยอีเมล",
+      "Business ($19/ที่นั่ง/เดือน จ่ายรายปี): เก็บไม่จำกัด + รองรับหลายภาษา + team analytics — Enterprise ($39/ที่นั่ง/เดือน จ่ายรายปีเท่านั้น): เพิ่ม SSO+SCIM, audit log, รองรับ HIPAA",
+      "ดูรายละเอียดการเชื่อมต่อ Zoom/Teams/CRM (Salesforce, HubSpot ฯลฯ) เพิ่มเติมที่หน้า fireflies.ai/integrations/videoconferencing"
     ]
   },
   {

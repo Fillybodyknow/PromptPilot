@@ -30,7 +30,7 @@
     "installSteps": [
       "เข้า chatgpt.com สมัคร/ล็อกอินด้วยบัญชี OpenAI — มีแผน Free, Plus, Pro และแผนองค์กร Team/Enterprise (สมัคร SSO/บริหารสิทธิ์ส่วนกลางได้ที่ chatgpt.com/enterprise)",
       "เลือกโมเดล GPT-5.6 จากตัวเลือกโมเดลในหน้าแชทหลังล็อกอิน",
-      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าราคา/แผนล่าสุดของ OpenAI มา verify ได้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คราคาที่ chatgpt.com/pricing อีกครั้งก่อนสมัคร"
+      "⚠️ หมายเหตุความแม่นยำ: verify ได้แค่ราคา API (developers.openai.com/api/docs/pricing) แต่หน้าราคาแผนผู้บริโภคของ ChatGPT ยังบล็อกการ fetch อัตโนมัติทุกครั้งที่ลอง — เช็คราคาที่ chatgpt.com/pricing อีกครั้งก่อนสมัคร"
     ]
   },
   {

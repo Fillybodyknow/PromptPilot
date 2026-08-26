@@ -80,13 +80,14 @@
     "status": "active",
     "url": "https://www.figma.com/make",
     "strength": "เชื่อมกับ workflow ออกแบบเดิม",
-    "pricing": "ต้องมี Figma plan (Professional+)",
+    "pricing": "Professional $16/เดือน/ที่นั่ง, Organization $55/เดือน/ที่นั่ง, Enterprise $90/เดือน/ที่นั่ง (จ่ายรายปี) — ดู AI credit ต่อแผนในหมายเหตุ",
     "summary": "ต้องมี Figma plan ระดับ Professional ขึ้นไป",
     "accessMethod": "sso-license",
     "installSteps": [
-      "ต้องมีบัญชี Figma ที่อยู่ในแผน Professional ขึ้นไปก่อน (Make ไม่เปิดให้แผน Free ใช้)",
-      "เข้าถึง Make ได้จากภายในไฟล์ Figma โดยตรง ไม่ต้องติดตั้งแยก",
-      "⚠️ หมายเหตุความแม่นยำ: หน้า figma.com/make ไม่ได้ระบุรายละเอียดแผน/ขั้นตอนการเปิดใช้ชัดเจนตอนตรวจสอบ (มีแค่ฟีเจอร์ที่กำลังจะมา เช่น 'Make on your local codebase') — เช็คหน้า Figma pricing จริงอีกครั้งก่อนวางแผนใช้งานองค์กร"
+      "ต้องมีบัญชี Figma ที่อยู่ในแผน Professional ขึ้นไปก่อน (แผน Starter ฟรีไม่รวม Make ตามที่ระบุไว้ในหน้าเว็บ)",
+      "แผน Professional ($16/เดือน/ที่นั่ง): โควตา 3,000 AI credit/เดือน — Organization ($55/เดือน/ที่นั่ง จ่ายรายปี): 3,500 credit/เดือน — Enterprise ($90/เดือน/ที่นั่ง จ่ายรายปี): 4,250 credit/เดือน",
+      "เข้าถึง Make ได้จากภายในไฟล์ Figma โดยตรง พิมพ์ prompt ขอ prototype/web app ได้ทันที ไม่ต้องติดตั้งแยก",
+      "⚠️ หมายเหตุความแม่นยำ: หน้าเว็บที่ fetch มาระบุขัดแย้งกันเอง — ข้อความบอกว่า Make ไม่รวมในแผน Starter แต่ตารางราคาก็โชว์ 'Starter: 150 credit/วัน' ด้วย ยึดตามข้อความหลัก (ต้อง Professional+) เป็นหลัก แต่ควรเช็ค figma.com/pricing จริงอีกครั้งก่อนสรุปกับพนักงาน"
     ]
   },
   {

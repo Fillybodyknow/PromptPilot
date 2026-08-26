@@ -8,15 +8,13 @@
     "status": "active",
     "url": "https://n8n.io",
     "strength": "MCP server native, ~70 AI/LangChain nodes",
-    "pricingModel": "self-host ได้, ถูกที่ volume สูง (บิลต่อ workflow run)",
+    "pricingModel": "Cloud: Starter €20/เดือน, Pro €50/เดือน, Business €667/เดือน (จ่ายรายปี); self-host ได้ฟรี",
     "selfHost": true,
     "summary": "เหมาะทีมเทคนิค; MCP server native (public preview เม.ย. 2026)",
     "accessMethod": "self-hosted",
     "installSteps": [
-      "แบบ cloud (ไม่ต้องดูแล infra เอง): สมัครฟรีที่ app.n8n.cloud/register",
-      "แบบ self-host: ดึง Docker image มารันตามคู่มือที่ docs.n8n.io/hosting หรือดาวน์โหลด source code ทั้งหมดจาก GitHub (open-source ภายใต้ FairCode license)",
-      "ฟีเจอร์ระดับองค์กร (SSO, SAML, LDAP, version control) รองรับทั้งบน cloud และ self-hosted",
-      "⚠️ หมายเหตุความแม่นยำ: หน้าราคาโดยละเอียด (n8n.io/pricing) ไม่สามารถดึงมา verify ได้ตอนเขียนข้อมูลนี้ — เช็คราคาจริงอีกครั้งก่อนตัดสินใจ"
+      "แบบ cloud (ไม่ต้องดูแล infra เอง): สมัครฟรีที่ app.n8n.cloud/register — แผน Starter €20/เดือน (2,500 workflow execution/เดือน, 5 concurrent, 2,300 AI credits), Pro €50/เดือน (10,000 execution, 20 concurrent, 13,700 AI credits), Business €667/เดือน (40,000 execution, มี SSO/SAML/LDAP), Enterprise ราคาตามตกลง — ทุกแผนใช้ user/workflow ไม่จำกัดคน คิดราคาตาม 1 workflow run ทั้งชุด ไม่ใช่ตาม step",
+      "แบบ self-host (ฟรี): ดึง Docker image มารันตามคู่มือที่ docs.n8n.io/hosting หรือดาวน์โหลด source code ทั้งหมดจาก GitHub (open-source ภายใต้ FairCode license) — แผน Business ก็เลือก self-host ได้เช่นกันถ้าต้องการฟีเจอร์ enterprise แต่รันในองค์กรเอง"
     ]
   },
   {
@@ -28,14 +26,15 @@
     "status": "active",
     "url": "https://zapier.com",
     "strength": "9,000+ แอป, ง่ายสุด, มี Agents + MCP",
-    "pricingModel": "แพงที่ volume สูง",
+    "pricingModel": "Free (100 tasks/เดือน), Pro $19.99/เดือน+, Team $69/เดือน+ (จ่ายรายปี), Enterprise ราคาตามตกลง",
     "selfHost": false,
     "summary": "ง่ายที่สุด รองรับแอปเยอะสุด แต่แพงเมื่อ volume สูง",
     "accessMethod": "web",
     "installSteps": [
       "เข้า zapier.com กด 'Start free' เพื่อสมัครบัญชี — ไม่ต้อง self-host เพราะเป็น SaaS ล้วน",
-      "องค์กรที่ต้องการแผนแบบกำหนดเอง/governance สำหรับ AI workflow ใช้ปุ่ม 'Talk to sales'",
-      "⚠️ หมายเหตุความแม่นยำ: หน้าราคาโดยละเอียดไม่สามารถดึงมา verify ได้ตอนเขียนข้อมูลนี้ — เช็คที่ zapier.com/pricing อีกครั้งก่อนตัดสินใจ"
+      "แผน Free: 100 tasks/เดือน, Zap workflow/Tables/Forms ไม่จำกัด แต่ workflow ทำได้แค่ 2 ขั้นตอน — Pro (เริ่ม $19.99/เดือน จ่ายรายปี): ปลดล็อก multi-step workflow, แอปพรีเมียมไม่จำกัด, webhooks",
+      "Team (เริ่ม $69/เดือน จ่ายรายปี): ใช้ร่วมกันได้สูงสุด 25 คน แชร์ workflow/connection กัน — ทุกแผนเสียเงินต้องเลือก task tier แยก (750 ถึง 2,000,000 tasks/เดือน) ยิ่งเยอะยิ่งแพงขึ้นตามระดับ",
+      "Enterprise: ผู้ใช้ไม่จำกัด, ควบคุมสิทธิ์แอดมิน/แอปขั้นสูง, SCIM provisioning — ติดต่อผ่านฝ่ายขาย Zapier"
     ]
   },
   {
