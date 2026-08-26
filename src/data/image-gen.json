@@ -4,79 +4,125 @@
     "name": "GPT Image 2",
     "vendor": "OpenAI",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://chatgpt.com",
     "pricePerThousand": "~$211 (high)",
     "strength": "#1 Text-to-Image; prompt adherence, ข้อความในรูป",
     "licenseNote": "ผ่าน API/ChatGPT",
-    "summary": "#1 Artificial Analysis Image Arena ด้าน text-to-image"
+    "summary": "#1 Artificial Analysis Image Arena ด้าน text-to-image",
+    "accessMethod": "web",
+    "installSteps": [
+      "ใช้ง่ายสุดผ่าน chatgpt.com (ต้องมีแผน Plus ขึ้นไป) พิมพ์ prompt ขอสร้างภาพในแชทได้โดยตรง",
+      "สำหรับเชื่อมเข้าระบบ/แอปขององค์กร: สมัคร API ที่ platform.openai.com แล้วเรียกใช้โมเดล GPT Image 2 ผ่าน Images API",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าราคา ChatGPT/OpenAI มา verify ล่าสุดได้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คราคาจริงอีกครั้งก่อนสมัคร"
+    ]
   },
   {
     "id": "nano-banana-2",
     "name": "Nano Banana 2 / Pro",
     "vendor": "Google",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://gemini.google.com",
     "pricePerThousand": "~$67",
     "strength": "#1 Image Editing, character consistency",
     "licenseNote": "ตรวจ Google terms",
-    "summary": "#1 ด้าน image editing และ character consistency"
+    "summary": "#1 ด้าน image editing และ character consistency",
+    "accessMethod": "web",
+    "installSteps": [
+      "ใช้ผ่าน gemini.google.com โดยตรง — 'Nano Banana' เป็นชื่อเล่นที่ใช้เรียกความสามารถเจน/แก้ภาพในตัว Gemini ไม่ใช่แอปแยกต่างหาก ล็อกอินแล้วพิมพ์ prompt ขอสร้าง/แก้ภาพในแชทได้เลย",
+      "สำหรับเชื่อมเข้าระบบ/แอปขององค์กรผ่าน API: ใช้ Google AI Studio (aistudio.google.com) หรือ Vertex AI สำหรับองค์กรที่ใช้ Google Cloud อยู่แล้ว",
+      "⚠️ หมายเหตุความแม่นยำ: หน้าประกาศผลิตภัณฑ์ทางการของ 'Nano Banana' ดึงเนื้อหามา verify โดยตรงไม่ได้ (ลิงก์ 404) — ยึดจากพฤติกรรมจริงของ Gemini ที่ทดลองใช้ได้ ควรเช็คหน้า Google AI Studio อีกครั้งสำหรับรายละเอียด API"
+    ]
   },
   {
     "id": "seedream-4-5",
     "name": "Seedream 4.5",
     "vendor": "ByteDance",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "pricePerThousand": "~$30 (4.0)",
     "strength": "text rendering, 4K, งานสินค้า",
     "licenseNote": "ตรวจ terms",
-    "summary": "เด่น text rendering และงานภาพสินค้าความละเอียด 4K"
+    "summary": "เด่น text rendering และงานภาพสินค้าความละเอียด 4K",
+    "accessMethod": "web",
+    "installSteps": [
+      "ช่องทางหลักคือแอป Doubao ของ ByteDance (เน้นตลาดจีน) — ผู้ใช้นอกจีนอาจเข้าถึงได้จำกัดกว่า ควรเช็คว่าเปิดให้บริการในไทยหรือไม่ก่อนวางแผนใช้งานจริง",
+      "⚠️ หมายเหตุความแม่นยำ: ตรวจสอบ fal.ai (API aggregator) แล้วพบว่ามี 'Seedance' (โมเดลวิดีโอของ ByteDance) ให้บริการ แต่ไม่พบ 'Seedream' (โมเดลรูปภาพ) อย่างชัดเจนตอนตรวจ — ห้ามสรุปว่า fal.ai รองรับ Seedream โดยไม่เช็คซ้ำ ต้องหาช่องทาง API ที่ถูกต้องก่อนใช้งานจริงในองค์กร"
+    ]
   },
   {
     "id": "flux-2-max",
     "name": "FLUX.2 [max]",
     "vendor": "Black Forest Labs",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://bfl.ai",
     "strength": "photorealism, open weights",
     "licenseNote": "ตรวจ license แต่ละ tier",
-    "summary": "photorealism สูง มี open weights ให้เลือก"
+    "summary": "photorealism สูง มี open weights ให้เลือก",
+    "accessMethod": "web",
+    "installSteps": [
+      "ทดลองใช้ผ่านเว็บได้ทันทีไม่ต้องติดตั้งที่ playground.bfl.ai หรือ dashboard.bfl.ai",
+      "สำหรับใช้งานจริงผ่าน API: สมัครบัญชีที่ dashboard.bfl.ai แล้วดู pricing/เอกสารที่ docs.bfl.ai/quick_start/introduction",
+      "สำหรับ self-host (ต้องการรันในองค์กรเอง): ขอ license ที่หน้า bfl.ai/licensing แล้วดาวน์โหลด model weights จาก Hugging Face (huggingface.co/black-forest-labs) หรือ GitHub (github.com/black-forest-labs/flux)"
+    ]
   },
   {
     "id": "midjourney-v7-v8",
     "name": "Midjourney V7/V8",
     "vendor": "Midjourney",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://www.midjourney.com",
     "strength": "คุณภาพศิลป์สูงสุด",
     "licenseNote": "ต้อง subscription เชิงพาณิชย์",
-    "summary": "ไม่ติด top 12 preference arena แต่ยังเป็นอันดับต้นด้านคุณภาพเชิงศิลป์"
+    "summary": "ไม่ติด top 12 preference arena แต่ยังเป็นอันดับต้นด้านคุณภาพเชิงศิลป์",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า midjourney.com สมัคร subscription (ไม่มีแผนใช้งานฟรีแบบเจนภาพไม่จำกัด) — ต้องเป็น plan เชิงพาณิชย์ถ้าจะใช้ภาพในงานธุรกิจ",
+      "ใช้งานผ่านเว็บแอปของ Midjourney โดยตรง หรือผ่านบอทใน Discord server ทางการ (ช่องทางดั้งเดิม)",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าเว็บ midjourney.com มา verify ราคา/ขั้นตอนสมัครล่าสุดได้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คหน้าเว็บจริงอีกครั้งก่อนสมัครใช้งานระดับองค์กร"
+    ]
   },
   {
     "id": "adobe-firefly-image-5",
     "name": "Adobe Firefly Image 5",
     "vendor": "Adobe",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://firefly.adobe.com",
     "strength": "IP-safe (เทรนบนข้อมูลมีสิทธิ์)",
     "licenseNote": "ปลอดภัยงานพาณิชย์สุด",
-    "summary": "IP-safe ปลอดภัยสำหรับงานพาณิชย์มากที่สุด"
+    "summary": "IP-safe ปลอดภัยสำหรับงานพาณิชย์มากที่สุด",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า firefly.adobe.com ล็อกอินด้วยบัญชี Adobe ID (บัญชีเดียวกับ Creative Cloud ถ้าองค์กรมีอยู่แล้ว)",
+      "ใช้งานร่วมกับ Photoshop/Illustrator ได้โดยตรงถ้ามี Creative Cloud license อยู่แล้ว หรือใช้ผ่านเว็บ Firefly แยกต่างหาก",
+      "⚠️ หมายเหตุความแม่นยำ: หน้าเว็บ firefly.adobe.com และหน้า FAQ ไม่สามารถดึงรายละเอียดแผนราคา/ขั้นตอนสมัครที่ชัดเจนมา verify ได้ตอนเขียนข้อมูลนี้ — เช็คหน้า Adobe ทางการอีกครั้งก่อนตัดสินใจสมัครระดับองค์กร"
+    ]
   },
   {
     "id": "recraft-ideogram",
     "name": "Recraft, Ideogram",
     "vendor": "หลายราย",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "strength": "vector / typography",
     "licenseNote": "ตรวจ terms",
-    "summary": "เด่นงาน vector และ typography เฉพาะทาง"
+    "summary": "เด่นงาน vector และ typography เฉพาะทาง",
+    "accessMethod": "web",
+    "installSteps": [
+      "Recraft: เข้า recraft.ai กด 'Try it free' เพื่อใช้ Recraft Studio (เว็บแอป) หรือขอ API access สำหรับเชื่อมเข้าระบบองค์กร — ดูราคาที่ recraft.ai/pricing",
+      "Ideogram: เข้า ideogram.ai สมัครใช้งาน (เด่นเรื่อง typography/ข้อความในภาพ)",
+      "⚠️ หมายเหตุความแม่นยำ: ราคา Recraft และขั้นตอนสมัคร Ideogram ไม่สามารถดึงมา verify ได้ครบตอนเขียนข้อมูลนี้ (บางหน้าเว็บ block การเข้าถึงอัตโนมัติ) — เช็คหน้าเว็บจริงอีกครั้งก่อนสมัคร"
+    ]
   }
 ]
