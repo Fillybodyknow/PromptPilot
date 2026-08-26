@@ -6,13 +6,21 @@
     "modelId": "claude-opus-5",
     "releaseDate": "2026-07-24",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-22",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://claude.ai",
     "benchmark": "AAII 63 (#1); SWE-bench Verified 97.0% (Vals AI)",
     "priceUsdIn": 5,
     "priceUsdOut": 25,
     "bestFor": "งานตัดสินใจ/วิเคราะห์ซับซ้อนของผู้บริหารและทีมที่ต้องการ agentic ยาว",
-    "summary": "reasoning + agentic ยาว; แพงกว่าตัวอื่นในกลุ่ม"
+    "summary": "reasoning + agentic ยาว; แพงกว่าตัวอื่นในกลุ่ม",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า claude.ai แล้วสมัคร/ล็อกอิน — แผนบุคคลมี Free, Pro ($17/เดือนจ่ายรายปี หรือ $20/เดือนจ่ายรายเดือน), Max (เริ่ม $100/เดือน)",
+      "สำหรับองค์กร: แผน Team ($20-25/ที่นั่ง/เดือน สำหรับทีม 2-150 คน) สมัครได้เองทันทีที่หน้าเว็บ ส่วน Enterprise มีทั้งแบบ self-serve เปิดใช้ได้ทันที และแบบติดต่อฝ่ายขายสำหรับสัญญา/usage commitment เฉพาะราย",
+      "เลือกโมเดล 'Claude Opus 5' จากตัวเลือกโมเดลในหน้าแชทหลังล็อกอิน — บัญชี Free อาจไม่มีสิทธิ์เข้าถึงรุ่น Opus ต้องอัปเกรดเป็น Pro ขึ้นไป",
+      "นอกจากเว็บ ยังใช้ผ่าน iOS/Android app, desktop app, หรือ browser extension Claude in Chrome ได้เช่นกัน"
+    ]
   },
   {
     "id": "claude-fable-5",
@@ -21,13 +29,19 @@
     "modelId": "claude-fable-5",
     "releaseDate": "2026",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-22",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://claude.ai",
     "benchmark": "AAII 62",
     "priceUsdIn": null,
     "priceUsdOut": null,
     "bestFor": "ทีมที่ต้องการพลังสูง แต่ Opus 5 คุ้มค่ากว่าในราคาถูกกว่าสำหรับงานส่วนใหญ่",
-    "summary": "แรง แต่คะแนน < Opus 5 ทั้งที่แพงกว่า (~2×); เคยถูกระงับ export-control 12 มิ.ย.–1 ก.ค. 2026"
+    "summary": "แรง แต่คะแนน < Opus 5 ทั้งที่แพงกว่า (~2×); เคยถูกระงับ export-control 12 มิ.ย.–1 ก.ค. 2026",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้าถึงผ่านช่องทางเดียวกับ Claude Opus 5 (claude.ai, แผน Pro/Max/Team/Enterprise) — เลือก 'Claude Fable 5' จากตัวเลือกโมเดลแทน",
+      "ตรวจสอบสถานะการใช้งานก่อนพึ่งพาโมเดลนี้ในงานสำคัญ เพราะเคยถูกระงับจาก export-control ชั่วคราวมาแล้วในอดีต (12 มิ.ย.–1 ก.ค. 2026)"
+    ]
   },
   {
     "id": "gemini-3-1-pro",
@@ -36,13 +50,21 @@
     "modelId": "gemini-3.1-pro",
     "releaseDate": "2026-02-19",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-22",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://gemini.google.com",
     "benchmark": "AAII ~57; SWE-bench ~80%",
     "priceUsdIn": 2,
     "priceUsdOut": 12,
     "bestFor": "ผู้ช่วยประจำวันของพนักงานทั่วไป — คุ้มค่าสุด + ภาษาไทยดี",
-    "summary": "คุ้มค่าสุดกลุ่ม frontier, ภาษาไทยดี — ตัวเลือก default ที่แนะนำสำหรับพนักงานทั่วไป"
+    "summary": "คุ้มค่าสุดกลุ่ม frontier, ภาษาไทยดี — ตัวเลือก default ที่แนะนำสำหรับพนักงานทั่วไป",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า gemini.google.com ล็อกอินด้วยบัญชี Google — ใช้งานระดับพื้นฐานได้ฟรี",
+      "อัปเกรดเป็น Google AI Plus ($9.99/เดือน, 2x การใช้งาน), Google AI Pro ($19.99/เดือน, 4x การใช้งาน + Deep Research), หรือ Google AI Ultra (สูงสุด 20x) เพื่อใช้โมเดล Pro เต็มรูปแบบ — แผนเหล่านี้สมัครได้เฉพาะบัญชี Google ส่วนตัวเท่านั้น",
+      "สำหรับองค์กรที่ใช้ Google Workspace: ต้องสมัคร Gemini เป็น add-on แยกต่างหากจากแผนบุคคลด้านบน หรือใช้ 'Gemini Enterprise app' — ติดต่อผู้ดูแลระบบ Workspace ขององค์กร",
+      "เลือกโมเดล Gemini 3.1 Pro จากตัวเลือกโมเดลในหน้าแชทหลังล็อกอิน"
+    ]
   },
   {
     "id": "gpt-5-6-sol",
@@ -51,13 +73,21 @@
     "modelId": "gpt-5.6",
     "releaseDate": "2026",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-22",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://chatgpt.com",
     "benchmark": "GPQA Diamond ~94.6% (llm-stats)",
     "priceUsdIn": null,
     "priceUsdOut": null,
     "bestFor": "งานวิเคราะห์เชิงลึกที่ต้องการ reasoning สูง",
-    "summary": "reasoning ลึก; ราคาสูงกว่า Gemini"
+    "summary": "reasoning ลึก; ราคาสูงกว่า Gemini",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า chatgpt.com สมัคร/ล็อกอินด้วยบัญชี OpenAI — มีแผน Free, Plus, Pro, และแผนองค์กร Team/Enterprise",
+      "เลือกโมเดล GPT-5.6 จากตัวเลือกโมเดลในหน้าแชทหลังล็อกอิน (ต้องมีแผนที่รองรับรุ่นนี้)",
+      "องค์กรที่ต้องการ SSO/บริหารสิทธิ์ส่วนกลาง สมัครผ่านหน้า chatgpt.com/enterprise",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าราคา/แผนล่าสุดของ OpenAI มา verify ได้ตอนเขียนข้อมูลนี้ (เว็บ block การเข้าถึงอัตโนมัติ) — ควรเช็คราคาที่ chatgpt.com/pricing อีกครั้งก่อนตัดสินใจสมัคร"
+    ]
   },
   {
     "id": "grok-4-6",
@@ -66,13 +96,20 @@
     "modelId": "grok-4.6",
     "releaseDate": "2026",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-22",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://grok.com",
     "benchmark": "AAII ~60.9",
     "priceUsdIn": null,
     "priceUsdOut": null,
     "bestFor": "งานที่ต้องอ้างอิงเอกสารยาว/บทสนทนายาวต่อเนื่อง งบกลาง",
-    "summary": "ถูกในกลุ่ม top 10; context ยาว"
+    "summary": "ถูกในกลุ่ม top 10; context ยาว",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า grok.com เพื่อใช้งานเป็นเว็บแชทเดี่ยว หรือใช้ผ่านแอป X (Twitter) ถ้ามีสิทธิ์ X Premium",
+      "เลือกโมเดล Grok 4.6 จากตัวเลือกโมเดลหลังล็อกอิน",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าราคา/แผนล่าสุดของ xAI มา verify ได้ตอนเขียนข้อมูลนี้ (เว็บ block การเข้าถึงอัตโนมัติ) — ควรเช็คหน้าเว็บจริงอีกครั้งก่อนสมัครใช้งานระดับองค์กร"
+    ]
   },
   {
     "id": "glm-5",
@@ -80,12 +117,19 @@
     "vendor": "Z.ai",
     "releaseDate": "2026",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-22",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://chat.z.ai",
     "benchmark": "open-weight ดีที่สุดในกลุ่ม",
     "priceUsdIn": null,
     "priceUsdOut": null,
     "bestFor": "องค์กรที่งบจำกัดหรือมีนโยบายรันโมเดลเองภายใน",
-    "summary": "ถูกกว่ามาก; ตัวเลือก self-host/คุ้มค่า"
+    "summary": "ถูกกว่ามาก; ตัวเลือก self-host/คุ้มค่า",
+    "accessMethod": "web",
+    "installSteps": [
+      "ใช้งานง่ายสุดผ่านเว็บแชทฟรีที่ chat.z.ai (ยืนยันแล้วว่าเป็นเว็บทางการ ขับเคลื่อนด้วย GLM-5.2)",
+      "ถ้าต้องการเชื่อมเข้าระบบ/แอปขององค์กรผ่าน API: สมัคร API key ที่ docs.z.ai รองรับ REST API, Python/Java SDK, และ OpenAI-compatible SDK (ต่อโค้ดเดิมที่เขียนไว้กับ OpenAI ได้โดยแทบไม่ต้องแก้)",
+      "ถ้าต้องการ self-host ในองค์กรเอง (ไม่ผ่าน cloud ของ Z.ai เลย): ค้นหา model weights ของ GLM บน Hugging Face แล้วรันด้วย Ollama/LM Studio ตาม tier ฮาร์ดแวร์ที่มี — ดูรายละเอียดเพิ่มเติมที่หมวด 'โมเดล Self-hosted/On-prem'"
+    ]
   }
 ]
