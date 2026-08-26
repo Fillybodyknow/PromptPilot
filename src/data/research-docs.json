@@ -4,54 +4,88 @@
     "name": "NotebookLM",
     "vendor": "Google",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://notebooklm.google.com",
     "strength": "source-grounded chat + audio overview + mind maps",
     "pricing": "มีแผนฟรี",
-    "summary": "เด่นสุดด้าน audio overview; ชุมชนบ่นเรื่อง citation หน้าสุ่มช่วง เม.ย. 2026"
+    "summary": "เด่นสุดด้าน audio overview; ชุมชนบ่นเรื่อง citation หน้าสุ่มช่วง เม.ย. 2026",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า notebooklm.google.com แล้วล็อกอินด้วยบัญชี Google — ใช้งานฟรีได้ (ยืนยันแล้วว่าต้องล็อกอินผ่านระบบ Google account จริง ไม่ใช่เว็บสาธารณะที่เปิดใช้ได้เลย)",
+      "สร้าง notebook ใหม่แล้วอัปโหลดเอกสาร/ลิงก์/PDF ที่ต้องการให้ AI อ้างอิงเป็นแหล่งข้อมูล (source-grounded — AI จะตอบจากเอกสารที่ให้เท่านั้น)",
+      "องค์กรที่ใช้ Google Workspace อาจมีสิทธิ์ NotebookLM รวมอยู่ในแผนอยู่แล้ว ตรวจสอบกับผู้ดูแลระบบ Workspace ก่อนสมัครแยก"
+    ]
   },
   {
     "id": "elicit",
     "name": "Elicit",
     "vendor": "Elicit",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://elicit.com",
     "strength": "systematic review/สกัดข้อมูล paper แบบตาราง",
     "pricing": "จาก ~$49/เดือน (ฟรี 5 paper/query)",
-    "summary": "เหมาะงาน systematic review และสกัดข้อมูลจาก paper"
+    "summary": "เหมาะงาน systematic review และสกัดข้อมูลจาก paper",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า elicit.com แล้วกด 'Sign up' เพื่อสมัครบัญชี — แผนฟรีใช้ได้จำกัดจำนวน paper ต่อ query",
+      "อัปเกรดเป็นแผนเสียเงินเมื่อต้องการวิเคราะห์ paper จำนวนมากขึ้นหรือฟีเจอร์ 'Elicit Alerts' (แจ้งเตือนงานวิจัยใหม่ในหัวข้อที่ติดตาม)",
+      "องค์กร/ทีมวิจัยขนาดใหญ่ ติดต่อผ่านปุ่ม 'Talk to Sales' บนเว็บไซต์เพื่อขอแผนแบบองค์กร",
+      "⚠️ หมายเหตุความแม่นยำ: หน้าราคาโดยละเอียด (elicit.com/pricing) ไม่สามารถดึงเนื้อหามา verify ได้ตอนเขียนข้อมูลนี้ — เช็คตัวเลขราคาจริงอีกครั้งก่อนสมัคร"
+    ]
   },
   {
     "id": "consensus",
     "name": "Consensus",
     "vendor": "Consensus",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://consensus.app",
     "strength": "ตอบจาก peer-reviewed + Consensus Meter",
     "pricing": "จาก ~$12/เดือน",
-    "summary": "ตอบคำถามจากงาน peer-reviewed พร้อม Consensus Meter"
+    "summary": "ตอบคำถามจากงาน peer-reviewed พร้อม Consensus Meter",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า consensus.app สมัคร/ล็อกอิน แล้วพิมพ์คำถามวิจัยเพื่อค้นหาจากฐานงาน peer-reviewed",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าเว็บ consensus.app มา verify ราคา/ขั้นตอนสมัครล่าสุดได้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คหน้าเว็บจริงอีกครั้งก่อนสมัครใช้งานระดับองค์กร"
+    ]
   },
   {
     "id": "perplexity",
     "name": "Perplexity",
     "vendor": "Perplexity",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://www.perplexity.ai",
     "strength": "ค้นเว็บสด + Deep Research",
     "pricing": "Comet browser ฟรีตั้งแต่ 18 มี.ค. 2026",
-    "summary": "ค้นเว็บสด + Deep Research; citation ผิด 37% (น้อยสุดในกลุ่มที่ทดสอบ)"
+    "summary": "ค้นเว็บสด + Deep Research; citation ผิด 37% (น้อยสุดในกลุ่มที่ทดสอบ)",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า perplexity.ai สมัคร/ล็อกอิน — ใช้งานค้นหาพื้นฐานได้ฟรี อัปเกรดเป็น Pro เพื่อโควตา Deep Research ที่สูงขึ้น",
+      "ดาวน์โหลด Comet browser (ฟรีตั้งแต่ 18 มี.ค. 2026) ถ้าต้องการ browser agent ที่ทำงานอัตโนมัติในหน้าเว็บแทนแค่ค้นหา",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าเว็บ perplexity.ai มา verify ราคา/ขั้นตอนล่าสุดได้ตอนเขียนข้อมูลนี้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คหน้าเว็บจริงอีกครั้งก่อนสมัคร"
+    ]
   },
   {
     "id": "deep-research-suite",
     "name": "ChatGPT / Gemini / Claude Deep Research",
     "vendor": "หลายราย",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "strength": "สังเคราะห์ข้ามแหล่ง",
     "pricing": "รวมใน plan หลัก",
-    "summary": "ฟีเจอร์ deep research ในตัวของแต่ละค่าย"
+    "summary": "ฟีเจอร์ deep research ในตัวของแต่ละค่าย",
+    "accessMethod": "web",
+    "installSteps": [
+      "ไม่ต้องสมัครแยก — เป็นฟีเจอร์ในตัวของบัญชีที่มีอยู่แล้ว: ChatGPT (chatgpt.com, ต้องมีแผน Plus ขึ้นไป), Gemini (gemini.google.com, ต้อง AI Pro/Ultra สำหรับโควตาสูง), Claude (claude.ai, แผน Pro ขึ้นไป)",
+      "เปิดใช้ผ่านปุ่ม/โหมด 'Deep Research' ในหน้าแชทของแต่ละเครื่องมือ แล้วตั้งคำถามวิจัยที่ต้องการให้สังเคราะห์ข้ามแหล่งข้อมูลเว็บ",
+      "เปรียบเทียบผลลัพธ์จากหลายเครื่องมือก่อนสรุปงานสำคัญ เพราะแต่ละเจ้าเลือกแหล่งอ้างอิงและสไตล์สังเคราะห์ต่างกัน"
+    ]
   }
 ]
