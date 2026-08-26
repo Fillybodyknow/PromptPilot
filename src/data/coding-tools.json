@@ -4,95 +4,159 @@
     "name": "Claude Code",
     "vendor": "Anthropic",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://claude.com/product/claude-code",
     "toolType": "cli-agent",
     "price": "~$20/เดือน (Pro)",
     "bestFor": "refactor/migration หลายไฟล์, งาน autonomous",
-    "summary": "terminal/CLI agent สำหรับงาน autonomous ข้ามหลายไฟล์"
+    "summary": "terminal/CLI agent สำหรับงาน autonomous ข้ามหลายไฟล์",
+    "accessMethod": "cli",
+    "installSteps": [
+      "ติดตั้งผ่าน terminal: macOS/Linux/WSL รัน `curl -fsSL https://claude.ai/install.sh | bash`; Windows PowerShell รัน `irm https://claude.ai/install.ps1 | iex`",
+      "ทางเลือกอื่น: Homebrew (`brew install --cask claude-code`) หรือ WinGet (`winget install Anthropic.ClaudeCode`)",
+      "ตรวจสอบว่าติดตั้งสำเร็จด้วยคำสั่ง `claude --version`",
+      "รันคำสั่ง `claude` ในโฟลเดอร์โปรเจกต์ แล้วล็อกอินตามที่ระบบขอ — รองรับบัญชี Claude Pro/Max/Team/Enterprise, Claude Console (API), หรือ SSO ผ่าน gateway ขององค์กรถ้า IT ตั้งค่าไว้",
+      "นอกจาก CLI ยังใช้ผ่านเว็บได้ที่ claude.ai/code, เป็น desktop app, หรือเป็นส่วนขยายใน VS Code/JetBrains ก็ได้"
+    ]
   },
   {
     "id": "cursor",
     "name": "Cursor",
     "vendor": "Anysphere",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://cursor.com",
     "toolType": "ide",
     "price": "~$20/เดือน (Pro)",
     "bestFor": "flow ในเอดิเตอร์, ผู้มาจาก VS Code",
-    "summary": "AI IDE เหมาะกับ flow ในเอดิเตอร์"
+    "summary": "AI IDE เหมาะกับ flow ในเอดิเตอร์",
+    "accessMethod": "desktop-installer",
+    "installSteps": [
+      "ดาวน์โหลดตัวติดตั้งจาก cursor.com/downloads ตามระบบปฏิบัติการ (macOS ARM64/x64/Universal, Windows x64/ARM64, Linux .deb/RPM)",
+      "หรือติดตั้งผ่าน terminal ด้วยคำสั่งเดียว: `curl https://cursor.com/install -fsS | bash`",
+      "เปิดโปรแกรมแล้วกด Sign in เพื่อล็อกอินด้วยบัญชี Cursor (หรือ SSO องค์กรถ้ามี)",
+      "นอกจาก desktop app ยังสั่งงาน agent ผ่าน cloud ได้จากเบราว์เซอร์, มือถือ, หรือเชื่อมกับ Slack/GitHub/Linear"
+    ]
   },
   {
     "id": "openai-codex",
     "name": "OpenAI Codex",
     "vendor": "OpenAI",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://chatgpt.com/codex",
     "toolType": "cloud-agent",
     "price": "รวมใน ChatGPT plan",
     "bestFor": "งาน background/parallel, PR อัตโนมัติ",
-    "summary": "agent ผ่าน ChatGPT/CLI/cloud เหมาะงาน background/parallel"
+    "summary": "agent ผ่าน ChatGPT/CLI/cloud เหมาะงาน background/parallel",
+    "accessMethod": "cli",
+    "installSteps": [
+      "ติดตั้ง Codex CLI (macOS/Linux): รัน `curl -fsSL https://chatgpt.com/codex/install.sh | sh` ใน terminal — คำสั่งเดียวกันใช้อัปเดตเวอร์ชันได้ด้วย",
+      "เข้าโฟลเดอร์โปรเจกต์แล้วรันคำสั่ง `codex` ครั้งแรก ระบบจะให้ล็อกอิน — เลือก 'Sign in with ChatGPT' หรือวิธีอื่นที่รองรับ",
+      "ผู้ใช้ Windows หรือใช้แบบ IDE extension แทน CLI ให้ดูขั้นตอนเฉพาะที่ developers.openai.com/codex",
+      "นอกจาก CLI ยังใช้งานผ่านเว็บ chatgpt.com/codex ได้โดยตรงสำหรับงาน background/parallel"
+    ]
   },
   {
     "id": "github-copilot",
     "name": "GitHub Copilot",
     "vendor": "GitHub",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://github.com/features/copilot",
     "toolType": "plugin",
     "price": "~$10/เดือน (ถูกสุด)",
     "bestFor": "ทีมใน GitHub/VS Code/JetBrains",
-    "summary": "inline + agent mode ราคาถูกสุดในกลุ่ม"
+    "summary": "inline + agent mode ราคาถูกสุดในกลุ่ม",
+    "accessMethod": "browser-extension",
+    "installSteps": [
+      "สมัคร subscription ที่ github.com/features/copilot — มีแผนฟรีแบบจำกัด (2,000 completions/เดือน) หรืออัปเกรดเป็น Pro/Pro+/Enterprise",
+      "ติดตั้งส่วนขยายตาม editor ที่ใช้: VS Code (ติดตั้ง GitHub Copilot Chat extension), Visual Studio 2022 17.8+, JetBrains IDEs, Xcode, หรือ Eclipse",
+      "ล็อกอินด้วยบัญชี GitHub ที่มีสิทธิ์ Copilot ใน editor นั้นๆ",
+      "เริ่มใช้ inline suggestion ได้ทันทีขณะพิมพ์โค้ด (กด Tab เพื่อยอมรับ) หรือเปิด Copilot Chat เพื่อถามคำถามเกี่ยวกับโค้ด",
+      "หมายเหตุ: ตั้งแต่ 22 เม.ย. 2026 การสมัคร Copilot Business แบบ self-serve สำหรับองค์กรบนแผน GitHub Free/Team ถูกระงับชั่วคราว — องค์กรใหม่อาจต้องติดต่อฝ่ายขาย"
+    ]
   },
   {
     "id": "devin-desktop",
     "name": "Windsurf → Devin Desktop",
     "vendor": "Cognition",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://devin.ai/desktop",
     "toolType": "ide",
     "price": "~$15/เดือน",
     "bestFor": "จัดการหลาย agent, งบจำกัด",
-    "summary": "agentic IDE เปลี่ยนชื่อจาก Windsurf เมื่อ 2 มิ.ย. 2026"
+    "summary": "agentic IDE เปลี่ยนชื่อจาก Windsurf เมื่อ 2 มิ.ย. 2026",
+    "accessMethod": "desktop-installer",
+    "installSteps": [
+      "โดเมนเดิม windsurf.com ถูก redirect ไปที่ devin.ai/desktop แล้ว (ยืนยันการเปลี่ยนชื่อ) — เข้าลิงก์ด้านบนเพื่อดาวน์โหลดตัวติดตั้งของ desktop app",
+      "เลือกตัวติดตั้งตามระบบปฏิบัติการที่ใช้ (macOS/Windows) แล้วติดตั้งตามปกติ",
+      "เปิดโปรแกรมแล้วล็อกอินด้วยบัญชี Cognition/Devin",
+      "หมายเหตุ: ขั้นตอนละเอียดหน้าเว็บดาวน์โหลดล่าสุดไม่สามารถดึงมาตรวจสอบได้ตอนเขียน guide นี้ (เว็บ rate-limit การเข้าถึงอัตโนมัติ) — แนะนำเช็คหน้าเว็บจริงอีกครั้งก่อนติดตั้งเผื่อขั้นตอนเปลี่ยน"
+    ]
   },
   {
     "id": "google-antigravity",
     "name": "Google Antigravity",
     "vendor": "Google",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://antigravity.google",
     "toolType": "ide",
     "price": "หลากหลาย",
     "bestFor": "ตัวเลือกเสริม",
-    "summary": "agent/IDE ตัวเลือกเสริมจาก Google"
+    "summary": "agent/IDE ตัวเลือกเสริมจาก Google",
+    "accessMethod": "desktop-installer",
+    "installSteps": [
+      "เข้า antigravity.google แล้วดาวน์โหลดตามชิป Mac ที่ใช้ (Apple Silicon หรือ Intel) — มีให้เลือกทั้ง Antigravity IDE (เต็มรูปแบบ), Antigravity CLI (terminal), และ Antigravity SDK (Python) แยกกันตามการใช้งาน",
+      "ติดตั้งและเปิดโปรแกรม จากนั้นสร้าง/ล็อกอินบัญชีตามที่ระบบแนะนำ — ใช้งานฟรีสำหรับนักพัฒนา",
+      "ดูขั้นตอนละเอียดเพิ่มเติมที่ antigravity.google/docs/getting-started"
+    ]
   },
   {
     "id": "kiro",
     "name": "Kiro",
     "vendor": "AWS",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://kiro.dev",
     "toolType": "ide",
     "price": "หลากหลาย",
     "bestFor": "ตัวเลือกเสริม",
-    "summary": "agent/IDE ตัวเลือกเสริมจาก AWS"
+    "summary": "agent/IDE ตัวเลือกเสริมจาก AWS",
+    "accessMethod": "desktop-installer",
+    "installSteps": [
+      "เลือกรูปแบบที่จะใช้: IDE (ดาวน์โหลดจาก kiro.dev/downloads), CLI (รัน `curl -fsSL https://cli.kiro.dev/install | bash`), หรือใช้ผ่านเว็บที่ app.kiro.dev โดยตรง",
+      "ล็อกอินด้วย GitHub, Google, AWS Builder ID, หรือ AWS IAM Identity Center — ไม่จำเป็นต้องมีบัญชี AWS มาก่อนก็ใช้ได้",
+      "Kiro เน้น 'spec-driven development' คือแปลง prompt เป็น spec ที่มีโครงสร้างก่อนลงมือเขียนโค้ดจริง เหมาะกับงานที่ต้องการเอกสารกำกับชัดเจน"
+    ]
   },
   {
     "id": "cline",
     "name": "Cline",
     "vendor": "open-source",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://cline.bot",
     "toolType": "plugin",
     "price": "open-source",
     "bestFor": "ตัวเลือกเสริมแบบ open-source",
-    "summary": "ปลั๊กอิน agent แบบ open-source"
+    "summary": "ปลั๊กอิน agent แบบ open-source",
+    "accessMethod": "browser-extension",
+    "installSteps": [
+      "ติดตั้งเป็นส่วนขยายผ่าน VS Code Marketplace (ค้นหา 'Cline') — ใช้ได้กับ Cursor และ Windsurf/Devin Desktop ด้วยเพราะ base จาก VS Code เหมือนกัน, รองรับ JetBrains แยกต่างหาก",
+      "หรือติดตั้งแบบ CLI ผ่าน npm: `npm i -g cline`",
+      "ตั้งค่า API key ของผู้ให้บริการโมเดลที่จะใช้ (Claude, OpenAI, Google ฯลฯ) ในหน้าตั้งค่าของส่วนขยาย — Cline เป็น open-source runtime ไม่ผูกกับโมเดลเดียว เลือกโมเดลได้เอง",
+      "ดูรายละเอียดการตั้งค่าเพิ่มเติมที่ docs.cline.bot"
+    ]
   }
 ]

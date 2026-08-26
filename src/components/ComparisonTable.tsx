@@ -26,6 +26,15 @@ const STATUS_STYLE: Record<string, string> = {
   restricted: "bg-amber-950/40 text-amber-300 ring-amber-800",
 };
 
+const ACCESS_METHOD_LABEL: Record<string, string> = {
+  web: "ใช้ผ่านเว็บ ไม่ต้องติดตั้ง",
+  "browser-extension": "Browser Extension",
+  "desktop-installer": "ติดตั้งโปรแกรมบนเครื่อง",
+  cli: "เครื่องมือบรรทัดคำสั่ง (CLI)",
+  "self-hosted": "ต้องมี IT รันเซิร์ฟเวอร์เอง",
+  "sso-license": "ต้องขอ license ผ่าน SSO องค์กร",
+};
+
 export function ComparisonTable({ entries, columns }: ComparisonTableProps) {
   return (
     <div className="overflow-x-auto rounded-lg border border-neutral-800">
@@ -71,6 +80,25 @@ export function ComparisonTable({ entries, columns }: ComparisonTableProps) {
                     <p className="mt-1 max-w-xs text-xs text-neutral-500">
                       {String(entry.summary)}
                     </p>
+                  ) : null}
+                  {Array.isArray(entry.installSteps) && entry.installSteps.length > 0 ? (
+                    <details className="mt-2 max-w-xs">
+                      <summary className="cursor-pointer text-xs font-medium text-neutral-400 hover:text-neutral-200">
+                        📦 วิธีเข้าถึง/ติดตั้ง
+                      </summary>
+                      <div className="mt-1.5 rounded border border-neutral-800 bg-neutral-950/60 p-2">
+                        {typeof entry.accessMethod === "string" ? (
+                          <span className="mb-1.5 inline-block rounded px-1.5 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400">
+                            {ACCESS_METHOD_LABEL[entry.accessMethod] ?? entry.accessMethod}
+                          </span>
+                        ) : null}
+                        <ol className="list-decimal space-y-1 pl-4 text-xs leading-relaxed text-neutral-400">
+                          {(entry.installSteps as string[]).map((step, i) => (
+                            <li key={i}>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    </details>
                   ) : null}
                 </td>
                 <td className="px-4 py-3 text-neutral-300">{String(entry.vendor)}</td>

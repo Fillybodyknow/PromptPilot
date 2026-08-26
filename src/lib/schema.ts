@@ -6,6 +6,16 @@ import { z } from "zod";
 export const sourceLabelEnum = z.enum(["official", "community"]);
 export const statusEnum = z.enum(["active", "closing", "closed", "restricted"]);
 
+/** วิธีเข้าถึง/ติดตั้งเครื่องมือ — ใช้ทั้งระดับ category guide และระดับเครื่องมือแต่ละตัว */
+export const accessMethodEnum = z.enum([
+  "web",
+  "browser-extension",
+  "desktop-installer",
+  "cli",
+  "self-hosted",
+  "sso-license",
+]);
+
 /**
  * Fields every entry in every category must have, regardless of category-specific
  * columns (price, benchmark, license, ...). Mirrors the recurring columns in the
@@ -23,6 +33,13 @@ export const baseEntrySchema = z.object({
   summary: z.string().min(1),
   /** ลิงก์ไปหน้าทางการของเครื่องมือ/โมเดลนี้ — ถ้ามีจะทำให้ชื่อในตารางคลิกได้ */
   url: z.url().optional(),
+  /**
+   * วิธีเข้าถึง/ติดตั้งเฉพาะเครื่องมือนี้ — ต่างจาก accessMethod ระดับ category guide
+   * เพราะเครื่องมือในหมวดเดียวกันอาจเข้าถึงคนละแบบ (เช่น coding-tools: บางตัว cli บางตัว desktop-installer)
+   */
+  accessMethod: accessMethodEnum.optional(),
+  /** ขั้นตอนติดตั้ง/เข้าถึงแบบละเอียดเฉพาะเครื่องมือนี้ — verify กับเอกสารทางการก่อนใส่เสมอ */
+  installSteps: z.array(z.string().min(1)).optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -134,17 +151,9 @@ export const openWeightSelfhostedSchema = baseEntrySchema.extend({
 
 // ---------------------------------------------------------------------------
 // Category Guide — เนื้อหา "วิธีใช้งาน / เขียน prompt / ติดตั้ง" ต่อ 1 หมวด
-// (แยกจาก tool catalog ด้านบน — 1 หมวดมี guide เดียว ไม่ใช่ 1 ต่อเครื่องมือ)
+// (แยกจาก tool catalog ด้านบน — 1 หมวดมี guide เดียว ไม่ใช่ 1 ต่อเครื่องมือ;
+// accessMethodEnum ถูกย้ายไปประกาศรวมกับ baseEntrySchema ด้านบนแล้ว เพราะใช้ร่วมกันทั้งสองที่)
 // ---------------------------------------------------------------------------
-export const accessMethodEnum = z.enum([
-  "web",
-  "browser-extension",
-  "desktop-installer",
-  "cli",
-  "self-hosted",
-  "sso-license",
-]);
-
 export const promptTemplateSchema = z
   .object({
     /** โจทย์/งานที่ prompt นี้ใช้ทำ */
