@@ -4,66 +4,106 @@
     "name": "Google Stitch",
     "vendor": "Google",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://stitch.withgoogle.com",
     "strength": "text-to-UI, export หลาย framework",
     "pricing": "ฟรี (350 gen/เดือน)",
     "integration": "มี MCP เชื่อม Claude Code/Cursor",
-    "summary": "text-to-UI ฟรี อัปเดตใหญ่ 19 มี.ค. 2026"
+    "summary": "text-to-UI ฟรี อัปเดตใหญ่ 19 มี.ค. 2026",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า stitch.withgoogle.com ล็อกอินด้วยบัญชี Google — ใช้งานฟรีได้ 350 generation/เดือน",
+      "พิมพ์ prompt อธิบายหน้าจอที่ต้องการ แล้ว export เป็นโค้ดตาม framework ที่ใช้ (React, HTML/CSS ฯลฯ)",
+      "ถ้าต้องการเชื่อมกับ Claude Code/Cursor ให้ตั้งค่า MCP server ของ Stitch ตามเอกสารในตัวเครื่องมือ"
+    ]
   },
   {
     "id": "v0-vercel",
     "name": "v0 by Vercel",
     "vendor": "Vercel",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://v0.app",
     "strength": "React/Next.js component generation",
     "pricing": "~$20/เดือน",
-    "summary": "เจน component React/Next.js โดยตรง"
+    "summary": "เจน component React/Next.js โดยตรง",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า v0.app (ชื่อโดเมนปัจจุบัน ไม่ใช่ v0.dev แล้ว) ล็อกอินด้วยบัญชี Vercel/GitHub",
+      "พิมพ์ prompt ขอ component/หน้าเว็บที่ต้องการ ได้โค้ด React + Tailwind พร้อมพรีวิวสด",
+      "deploy ต่อเข้า Vercel ได้ทันทีจากในตัวเครื่องมือ ถ้าใช้ Vercel เป็น hosting อยู่แล้ว"
+    ]
   },
   {
     "id": "lovable",
     "name": "Lovable",
     "vendor": "Lovable",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://lovable.dev",
     "strength": "full-stack app (chat-first)",
     "pricing": "~$25/เดือน",
-    "summary": "สร้างแอป full-stack แบบ chat-first"
+    "summary": "สร้างแอป full-stack แบบ chat-first",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า lovable.dev กด 'Get started' — เริ่มต้นใช้งานฟรี ไม่ต้องใส่บัตรเครดิต",
+      "แผน Free ให้เครดิตสร้าง 5 ครั้ง/วัน (สูงสุด 30/เดือน) + 20 cloud credits/เดือน — ระบบคิดเครดิตตามความซับซ้อนของงานที่ขอ (~0.5-1.7 เครดิต/ครั้ง)",
+      "อัปเกรดเป็น Pro หรือ Business เมื่อใช้เกิน quota ฟรี — ทุกแผนเชิญสมาชิกทีมเข้าร่วม workspace ได้ไม่จำกัดคน ใช้เครดิตพูลร่วมกัน ไม่คิดตามจำนวนคน (per-seat)"
+    ]
   },
   {
     "id": "bolt-new",
     "name": "Bolt.new",
     "vendor": "StackBlitz",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://bolt.new",
     "strength": "rapid prototype full-stack",
     "pricing": "หลากหลาย",
-    "summary": "เหมาะ prototype full-stack แบบเร็ว"
+    "summary": "เหมาะ prototype full-stack แบบเร็ว",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า bolt.new กด 'Get Started' เริ่มใช้งานฟรีได้ทันที — เลือกประเภทงาน (Website, Slides, App, Prototype) หรือ import จาก Figma/GitHub ได้เลย",
+      "แผน Standard เหมาะงานพัฒนาทั่วไป, แผน Max Pro ปลดล็อกความสามารถเพิ่มเติมสำหรับงานหนักขึ้น — ดูรายละเอียดที่ bolt.new/pricing"
+    ]
   },
   {
     "id": "figma-make",
     "name": "Figma Make / Figma AI",
     "vendor": "Figma",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://www.figma.com/make",
     "strength": "เชื่อมกับ workflow ออกแบบเดิม",
     "pricing": "ต้องมี Figma plan (Professional+)",
-    "summary": "ต้องมี Figma plan ระดับ Professional ขึ้นไป"
+    "summary": "ต้องมี Figma plan ระดับ Professional ขึ้นไป",
+    "accessMethod": "sso-license",
+    "installSteps": [
+      "ต้องมีบัญชี Figma ที่อยู่ในแผน Professional ขึ้นไปก่อน (Make ไม่เปิดให้แผน Free ใช้)",
+      "เข้าถึง Make ได้จากภายในไฟล์ Figma โดยตรง ไม่ต้องติดตั้งแยก",
+      "⚠️ หมายเหตุความแม่นยำ: หน้า figma.com/make ไม่ได้ระบุรายละเอียดแผน/ขั้นตอนการเปิดใช้ชัดเจนตอนตรวจสอบ (มีแค่ฟีเจอร์ที่กำลังจะมา เช่น 'Make on your local codebase') — เช็คหน้า Figma pricing จริงอีกครั้งก่อนวางแผนใช้งานองค์กร"
+    ]
   },
   {
     "id": "uizard-relume-recraft-firefly",
     "name": "Uizard, Relume, Recraft (vector), Adobe Firefly",
     "vendor": "หลายราย",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "strength": "เครื่องมือเสริม",
     "pricing": "หลากหลาย",
-    "summary": "ตัวเลือกเสริมนอกเหนือจากผู้นำหมวด"
+    "summary": "ตัวเลือกเสริมนอกเหนือจากผู้นำหมวด",
+    "accessMethod": "web",
+    "installSteps": [
+      "Uizard: เข้า uizard.io กด 'Sign up for free' (app.uizard.io/sign-up) — ใช้ text-to-design, screenshot-to-mockup ได้ทันทีไม่ต้องใส่บัตรเครดิต",
+      "Relume: เข้า relume.ai (ย้ายจากโดเมนเดิม relume.io แล้ว) กด 'Start for free' — AI สร้าง sitemap/wireframe/เว็บไซต์การตลาดจาก brief",
+      "Recraft และ Adobe Firefly: ดูขั้นตอนละเอียดในหมวด 'งานออกแบบ/สื่อการตลาด — ภาพ' (image-gen) ที่ตรวจสอบไว้แล้ว"
+    ]
   }
 ]
