@@ -4,47 +4,76 @@
     "name": "Gamma",
     "vendor": "Gamma",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://gamma.app",
     "strength": "เจนสไลด์จาก prompt/outline เดียวได้ทั้งชุด ปรับ theme อัตโนมัติ",
     "pricing": "ฟรีจำกัดจำนวน, Plus ~$10-20/เดือน",
     "integration": "export เป็น PPTX/PDF",
-    "summary": "เร็วที่สุดสำหรับสร้างสไลด์ฉบับร่างจากไอเดียเปล่า"
+    "summary": "เร็วที่สุดสำหรับสร้างสไลด์ฉบับร่างจากไอเดียเปล่า",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า gamma.app แล้วสมัคร/ล็อกอินด้วยบัญชี Google หรืออีเมล — ใช้งานระดับฟรีได้จำนวนจำกัดต่อเดือน",
+      "อัปเกรดเป็นแผน Plus/Pro เมื่อใช้เกิน quota ฟรี",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าเว็บ gamma.app มา verify ราคา/ขั้นตอนล่าสุดได้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คหน้า pricing จริงอีกครั้งก่อนสมัคร"
+    ]
   },
   {
     "id": "copilot-powerpoint",
     "name": "Microsoft Copilot for PowerPoint",
     "vendor": "Microsoft",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://www.microsoft.com/en-us/microsoft-365/copilot",
     "strength": "ทำงานในไฟล์ PowerPoint เดิมขององค์กรได้ทันที ใช้ template บริษัท",
     "pricing": "รวมใน Microsoft 365 Copilot license",
     "integration": "PowerPoint, Word, Outlook (M365 ecosystem)",
-    "summary": "เหมาะองค์กรที่ใช้ M365 อยู่แล้ว — ต่อยอดจาก template เดิมได้เลย"
+    "summary": "เหมาะองค์กรที่ใช้ M365 อยู่แล้ว — ต่อยอดจาก template เดิมได้เลย",
+    "accessMethod": "sso-license",
+    "installSteps": [
+      "ถ้าองค์กรมี Microsoft 365 อยู่แล้ว: ให้ผู้ดูแลระบบ 'เพิ่ม Copilot เข้าไปในแผน M365 เดิม' ผ่านศูนย์ดูแลระบบ (admin center)",
+      "ถ้ายังไม่มี M365: ซื้อแบบรวมชุด (M365 + Copilot) ได้ผ่านหน้าเว็บทางการ",
+      "หลังเปิดใช้งาน Copilot จะปรากฏเป็นปุ่ม/แถบด้านข้างในตัว PowerPoint ทันที ไม่ต้องติดตั้งแยก — ล็อกอินด้วยบัญชี Microsoft 365 ขององค์กร (SSO)",
+      "ไมโครซอฟท์มีบริการ 'Onboarding for Business' ช่วยองค์กรตั้งค่าและ rollout ให้พนักงานด้วย"
+    ]
   },
   {
     "id": "gemini-slides",
     "name": "Google Slides + Gemini",
     "vendor": "Google",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://slides.google.com",
     "strength": "สร้าง/แก้สไลด์ใน Google Workspace โดยตรง",
     "pricing": "รวมใน Google Workspace แผนที่มี Gemini",
     "integration": "Google Slides, Docs, Sheets",
-    "summary": "เหมาะองค์กรที่ใช้ Google Workspace"
+    "summary": "เหมาะองค์กรที่ใช้ Google Workspace",
+    "accessMethod": "sso-license",
+    "installSteps": [
+      "องค์กรต้องมี Google Workspace อยู่แล้ว และสมัคร Gemini เป็น add-on แยกต่างหาก (ไม่ใช่แผน Google AI ส่วนบุคคล) — ผู้ดูแลระบบ Workspace เป็นคนเปิดใช้งานให้",
+      "หลังเปิดใช้งาน ไอคอน Gemini จะปรากฏในแถบด้านข้างของ Google Slides ทันที ล็อกอินด้วยบัญชี Google Workspace ขององค์กร",
+      "พิมพ์ prompt ในแถบ Gemini เพื่อสร้าง/แก้สไลด์ได้โดยตรงในไฟล์ที่เปิดอยู่"
+    ]
   },
   {
     "id": "beautiful-ai",
     "name": "Beautiful.ai",
     "vendor": "Beautiful.ai",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://www.beautiful.ai",
     "strength": "layout ปรับอัตโนมัติให้สวยเสมอ เหมาะทีมที่ไม่มี designer",
     "pricing": "จาก ~$12/เดือน",
     "integration": "export PPTX/PDF",
-    "summary": "เน้นดีไซน์สวยอัตโนมัติโดยไม่ต้องจัด layout เอง"
+    "summary": "เน้นดีไซน์สวยอัตโนมัติโดยไม่ต้องจัด layout เอง",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า beautiful.ai แล้วกด 'Start a free trial' หรือ 'Get started' — ทดลองใช้ฟรี 14 วัน เข้าถึงฟีเจอร์ครบ",
+      "เลือกแผนตามขนาดทีม: Individuals, Freelancers & Agencies, Teams/Small Businesses, หรือ Enterprise (มี SSO/สิทธิ์ขั้นสูงสำหรับองค์กรใหญ่)",
+      "องค์กรที่ต้องการแผนแบบกำหนดเอง ติดต่อ sales@beautiful.ai โดยตรง"
+    ]
   }
 ]
