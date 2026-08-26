@@ -4,43 +4,72 @@
     "name": "DeepL",
     "vendor": "DeepL",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://www.deepl.com",
     "strength": "แปลภาษาสากลคุณภาพสูง",
     "scope": "international",
-    "summary": "เหมาะแปลภาษาสากลทั่วไป"
+    "summary": "เหมาะแปลภาษาสากลทั่วไป",
+    "accessMethod": "web",
+    "installSteps": [
+      "ใช้งานทันทีไม่ต้องสมัครที่ deepl.com (ปุ่ม 'Open Translator') สำหรับแปลข้อความพื้นฐาน",
+      "สมัคร DeepL Pro (ปุ่ม 'Start free trial') สำหรับโควตาสูงขึ้น + แปลไฟล์เอกสาร + ไม่เก็บข้อความไป train โมเดล",
+      "สำหรับเชื่อมเข้าระบบ/แอปขององค์กร: ขอ Free API Key ได้ในหน้า Developers แล้วดู pricing ของ API แยกต่างหาก",
+      "มีให้ใช้หลายช่องทาง: browser extension (Chrome/Firefox/Edge), desktop app (Windows/Mac), mobile app, และ integration กับ Google Workspace/Microsoft 365/Word/Outlook/PowerPoint — องค์กรขนาดใหญ่ติดต่อผ่าน 'Contact Sales'"
+    ]
   },
   {
     "id": "gemini-translation",
     "name": "Gemini",
     "vendor": "Google",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://gemini.google.com",
     "strength": "แปลสากล + ภาษาไทยดี",
     "scope": "international",
-    "summary": "แปลได้ทั้งสากลและภาษาไทยในตัวเดียว"
+    "summary": "แปลได้ทั้งสากลและภาษาไทยในตัวเดียว",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า gemini.google.com ล็อกอินด้วยบัญชี Google — ใช้งานฟรีได้ในระดับพื้นฐาน พิมพ์ขอแปลในแชทได้เลย ไม่ต้องตั้งค่าอะไรเพิ่ม",
+      "อัปเกรดเป็น Google AI Plus/Pro เพื่อโควตาสูงขึ้นถ้าแปลเอกสารจำนวนมาก",
+      "องค์กรที่ใช้ Google Workspace: สมัคร Gemini เป็น add-on แยกต่างหากผ่านผู้ดูแลระบบ"
+    ]
   },
   {
     "id": "gpt-translation",
     "name": "GPT",
     "vendor": "OpenAI",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://chatgpt.com",
     "strength": "แปลภาษาสากล",
     "scope": "international",
-    "summary": "เหมาะแปลภาษาสากลทั่วไป"
+    "summary": "เหมาะแปลภาษาสากลทั่วไป",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า chatgpt.com สมัคร/ล็อกอิน พิมพ์ขอแปลข้อความในแชทได้โดยตรง — แผน Free ใช้งานพื้นฐานได้ อัปเกรด Plus/Pro สำหรับโควตาสูงขึ้น",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าราคา/แผนล่าสุดของ OpenAI มา verify ได้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คราคาที่ chatgpt.com/pricing อีกครั้งก่อนสมัคร"
+    ]
   },
   {
     "id": "typhoon-translate-1-5",
     "name": "Typhoon-Translate v1.5",
     "vendor": "SCB 10X",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://opentyphoon.ai",
     "strength": "ไทย↔อังกฤษ คุณภาพสูง เฉพาะทาง (4B)",
     "scope": "thai",
-    "summary": "เฉพาะทางไทย↔อังกฤษ; ตรวจ license ก่อนใช้ (card ระบุไม่ชัด)"
+    "summary": "เฉพาะทางไทย↔อังกฤษ; ตรวจ license ก่อนใช้ (card ระบุไม่ชัด)",
+    "accessMethod": "web",
+    "installSteps": [
+      "ทดลองใช้ฟรีผ่าน playground ที่ playground.opentyphoon.ai ไม่ต้องติดตั้งอะไร",
+      "สำหรับ self-host/ใช้งานผ่าน API เอง: ดาวน์โหลด model weights จาก Hugging Face (huggingface.co/scb10x) แล้วรันด้วย Ollama/LM Studio ตามเอกสารที่ docs.opentyphoon.ai/en/",
+      "โค้ดตัวอย่าง/repo เพิ่มเติมอยู่ที่ GitHub (github.com/scb-10x) — มีชุมชนช่วยเหลือผ่าน Discord (discord.gg/9F6nrFXyNt)",
+      "⚠️ ตรวจสอบ license ของ Typhoon-Translate v1.5 ให้ชัดเจนก่อนใช้เชิงพาณิชย์ — model card ระบุ base model ไม่สอดคล้องกัน (ตามที่บันทึกไว้ในข้อมูลตั้งต้น) ควรสอบถามทีม SCB 10X โดยตรงถ้าไม่ชัวร์"
+    ]
   }
 ]
