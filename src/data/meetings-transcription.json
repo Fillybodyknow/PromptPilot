@@ -4,59 +4,94 @@
     "name": "Otter.ai",
     "vendor": "Otter.ai",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://otter.ai",
     "capability": "transcription",
     "integration": "Zoom, Google Meet, Microsoft Teams",
-    "pricing": "ฟรีจำกัดนาที, Business ~$20/ผู้ใช้/เดือน",
-    "summary": "ถอดเสียงประชุมสด + สรุป action item อัตโนมัติ"
+    "pricing": "ฟรีจำกัดนาที, Business $19.99/ผู้ใช้/เดือน (ทดลองฟรี 7 วัน)",
+    "summary": "ถอดเสียงประชุมสด + สรุป action item อัตโนมัติ",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า otter.ai กด 'Start for free' — แผน Basic ฟรี ประชุมไม่จำกัดจำนวนครั้ง พร้อมสรุปอัตโนมัติเบื้องต้น",
+      "อัปเกรดเป็น Business ($19.99/ผู้ใช้/เดือน) เพื่อโควตา 6,000 นาที/เดือน (สูงสุด 4 ชม./การประชุม) + แก้ไขร่วมกัน + อัปโหลดไฟล์เสียงเองได้",
+      "เชื่อมกับ Zoom: เชิญ 'AI Meeting Agent' ให้เข้าร่วมประชุมอัตโนมัติ / Google Meet: เปิดถอดเสียงสดได้ทันที / Teams: ตั้งเวลาให้ agent เข้าประชุมอัตโนมัติผ่านปฏิทิน",
+      "องค์กรขนาดใหญ่ที่ต้องการราคา/สิทธิ์แบบกำหนดเอง ติดต่อฝ่ายขาย (Enterprise plan)"
+    ]
   },
   {
     "id": "fireflies-ai",
     "name": "Fireflies.ai",
     "vendor": "Fireflies.ai",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://fireflies.ai",
     "capability": "meeting-summary",
     "integration": "Zoom, Google Meet, Microsoft Teams, CRM ต่างๆ",
     "pricing": "ฟรีจำกัด, Business ~$19/ผู้ใช้/เดือน",
-    "summary": "เด่นด้านเชื่อมสรุปประชุมเข้า CRM/workflow อัตโนมัติ"
+    "summary": "เด่นด้านเชื่อมสรุปประชุมเข้า CRM/workflow อัตโนมัติ",
+    "accessMethod": "browser-extension",
+    "installSteps": [
+      "เข้า fireflies.ai กด 'Get Started' เพื่อล็อกอินที่ app.fireflies.ai/login",
+      "ติดตั้ง Chrome Extension เพื่อบันทึก Google Meet อัตโนมัติ หรือให้ 'AI Note Taker Bot' เข้าร่วมประชุมอัตโนมัติผ่านปฏิทินที่เชื่อมไว้",
+      "ดูรายละเอียดการเชื่อมต่อ Zoom/Teams/CRM (Salesforce, HubSpot ฯลฯ) เพิ่มเติมที่หน้า fireflies.ai/integrations/videoconferencing",
+      "⚠️ หมายเหตุความแม่นยำ: หน้าราคาโดยละเอียด (fireflies.ai/pricing) ไม่สามารถดึงมา verify ได้ตอนเขียนข้อมูลนี้ — เช็คตัวเลขราคาจริงอีกครั้งก่อนสมัคร"
+    ]
   },
   {
     "id": "teams-copilot-recap",
     "name": "Microsoft Teams Premium/Copilot Recap",
     "vendor": "Microsoft",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "capability": "meeting-summary",
     "integration": "Microsoft Teams",
     "pricing": "รวมใน Teams Premium / M365 Copilot license",
-    "summary": "เหมาะองค์กรที่ใช้ Teams อยู่แล้ว — ไม่ต้องติดตั้งเพิ่ม"
+    "summary": "เหมาะองค์กรที่ใช้ Teams อยู่แล้ว — ไม่ต้องติดตั้งเพิ่ม",
+    "accessMethod": "sso-license",
+    "installSteps": [
+      "ให้ผู้ดูแลระบบเพิ่ม Teams Premium หรือ Microsoft 365 Copilot เข้าไปในแผนองค์กรที่มีอยู่ผ่าน admin center (แบบเดียวกับ Copilot for PowerPoint)",
+      "หลังเปิดใช้งาน ฟีเจอร์ Recap/Intelligent Recap จะปรากฏในตัว Teams ทันทีหลังประชุมจบ ไม่ต้องติดตั้งแยก — ล็อกอินด้วยบัญชี Microsoft 365 ขององค์กร (SSO)"
+    ]
   },
   {
     "id": "google-meet-gemini-notes",
     "name": "Google Meet + Gemini Notes",
     "vendor": "Google",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "capability": "live-notes",
     "integration": "Google Meet, Google Docs",
     "pricing": "รวมใน Google Workspace แผนที่มี Gemini",
-    "summary": "จด note สดระหว่างประชุมและสรุปลง Docs อัตโนมัติ"
+    "summary": "จด note สดระหว่างประชุมและสรุปลง Docs อัตโนมัติ",
+    "accessMethod": "sso-license",
+    "installSteps": [
+      "องค์กรต้องมี Google Workspace และสมัคร Gemini เป็น add-on แยกต่างหาก — ผู้ดูแลระบบ Workspace เป็นคนเปิดใช้งานให้",
+      "หลังเปิดใช้งาน เปิดฟีเจอร์ 'take notes for me' ในหน้าประชุม Google Meet ได้โดยตรง สรุปจะถูกบันทึกลง Google Docs อัตโนมัติหลังจบประชุม"
+    ]
   },
   {
     "id": "whisper-transcription",
     "name": "Whisper (self-host)",
     "vendor": "OpenAI",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://github.com/openai/whisper",
     "capability": "transcription",
     "integration": "ต้องต่อ pipeline เอง (ไม่มี UI สำเร็จรูป)",
     "pricing": "ฟรี open source",
-    "summary": "ตัวเลือกสำหรับองค์กรที่ห้ามส่งเสียงประชุมออกนอกระบบ — รันเองได้"
+    "summary": "ตัวเลือกสำหรับองค์กรที่ห้ามส่งเสียงประชุมออกนอกระบบ — รันเองได้",
+    "accessMethod": "cli",
+    "installSteps": [
+      "ติดตั้งผ่าน pip: `pip install -U openai-whisper` (หรือเวอร์ชันล่าสุดจาก GitHub: `pip install git+https://github.com/openai/whisper.git`)",
+      "ติดตั้ง FFmpeg ที่ระบบต้องใช้ประมวลผลเสียง — Ubuntu/Debian: `sudo apt install ffmpeg`, macOS: `brew install ffmpeg`, Windows: `choco install ffmpeg`",
+      "ถอดเสียงผ่านคำสั่งเดียว: `whisper audio.mp3 --model turbo` หรือเรียกจาก Python: `import whisper; model = whisper.load_model(\"turbo\"); result = model.transcribe(\"audio.mp3\")`",
+      "หมายเหตุ: โมเดล turbo ไม่รองรับงานแปลภาษา — ถ้าต้องการแปล (translate) ให้ใช้โมเดล medium หรือ large แทน",
+      "ต้องมี IT ต่อ pipeline เอง (บันทึกเสียงประชุม → รัน Whisper → เก็บผลลัพธ์) เพราะไม่มี UI สำเร็จรูปเหมือน Otter/Fireflies"
+    ]
   }
 ]
