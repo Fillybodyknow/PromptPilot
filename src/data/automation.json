@@ -4,47 +4,76 @@
     "name": "n8n",
     "vendor": "n8n",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://n8n.io",
     "strength": "MCP server native, ~70 AI/LangChain nodes",
     "pricingModel": "self-host ได้, ถูกที่ volume สูง (บิลต่อ workflow run)",
     "selfHost": true,
-    "summary": "เหมาะทีมเทคนิค; MCP server native (public preview เม.ย. 2026)"
+    "summary": "เหมาะทีมเทคนิค; MCP server native (public preview เม.ย. 2026)",
+    "accessMethod": "self-hosted",
+    "installSteps": [
+      "แบบ cloud (ไม่ต้องดูแล infra เอง): สมัครฟรีที่ app.n8n.cloud/register",
+      "แบบ self-host: ดึง Docker image มารันตามคู่มือที่ docs.n8n.io/hosting หรือดาวน์โหลด source code ทั้งหมดจาก GitHub (open-source ภายใต้ FairCode license)",
+      "ฟีเจอร์ระดับองค์กร (SSO, SAML, LDAP, version control) รองรับทั้งบน cloud และ self-hosted",
+      "⚠️ หมายเหตุความแม่นยำ: หน้าราคาโดยละเอียด (n8n.io/pricing) ไม่สามารถดึงมา verify ได้ตอนเขียนข้อมูลนี้ — เช็คราคาจริงอีกครั้งก่อนตัดสินใจ"
+    ]
   },
   {
     "id": "zapier",
     "name": "Zapier",
     "vendor": "Zapier",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://zapier.com",
     "strength": "9,000+ แอป, ง่ายสุด, มี Agents + MCP",
     "pricingModel": "แพงที่ volume สูง",
     "selfHost": false,
-    "summary": "ง่ายที่สุด รองรับแอปเยอะสุด แต่แพงเมื่อ volume สูง"
+    "summary": "ง่ายที่สุด รองรับแอปเยอะสุด แต่แพงเมื่อ volume สูง",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า zapier.com กด 'Start free' เพื่อสมัครบัญชี — ไม่ต้อง self-host เพราะเป็น SaaS ล้วน",
+      "องค์กรที่ต้องการแผนแบบกำหนดเอง/governance สำหรับ AI workflow ใช้ปุ่ม 'Talk to sales'",
+      "⚠️ หมายเหตุความแม่นยำ: หน้าราคาโดยละเอียดไม่สามารถดึงมา verify ได้ตอนเขียนข้อมูลนี้ — เช็คที่ zapier.com/pricing อีกครั้งก่อนตัดสินใจ"
+    ]
   },
   {
     "id": "make",
     "name": "Make",
     "vendor": "Make",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://www.make.com",
     "strength": "visual, คุ้มค่า, EU data center, มี Maia + AI Agents",
     "pricingModel": "คุ้มค่า",
     "selfHost": false,
-    "summary": "visual builder คุ้มค่า มี EU data center"
+    "summary": "visual builder คุ้มค่า มี EU data center",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า make.com กด 'Get started free' — ไม่ต้องใส่บัตรเครดิต แผนฟรีใช้ได้ไม่จำกัดเวลา",
+      "อัปเกรดเป็นแผนเสียเงินเมื่อต้องการ workflow run สูงขึ้นหรือฟีเจอร์ทีม — ดูรายละเอียดที่ make.com/pricing",
+      "องค์กรที่ต้องการคุยรายละเอียดก่อนตัดสินใจ ใช้ตัวเลือก 'คุยกับฝ่ายขาย' ได้เช่นกัน"
+    ]
   },
   {
     "id": "mcp-protocol",
     "name": "MCP (Model Context Protocol)",
     "vendor": "Anthropic",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://modelcontextprotocol.io",
     "strength": "มาตรฐานเปิดเชื่อม AI กับ tools",
     "pricingModel": "open standard",
     "selfHost": true,
-    "summary": "รองรับทั้ง 3 แพลตฟอร์มแล้ว — สัญญาณ future-proof ที่ดีกว่าจำนวนแอป"
+    "summary": "รองรับทั้ง 3 แพลตฟอร์มแล้ว — สัญญาณ future-proof ที่ดีกว่าจำนวนแอป",
+    "accessMethod": "self-hosted",
+    "installSteps": [
+      "MCP ไม่ใช่ 'บริการที่สมัครใช้' แต่เป็นมาตรฐานเปิด (open protocol) — เริ่มต้นที่ modelcontextprotocol.io เพื่อดูเอกสารสร้าง MCP server (เปิดให้ AI เข้าถึงข้อมูล/เครื่องมือขององค์กร) หรือ MCP client (แอปที่เชื่อมต่อ MCP server)",
+      "ถ้าแค่ต้องการ 'ใช้' ไม่ต้องสร้างเอง: เครื่องมือที่รองรับ MCP อยู่แล้ว เช่น Claude, ChatGPT, VS Code, Cursor — เปิดใช้งานผ่านการตั้งค่า MCP connector ในเครื่องมือนั้นๆ โดยตรง ไม่ต้องติดตั้งอะไรเพิ่มถ้า server ที่จะต่อมีอยู่แล้ว",
+      "องค์กรที่อยากทำ MCP server ของตัวเอง (เช่น เชื่อม AI เข้าฐานข้อมูลภายใน) ต้องมีทีม dev พัฒนาตามสเปกในเอกสาร 'Build servers'"
+    ]
   }
 ]
