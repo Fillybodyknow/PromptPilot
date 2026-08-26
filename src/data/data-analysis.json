@@ -4,39 +4,66 @@
     "name": "ChatGPT Advanced Data Analysis",
     "vendor": "OpenAI",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://chatgpt.com",
     "strength": "EDA, กราฟ, สรุปเชิงสถิติ",
-    "summary": "รันโค้ดวิเคราะห์ข้อมูลในตัว เหมาะ EDA และกราฟ"
+    "summary": "รันโค้ดวิเคราะห์ข้อมูลในตัว เหมาะ EDA และกราฟ",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า chatgpt.com สมัคร/ล็อกอินด้วยบัญชี OpenAI — ต้องมีแผน Plus ขึ้นไปเพื่อใช้ฟีเจอร์อัปโหลดไฟล์และรันโค้ดวิเคราะห์ข้อมูล",
+      "อัปโหลดไฟล์ CSV/Excel เข้าไปในแชทได้โดยตรง แล้วพิมพ์คำสั่งขอให้วิเคราะห์",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าราคา/แผนล่าสุดของ OpenAI มา verify ได้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คราคาที่ chatgpt.com/pricing อีกครั้งก่อนสมัคร"
+    ]
   },
   {
     "id": "claude-data-analysis",
     "name": "Claude (วิเคราะห์+โค้ด)",
     "vendor": "Anthropic",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://claude.ai",
     "strength": "วิเคราะห์ข้อมูลพร้อมเขียนโค้ดอธิบาย",
-    "summary": "วิเคราะห์ข้อมูลพร้อมโค้ดประกอบคำอธิบาย"
+    "summary": "วิเคราะห์ข้อมูลพร้อมโค้ดประกอบคำอธิบาย",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า claude.ai สมัคร/ล็อกอิน — แผน Free ใช้งานพื้นฐานได้ อัปเกรดเป็น Pro ($17-20/เดือน) ขึ้นไปเพื่อโควตาการใช้งานที่สูงขึ้นสำหรับไฟล์ข้อมูลขนาดใหญ่",
+      "อัปโหลดไฟล์ CSV/Excel เข้าแชทได้โดยตรง Claude จะเขียนโค้ด (Python) พร้อมรันและอธิบายผลลัพธ์ให้ในตัว",
+      "สำหรับทีม/องค์กร ใช้แผน Team/Enterprise เพื่อบริหารสิทธิ์ส่วนกลางและ SSO เหมือนหมวดอื่น"
+    ]
   },
   {
     "id": "julius-ai",
     "name": "Julius AI",
     "vendor": "Julius",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://julius.ai",
     "strength": "เฉพาะทางข้อมูล",
-    "summary": "เครื่องมือเฉพาะทางสำหรับงานข้อมูลโดยตรง"
+    "summary": "เครื่องมือเฉพาะทางสำหรับงานข้อมูลโดยตรง",
+    "accessMethod": "web",
+    "installSteps": [
+      "เข้า julius.ai สมัคร/ล็อกอิน แล้วอัปโหลดไฟล์ข้อมูล (CSV/Excel/Google Sheets) เพื่อเริ่มวิเคราะห์",
+      "⚠️ หมายเหตุความแม่นยำ: ไม่สามารถดึงหน้าเว็บ julius.ai มา verify ราคา/ขั้นตอนสมัครล่าสุดได้ (เว็บ block การเข้าถึงอัตโนมัติ) — เช็คหน้าเว็บจริงอีกครั้งก่อนสมัครใช้งานระดับองค์กร"
+    ]
   },
   {
     "id": "gemini-sheets",
     "name": "Gemini in Google Sheets",
     "vendor": "Google",
     "sourceLabel": "official",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
+    "url": "https://sheets.google.com",
     "strength": "ทำงานในสเปรดชีตโดยตรง",
-    "summary": "ผนวกเข้ากับ Google Sheets โดยตรง"
+    "summary": "ผนวกเข้ากับ Google Sheets โดยตรง",
+    "accessMethod": "sso-license",
+    "installSteps": [
+      "องค์กรต้องมี Google Workspace และสมัคร Gemini เป็น add-on แยกต่างหาก — ผู้ดูแลระบบ Workspace เป็นคนเปิดใช้งานให้ (ไม่ใช่แผน Google AI ส่วนบุคคล)",
+      "หลังเปิดใช้งาน ไอคอน Gemini จะปรากฏในแถบด้านข้างของ Google Sheets ทันที ล็อกอินด้วยบัญชี Workspace ขององค์กร",
+      "พิมพ์คำสั่งในแถบ Gemini เพื่อขอสรุป/สร้างกราฟ/เขียนสูตรจากข้อมูลในชีตที่เปิดอยู่ได้โดยตรง"
+    ]
   }
 ]
