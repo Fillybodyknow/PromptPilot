@@ -4,47 +4,72 @@
     "name": "Gemma 4 9B / Llama 5.1 8B / Phi-4 / gpt-oss-20b",
     "vendor": "หลายราย",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "vramTier": "≤8GB VRAM",
     "recommendedRunner": "Ollama หรือ LM Studio",
     "licenseNote": "Gemma = Gemma Terms (ไม่ใช่ Apache)",
-    "summary": "รันบนโน้ตบุ๊ก/การ์ดจอเล็กได้"
+    "summary": "รันบนโน้ตบุ๊ก/การ์ดจอเล็กได้",
+    "accessMethod": "self-hosted",
+    "installSteps": [
+      "ติดตั้ง Ollama: macOS/Linux รัน `curl -fsSL https://ollama.com/install.sh | sh`, Windows รัน `irm https://ollama.com/install.ps1 | iex` (หรือดาวน์โหลดตัวติดตั้งจาก ollama.com/download)",
+      "ดึงและรันโมเดลด้วยคำสั่งเดียว เช่น `ollama run gemma4` — ระบบจะดาวน์โหลดให้อัตโนมัติครั้งแรก",
+      "เรียกใช้ผ่าน REST API ได้ที่ localhost:11434 (เช่น `curl http://localhost:11434/api/chat -d '{\"model\":\"gemma4\",\"messages\":[...]}'`) เพื่อเชื่อมเข้าระบบ/แอปขององค์กร",
+      "ทางเลือกอื่น: ติดตั้ง LM Studio จาก lmstudio.ai (มี GUI ใช้ง่ายกว่า) แล้วใช้คำสั่ง `lms get` ดาวน์โหลดโมเดล และ `lms server start` เพื่อเปิด local server แบบ OpenAI-compatible",
+      "เครื่อง spec ระดับนี้ (≤8GB VRAM) รันได้บนโน้ตบุ๊กทั่วไปหรือการ์ดจอเล็ก เหมาะทดลองใช้ก่อนขยายไป tier ที่ใหญ่ขึ้น"
+    ]
   },
   {
     "id": "tier-24gb",
     "name": "Qwen 3.6 32B / DeepSeek V4 Flash / Gemma 3 27B",
     "vendor": "หลายราย",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "vramTier": "24GB (RTX 4090)",
     "recommendedRunner": "Ollama หรือ LM Studio",
     "licenseNote": "ตรวจ license เฉพาะรุ่น",
-    "summary": "all-rounder รันได้ด้วยการ์ดจอเดียว"
+    "summary": "all-rounder รันได้ด้วยการ์ดจอเดียว",
+    "accessMethod": "self-hosted",
+    "installSteps": [
+      "ขั้นตอนติดตั้งเหมือน tier ≤8GB ทุกประการ (Ollama หรือ LM Studio) — ต่างกันแค่ต้องมีการ์ดจอ 24GB VRAM ขึ้นไป (เช่น RTX 4090) เพื่อโหลดโมเดลขนาด 27-32B ได้ทั้งตัวใน memory",
+      "ตรวจสอบ license เฉพาะรุ่นก่อนใช้เชิงพาณิชย์ — แต่ละโมเดล (Qwen, DeepSeek, Gemma) มีเงื่อนไขต่างกัน ไม่ใช่ Apache 2.0 เหมือนกันหมด"
+    ]
   },
   {
     "id": "tier-128gb",
     "name": "gpt-oss-120b / Nemotron 3 Super / Qwen3-Coder-Next",
     "vendor": "หลายราย",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "vramTier": "128GB+ / Mac Ultra",
     "recommendedRunner": "Ollama หรือ LM Studio",
     "licenseNote": "ตรวจ license เฉพาะรุ่น",
-    "summary": "frontier MoE ระดับที่การ์ดจอทั่วไปยังเอื้อมไม่ถึง"
+    "summary": "frontier MoE ระดับที่การ์ดจอทั่วไปยังเอื้อมไม่ถึง",
+    "accessMethod": "self-hosted",
+    "installSteps": [
+      "ขั้นตอนติดตั้งเหมือนเดิม (Ollama/LM Studio) — แต่ต้องมีเครื่องระดับ workstation เช่น Mac Studio/Ultra ที่มี unified memory 128GB+ หรือเซิร์ฟเวอร์ที่มีการ์ดจอหลายใบรวมกัน เพราะโมเดลขนาดนี้ใหญ่เกินการ์ดจอผู้บริโภคทั่วไป",
+      "ควรให้ทีม IT ประเมิน spec เครื่องจริงก่อนซื้อ/จัดสรรงบ เพราะราคาเครื่องระดับนี้สูงมาก — ทดลองกับ tier เล็กกว่าก่อนเพื่อประเมินว่าคุ้มค่าจริงหรือไม่"
+    ]
   },
   {
     "id": "tier-server",
     "name": "GLM-5.2 (744B) / Kimi K3 (~1T) / DeepSeek V4 Pro (1.6T) / MiniMax M3",
     "vendor": "หลายราย",
     "sourceLabel": "community",
-    "verifiedAt": "2026-08-24",
+    "verifiedAt": "2026-08-25",
     "status": "active",
     "vramTier": "server / rented H100",
     "recommendedRunner": "Ollama หรือ LM Studio (OpenAI-compatible endpoint)",
     "licenseNote": "DeepSeek/MiniMax มี license เฉพาะ — ตรวจก่อนใช้",
-    "summary": "ระดับ frontier open ต้องเช่า/มี server H100"
+    "summary": "ระดับ frontier open ต้องเช่า/มี server H100",
+    "accessMethod": "self-hosted",
+    "installSteps": [
+      "โมเดลระดับนี้ (744B-1.6T พารามิเตอร์) ไม่สามารถรันบนเครื่องเดียวทั่วไปได้ ต้องเช่า cloud GPU (เช่น H100 หลายใบ) จากผู้ให้บริการอย่าง AWS, Google Cloud, RunPod หรือ Lambda Labs",
+      "ติดตั้ง Ollama/LM Studio บนเซิร์ฟเวอร์ที่เช่าไว้ตามขั้นตอนเดียวกับ tier เล็กกว่า แล้วเปิด endpoint แบบ OpenAI-compatible ให้ระบบภายในองค์กรเรียกใช้ผ่าน network ภายในเท่านั้น (ห้ามเปิดสู่อินเทอร์เน็ตสาธารณะ)",
+      "ตรวจสอบ license ของ DeepSeek/MiniMax ให้ชัดเจนก่อนใช้เชิงพาณิชย์ — มีเงื่อนไขเฉพาะที่ต่างจาก MIT/Apache ทั่วไป",
+      "ระดับนี้เหมาะกับองค์กรที่มีทีม infra จริงจังดูแล ไม่ใช่การตั้งค่าที่พนักงานทั่วไปทำเองได้"
+    ]
   }
 ]
