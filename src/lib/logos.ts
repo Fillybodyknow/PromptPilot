@@ -14,6 +14,16 @@ export interface VendorLogoInfo {
   src: string | null;
   /** Wide wordmark (icon + name baked in). Path under /public, or null. */
   longSrc: string | null;
+  /**
+   * true if longSrc has no real alpha transparency (a fully opaque image —
+   * checked per-file with PIL, min alpha == 255 across the whole image).
+   * Monochrome/invert treatments turn these into a solid white rectangle
+   * instead of a white silhouette, so callers must render opaque logos
+   * differently (e.g. on their own light chip, no invert filter).
+   * Confirmed opaque: AWS, ByteDance, Consensus, "SCB 10X" — everything
+   * else has real transparency.
+   */
+  longOpaque?: boolean;
   initials: string;
 }
 
@@ -37,6 +47,7 @@ export const VENDOR_LOGOS: Record<string, VendorLogoInfo> = {
   AWS: {
     src: "/images/app/AI_Model/AWS_Kiro/AWS_Kiro_logo.png",
     longSrc: "/images/app/AI_Model/AWS_Kiro/AWS_Kiro_long_logo.png",
+    longOpaque: true,
     initials: "AWS",
   },
   "Beautiful.ai": {
@@ -52,6 +63,7 @@ export const VENDOR_LOGOS: Record<string, VendorLogoInfo> = {
   ByteDance: {
     src: "/images/app/AI_Model/ByteDance/bytedance-logo.png",
     longSrc: "/images/app/AI_Model/ByteDance/bytedance-long_logo.png",
+    longOpaque: true,
     initials: "BD",
   },
   Cognition: {
@@ -62,6 +74,7 @@ export const VENDOR_LOGOS: Record<string, VendorLogoInfo> = {
   Consensus: {
     src: "/images/app/AI_Model/Consensus/Consensus_logo.png",
     longSrc: "/images/app/AI_Model/Consensus/Consensus_long_logo.png",
+    longOpaque: true,
     initials: "Cn",
   },
   DeepL: {
@@ -152,6 +165,7 @@ export const VENDOR_LOGOS: Record<string, VendorLogoInfo> = {
   "SCB 10X": {
     src: "/images/app/AI_Model/Typhoon/Typhoon_logo.png",
     longSrc: "/images/app/AI_Model/Typhoon/Typhoon_long_logo.png",
+    longOpaque: true,
     initials: "10X",
   },
   StackBlitz: {
