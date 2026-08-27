@@ -12,7 +12,7 @@ export function LogoMarquee() {
         {looped.map((vendor, i) => (
           <div
             key={`${vendor}-${i}`}
-            className="flex shrink-0 items-center opacity-60 transition-opacity hover:opacity-100"
+            className="flex shrink-0 items-center opacity-50 grayscale invert brightness-0 transition-all duration-300 hover:opacity-100 hover:filter-none"
           >
             <VendorLogo vendor={vendor} variant="long" size={22} />
           </div>
