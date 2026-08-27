@@ -3,6 +3,7 @@ import Image from "next/image";
 import { LogoMarquee } from "./LogoMarquee";
 import { PartnersSection } from "./PartnersSection";
 import { ThemeToggle } from "./ThemeToggle";
+import { withBasePath } from "@/lib/basePath";
 
 export function Header() {
   return (
@@ -16,7 +17,7 @@ export function Header() {
             className="flex items-center gap-2.5 font-semibold text-neutral-100 light:text-neutral-900"
           >
             <Image
-              src="/images/app/app_logo.png"
+              src={withBasePath("/images/app/app_logo.png")}
               alt="PromptPilot"
               width={32}
               height={32}

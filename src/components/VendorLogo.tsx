@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getVendorLogoInfo, getBadgeColor } from "@/lib/logos";
+import { withBasePath } from "@/lib/basePath";
 
 interface VendorLogoProps {
   vendor: string;
@@ -27,7 +28,7 @@ export function VendorLogo({
     if (!info.longSrc) return null;
     return (
       <Image
-        src={info.longSrc}
+        src={withBasePath(info.longSrc)}
         alt={vendor}
         title={vendor}
         width={160}
@@ -42,7 +43,7 @@ export function VendorLogo({
   if (info.src) {
     return (
       <Image
-        src={info.src}
+        src={withBasePath(info.src)}
         alt={vendor}
         title={vendor}
         width={size}

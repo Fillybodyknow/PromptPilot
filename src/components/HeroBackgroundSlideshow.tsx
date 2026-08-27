@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { withBasePath } from "@/lib/basePath";
 
-const BACKGROUNDS = Array.from(
-  { length: 8 },
-  (_, i) => `/images/app/backgrounds/${i + 1}.png`
+const BACKGROUNDS = Array.from({ length: 8 }, (_, i) =>
+  withBasePath(`/images/app/backgrounds/${i + 1}.png`)
 );
 
 const INTERVAL_MS = 6000;

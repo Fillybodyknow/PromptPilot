@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { withBasePath } from "@/lib/basePath";
 
 const notoSansThai = Noto_Sans_Thai({
   variable: "--font-sans",
@@ -14,8 +15,8 @@ export const metadata: Metadata = {
   title: "PromptPilot",
   description: "ฐานข้อมูลเปรียบเทียบเครื่องมือ AI รายหมวด สำหรับผู้ใช้ในประเทศไทย",
   icons: {
-    icon: "/images/app/app_logo.png",
-    apple: "/images/app/app_logo.png",
+    icon: withBasePath("/images/app/app_logo.png"),
+    apple: withBasePath("/images/app/app_logo.png"),
   },
 };
 

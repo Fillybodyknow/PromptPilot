@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { withBasePath } from "@/lib/basePath";
 
 interface Partner {
   name: string;
@@ -32,7 +33,7 @@ export function PartnersSection() {
           className="flex h-6 shrink-0 items-center rounded bg-white px-1.5 py-1 light:ring-1 light:ring-black/10"
         >
           <Image
-            src={partner.src}
+            src={withBasePath(partner.src)}
             alt={partner.name}
             title={partner.name}
             width={56}
