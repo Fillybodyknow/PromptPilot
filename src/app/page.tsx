@@ -134,7 +134,7 @@ export default function MainPage() {
 
       {/* CTA */}
       <section className="relative overflow-hidden border-t border-white/10">
-        <PhotoAuroraBackground />
+        <PhotoAuroraBackground objectPositionClassName="object-[center_30%]" />
         <div className="mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
           <p className="text-2xl font-semibold text-neutral-50 sm:text-3xl">
             พร้อมเริ่มใช้ AI ในองค์กรของคุณแล้วหรือยัง?
