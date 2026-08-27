@@ -1,16 +1,9 @@
 @import "tailwindcss";
 
-/* Tailwind v4 class-based dark mode — toggled via .dark on <html> (see ThemeToggle + no-flash script in layout.tsx) */
-@custom-variant dark (&:where(.dark, .dark *));
-
+/* Single dark theme — no light/dark toggle. */
 :root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-}
-
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #08070c;
+  --foreground: #f4f4f5;
 }
 
 @theme inline {
@@ -23,6 +16,59 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Gradient text — headline accent, used across hero sections */
+.text-gradient {
+  background: linear-gradient(90deg, #818cf8, #a78bfa, #e879f9);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Slow-drifting aurora blobs behind hero sections */
+@keyframes aurora-drift-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6%, -10%) scale(1.15);
+  }
+}
+
+@keyframes aurora-drift-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-8%, 8%) scale(1.1);
+  }
+}
+
+.animate-aurora-1 {
+  animation: aurora-drift-1 22s ease-in-out infinite;
+}
+
+.animate-aurora-2 {
+  animation: aurora-drift-2 26s ease-in-out infinite;
+}
+
+/* Entrance animation for hero content — staggered via inline animation-delay */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Logo marquee strip in the topbar */
@@ -44,7 +90,12 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
+  .animate-marquee,
+  .animate-aurora-1,
+  .animate-aurora-2 {
     animation: none;
+  }
+  .animate-fade-up {
+    animation-duration: 0.01ms !important;
   }
 }

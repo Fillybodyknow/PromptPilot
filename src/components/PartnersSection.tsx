@@ -24,8 +24,8 @@ const PARTNERS: Partner[] = [
  */
 export function PartnersSection() {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 border-t border-neutral-200 bg-neutral-50 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-950/60">
-      <span className="mr-1 text-xs font-medium whitespace-nowrap text-neutral-400 dark:text-neutral-600">
+    <div className="flex flex-wrap items-center justify-center gap-2 border-t border-white/10 bg-black/30 px-4 py-2">
+      <span className="mr-1 text-xs font-medium whitespace-nowrap text-neutral-500">
         พันธมิตรของเรา
       </span>
       {PARTNERS.map((partner) => (
