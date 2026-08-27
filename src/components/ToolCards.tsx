@@ -16,6 +16,24 @@ function formatCell(value: unknown): string {
   return String(value);
 }
 
+/** Install steps often embed a literal CLI command in backticks (e.g. self-hosted
+ * models) — render those segments as inline <code> instead of plain text so they
+ * stand out from the surrounding instruction instead of blurring together. */
+function renderStepText(step: string) {
+  return step.split(/(`[^`]+`)/g).map((part, i) =>
+    part.startsWith("`") && part.endsWith("`") ? (
+      <code
+        key={i}
+        className="rounded bg-white/10 px-1 py-0.5 font-mono text-[11px] break-all text-indigo-300 light:bg-black/10 light:text-indigo-700"
+      >
+        {part.slice(1, -1)}
+      </code>
+    ) : (
+      part
+    )
+  );
+}
+
 const STATUS_LABEL: Record<string, string> = {
   active: "เปิดใช้",
   closing: "กำลังปิด",
@@ -111,15 +129,22 @@ export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: T
                 <summary className="cursor-pointer text-xs font-medium text-neutral-400 hover:text-neutral-200 light:text-neutral-600 light:hover:text-neutral-900">
                   📦 วิธีเข้าถึง/ติดตั้ง
                 </summary>
-                <div className="mt-2 rounded border border-white/10 bg-black/40 p-2 light:border-black/10 light:bg-black/[0.03]">
+                <div className="mt-3 rounded-lg border border-white/10 bg-black/40 p-3.5 light:border-black/10 light:bg-black/[0.03]">
                   {typeof entry.accessMethod === "string" ? (
-                    <span className="mb-1.5 inline-block rounded px-1.5 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400 light:ring-neutral-300 light:text-neutral-600">
+                    <span className="mb-3 inline-block rounded px-1.5 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400 light:ring-neutral-300 light:text-neutral-600">
                       {ACCESS_METHOD_LABEL[entry.accessMethod] ?? entry.accessMethod}
                     </span>
                   ) : null}
-                  <ol className="list-decimal space-y-1 pl-4 text-xs leading-relaxed text-neutral-400 light:text-neutral-600">
+                  <ol className="space-y-3">
                     {(entry.installSteps as string[]).map((step, si) => (
-                      <li key={si}>{step}</li>
+                      <li key={si} className="flex gap-2.5">
+                        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-medium text-neutral-300 light:bg-black/10 light:text-neutral-700">
+                          {si + 1}
+                        </span>
+                        <span className="min-w-0 text-xs leading-relaxed text-neutral-400 light:text-neutral-600">
+                          {renderStepText(step)}
+                        </span>
+                      </li>
                     ))}
                   </ol>
                 </div>
