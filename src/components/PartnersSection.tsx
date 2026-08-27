@@ -38,6 +38,7 @@ export function PartnersSection() {
             width={56}
             height={16}
             className="h-4 w-auto object-contain"
+            style={{ width: "auto" }}
             unoptimized
           />
         </div>

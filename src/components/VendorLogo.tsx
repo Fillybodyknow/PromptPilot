@@ -33,7 +33,7 @@ export function VendorLogo({
         width={160}
         height={size}
         className={`w-auto shrink-0 object-contain ${className}`}
-        style={{ height: size }}
+        style={{ height: size, width: "auto" }}
         unoptimized
       />
     );
