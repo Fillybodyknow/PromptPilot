@@ -23,6 +23,7 @@ import openWeightSelfhosted from "@/data/open-weight-selfhosted.json";
 
 import businessWritingGuide from "@/data/guides/business-writing.json";
 import generalAssistantGuide from "@/data/guides/general-assistant.json";
+import codingModelsGuide from "@/data/guides/coding-models.json";
 import codingToolsGuide from "@/data/guides/coding-tools.json";
 import researchDocsGuide from "@/data/guides/research-docs.json";
 import dataAnalysisGuide from "@/data/guides/data-analysis.json";
@@ -55,12 +56,13 @@ const RAW_DATA: Record<string, unknown[]> = {
 };
 
 /**
- * แมป category key -> raw guide JSON (ยังไม่ validate) — ไม่ใช่ทุกหมวดจะมี guide
- * ตอนนี้มีแค่ business-writing เป็นตัวอย่าง หมวดอื่นจะทยอยเพิ่ม
+ * แมป category key -> raw guide JSON (ยังไม่ validate) — ครบทั้ง 13 หมวดแล้ว
+ * (coding-models เป็นหมวดสุดท้ายที่เพิ่ม)
  */
 const RAW_GUIDES: Record<string, unknown> = {
   "business-writing": businessWritingGuide,
   "general-assistant": generalAssistantGuide,
+  "coding-models": codingModelsGuide,
   "coding-tools": codingToolsGuide,
   "research-docs": researchDocsGuide,
   "data-analysis": dataAnalysisGuide,

@@ -1,0 +1,42 @@
+{
+  "categoryKey": "coding-models",
+  "howToUse": "หมวดนี้คือ \"เลือกโมเดลไหนเก่งเขียนโปรแกรมที่สุด\" ไม่ใช่ตัวเครื่องมือที่ใช้งานเองโดยตรง — พอเลือกโมเดลได้แล้ว ต้องไปเรียกใช้ผ่านอินเทอร์เฟซที่มีอยู่แล้ว เช่น เว็บแชท (claude.ai, chatgpt.com) หรือ agentic IDE/extension ในหมวด \"เขียนโปรแกรม — เครื่องมือ/IDE/Agent\" (coding-tools) ถ้าอยากรวมงานเขียนโค้ดเข้ากับ editor โดยตรง คะแนน benchmark อย่าง SWE-bench เปลี่ยนบ่อยทุกครั้งที่มีรุ่นใหม่ออก — ควรเช็คคะแนนล่าสุดก่อนผูกทีมกับโมเดลใดโมเดลหนึ่งระยะยาว ไม่ใช่เชื่อคะแนนที่บันทึกไว้ตลอดไป",
+  "accessMethod": "web",
+  "installSteps": [
+    "เปิดเว็บของอินเทอร์เฟซที่มีอยู่แล้ว (เช่น claude.ai, chatgpt.com) หรือ agentic IDE/extension จากหมวด \"เขียนโปรแกรม — เครื่องมือ/IDE/Agent\" — บัญชี/license ใช้ร่วมกับหมวดผู้ช่วยทั่วไปได้เลย ไม่ต้องสมัครแยก",
+    "เลือกโมเดลจากตัวเลือกในหน้าตั้งค่า/dropdown ให้ตรงกับชื่อที่แนะนำในหมวดนี้ (เช่น เลือก \"Claude Opus 5\" แทนโมเดลเริ่มต้น)",
+    "ถ้าเครื่องมือที่ใช้อยู่ไม่มีตัวเลือกโมเดลนี้โดยตรง (เช่น IDE บางตัวผูกกับโมเดลเดียว) ให้ดูหมวด \"เขียนโปรแกรม — เครื่องมือ/IDE/Agent\" หาตัวที่รองรับโมเดลนี้แทน"
+  ],
+  "dataHandlingNote": "โค้ดขององค์กรมักมีความลับทางธุรกิจ (business logic, API key, connection string) ปนอยู่ — ห้ามวางโค้ดที่มี credential/secret จริงลงในโมเดลที่ไม่ใช่ self-hosted โดยตรง ให้ลบ/แทนที่ค่าที่อ่อนไหวก่อนเสมอ และตรวจสอบนโยบายองค์กรว่าอนุญาตให้ source code ออกไปนอกเครื่อง/นอกองค์กรหรือไม่ก่อนใช้งานจริง — ถ้า repo อยู่ในกลุ่มควบคุมเข้มงวด (การเงิน, ระบบลูกค้า) ให้พิจารณาหมวด \"self-hosted\" แทน เพื่อไม่ให้โค้ดออกนอกเครือข่ายองค์กรเลย",
+  "promptTemplates": [
+    {
+      "task": "รีวิวโค้ดหาบั๊กและช่องโหว่ความปลอดภัย",
+      "badPrompt": "เช็คโค้ดนี้หน่อย",
+      "goodPrompt": "รีวิวโค้ดด้านล่างนี้ในฐานะ senior engineer โฟกัส 3 เรื่อง: (1) บั๊ก/edge case ที่พลาดได้ (2) ช่องโหว่ความปลอดภัย เช่น injection หรือการจัดการ secret ไม่ปลอดภัย (3) จุดที่ควร refactor เพื่อความอ่านง่าย ตอบเป็นลิสต์แยกตามหมวด ไม่ต้องเขียนโค้ดใหม่ทั้งหมด แค่ชี้จุดพร้อมเหตุผลสั้นๆ:\n\n[วางโค้ด]",
+      "why": "ระบุบทบาท (senior engineer) และแตกหมวดที่ต้องการ 3 เรื่องชัดเจน ทำให้ได้คำตอบที่ actionable และครอบคลุมทั้งบั๊ก/security/readability ในครั้งเดียว ต่างจาก prompt กว้างๆ ที่มักได้ comment ผิวเผินแบบ \"โค้ดดูดีนะ\"",
+      "tested": true,
+      "testedAt": "2026-08-27",
+      "testedWith": ["Claude Sonnet 5 (self-test โดยตัว AI เอง ระหว่างทำ guide นี้ — ยังไม่ผ่านการรีวิวจากพนักงานจริง)"],
+      "sampleOutput": "[โค้ดที่ใช้ทดสอบ]\ndef get_user(user_id):\n    query = \"SELECT * FROM users WHERE id = \" + user_id\n    cursor.execute(query)\n    return cursor.fetchone()\n\nผลลัพธ์จริงที่ได้:\n1. บั๊ก: ไม่มีการเช็คว่า user_id เป็นค่าว่าง/None ก่อนใช้ — ถ้าเรียกด้วยค่าว่างจะได้ query ผิดรูปแบบหรือ error ที่ไม่ชัดเจน\n2. ช่องโหว่ความปลอดภัย: ต่อ string เข้า SQL query โดยตรงเปิดช่องโหว่ SQL Injection ทันที — ควรเปลี่ยนเป็น parameterized query เช่น cursor.execute(\"SELECT * FROM users WHERE id = %s\", (user_id,))\n3. Refactor: ไม่มี try/except รอบ cursor.execute และไม่เห็นการปิด/คืน connection — ควรใช้ context manager (with) เพื่อกัน connection leak เวลาเกิด error ระหว่างทาง",
+      "sourceUrl": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+    },
+    {
+      "task": "เขียน unit test ให้ครอบคลุม edge case",
+      "badPrompt": "เขียน test ให้ function นี้หน่อย",
+      "goodPrompt": "เขียน unit test (pytest) ให้ function ด้านล่าง ให้ครอบคลุม: (1) กรณีปกติ (2) ค่าติดลบ/ขอบเขต (3) กรณีที่ควร throw error ตั้งชื่อ test ให้สื่อสิ่งที่ทดสอบชัดเจน ไม่ต้องอธิบายเพิ่ม แค่ให้โค้ด test:\n\n[วางโค้ดฟังก์ชัน]",
+      "why": "ระบุภาษา/framework ของ test (pytest) และแตก edge case ที่ต้องการ 3 กลุ่มชัดเจน ป้องกันปัญหาที่พบบ่อยเวลาสั่งกว้างๆ คือได้ test แค่ happy path เดียวแล้วดูเหมือนครอบคลุมทั้งที่ไม่ใช่",
+      "tested": true,
+      "testedAt": "2026-08-27",
+      "testedWith": ["Claude Sonnet 5 (self-test โดยตัว AI เอง ระหว่างทำ guide นี้ — ยังไม่ผ่านการรีวิวจากพนักงานจริง)"],
+      "sampleOutput": "[ฟังก์ชันที่ใช้ทดสอบ]\ndef divide(a, b):\n    return a / b\n\nผลลัพธ์จริงที่ได้:\nimport pytest\n\ndef test_divide_normal_case():\n    assert divide(10, 2) == 5\n\ndef test_divide_negative_numbers():\n    assert divide(-10, 2) == -5\n\ndef test_divide_by_zero_raises():\n    with pytest.raises(ZeroDivisionError):\n        divide(10, 0)\n\ndef test_divide_float_result():\n    assert divide(7, 2) == 3.5",
+      "sourceUrl": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+    },
+    {
+      "task": "อธิบายโค้ด/ระบบเก่าที่ไม่คุ้นเคยให้คนที่ไม่ใช่ dev เข้าใจ",
+      "badPrompt": "โค้ดนี้ทำอะไร",
+      "goodPrompt": "อธิบายโค้ดด้านล่างนี้เป็นภาษาที่คนทำงานทั่วไปเข้าใจได้ (ไม่ใช่โปรแกรมเมอร์) แบ่งเป็น 3 ส่วน: จุดประสงค์หลักของโค้ดนี้คืออะไร, ทำงานเป็นขั้นตอนอย่างไรแบบสรุปสั้น, มีจุดเสี่ยง/ข้อจำกัดอะไรที่ควรรู้ก่อนจะแก้ไขต่อ ไม่ต้องอธิบายทีละบรรทัด:\n\n[วางโค้ด]",
+      "why": "ระบุกลุ่มผู้อ่าน (ไม่ใช่ dev) และกำหนดโครงคำตอบ 3 ส่วนชัดเจน ทำให้ได้คำอธิบายที่ non-technical stakeholder นำไปใช้ตัดสินใจได้จริง ต่างจากถามกว้างๆ ที่มักได้คำตอบเทคนิคจ๋าเกินกว่าจะเข้าใจ — ยังไม่ได้ทดสอบผลจริงกับโค้ด legacy ที่ซับซ้อนมากในสถานการณ์จริง",
+      "tested": false
+    }
+  ]
+}
