@@ -12,13 +12,14 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
 
   return (
     <>
-      {/* Decorative photo banner — lives in the layout (not the swapping content area)
-          so it stays mounted and doesn't re-trigger as you switch categories. */}
-      <section className="relative h-64 overflow-hidden sm:h-80 lg:h-96" aria-hidden>
+      {/* Fixed full-viewport photo background for the whole /explore section — stays put
+          as the page scrolls (Header's backdrop-blur picks up a frosted hint of it too).
+          A strong scrim keeps the sidebar/cards on top legible. Only mounted while an
+          /explore route is active, so it never bleeds into other pages. */}
+      <div className="fixed inset-0 -z-10" aria-hidden>
         <HeroBackgroundSlideshow />
-        <div className="absolute inset-0 bg-black/65" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#08070c]" />
-      </section>
+        <div className="absolute inset-0 bg-black/80" />
+      </div>
 
       <div className="mx-auto max-w-7xl px-6 py-8 sm:py-10">
         <div className="mb-6 lg:hidden">
