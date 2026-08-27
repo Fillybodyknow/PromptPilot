@@ -1,9 +1,12 @@
 import type { ColumnDef } from "@/lib/categories";
 import { VendorLogo } from "./VendorLogo";
+import { DEFAULT_GROUP_ACCENT, type GroupAccent } from "@/lib/groupAccent";
 
 interface ToolCardsProps {
   entries: Record<string, unknown>[];
   columns: ColumnDef[];
+  /** Per-category-group color accent — ties each card's hover state to its group's hue. */
+  accent?: GroupAccent;
 }
 
 function formatCell(value: unknown): string {
@@ -36,7 +39,7 @@ const ACCESS_METHOD_LABEL: Record<string, string> = {
   "sso-license": "ต้องขอ license ผ่าน SSO องค์กร",
 };
 
-export function ToolCards({ entries, columns }: ToolCardsProps) {
+export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: ToolCardsProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {entries.map((entry, i) => {
@@ -45,7 +48,7 @@ export function ToolCards({ entries, columns }: ToolCardsProps) {
         return (
           <div
             key={String(entry.id)}
-            className="animate-fade-up group flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:-translate-y-1 hover:border-indigo-400/30 hover:bg-white/[0.06]"
+            className={`animate-fade-up group flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:-translate-y-1 hover:bg-white/[0.06] ${accent.hoverBorder}`}
             style={{ animationDelay: `${Math.min(i, 12) * 60}ms` }}
           >
             <div className="flex items-start justify-between gap-2">
@@ -58,7 +61,7 @@ export function ToolCards({ entries, columns }: ToolCardsProps) {
                         href={entry.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="underline decoration-neutral-600 underline-offset-2 hover:text-indigo-400 hover:decoration-indigo-400"
+                        className={`underline decoration-neutral-600 underline-offset-2 ${accent.hoverText}`}
                       >
                         {String(entry.name)} ↗
                       </a>

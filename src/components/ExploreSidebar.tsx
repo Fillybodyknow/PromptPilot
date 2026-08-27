@@ -3,16 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const GROUP_ICON: Record<string, string> = {
-  ผู้ช่วยทั่วไป: "💬",
-  งานเอกสาร: "📄",
-  งานพัฒนาระบบ: "💻",
-  งานข้อมูล: "📊",
-  งานออกแบบ: "🎨",
-  งานสื่อสาร: "🎙️",
-  งานระบบ: "⚙️",
-};
+import { getGroupAccent } from "@/lib/groupAccent";
 
 interface SidebarCategory {
   key: string;
@@ -36,19 +27,22 @@ export function ExploreSidebar({ groups, variant = "sidebar" }: ExploreSidebarPr
   const [query, setQuery] = useState("");
 
   if (variant === "mobile") {
-    const flat = groups.flatMap((g) => g.categories);
+    const flat = groups.flatMap((g) =>
+      g.categories.map((c) => ({ ...c, group: g.group }))
+    );
     return (
       <div className="flex gap-2 overflow-x-auto pb-1">
         {flat.map((category) => {
           const href = `/explore/${category.key}`;
           const active = pathname === href;
+          const accent = getGroupAccent(category.group);
           return (
             <Link
               key={category.key}
               href={href}
               className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                 active
-                  ? "bg-indigo-500 text-white"
+                  ? accent.solid
                   : "bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200"
               }`}
             >
@@ -91,38 +85,41 @@ export function ExploreSidebar({ groups, variant = "sidebar" }: ExploreSidebarPr
         <p className="px-1 text-sm text-neutral-500">ไม่พบหมวดหมู่ที่ค้นหา</p>
       ) : (
         <nav className="space-y-6">
-          {filteredGroups.map((group) => (
-            <div key={group.group}>
-              <div className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                <span aria-hidden>{GROUP_ICON[group.group] ?? "🔹"}</span>
-                {group.group}
-              </div>
-              <div className="space-y-0.5">
-                {group.categories.map((category) => {
-                  const href = `/explore/${category.key}`;
-                  const active = pathname === href;
-                  return (
-                    <Link
-                      key={category.key}
-                      href={href}
-                      className={`flex items-center justify-between gap-2 rounded-lg border-l-2 py-2 pr-3 pl-3 text-sm transition-all ${
-                        active
-                          ? "border-indigo-400 bg-indigo-500/10 font-medium text-indigo-300"
-                          : "border-transparent text-neutral-400 hover:translate-x-0.5 hover:border-white/20 hover:bg-white/5 hover:text-neutral-100"
-                      }`}
-                    >
-                      <span>{category.titleTh}</span>
-                      <span
-                        className={`text-xs tabular-nums ${active ? "text-indigo-400" : "text-neutral-600"}`}
+          {filteredGroups.map((group) => {
+            const accent = getGroupAccent(group.group);
+            return (
+              <div key={group.group}>
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                  <span aria-hidden>{accent.icon}</span>
+                  {group.group}
+                </div>
+                <div className="space-y-0.5">
+                  {group.categories.map((category) => {
+                    const href = `/explore/${category.key}`;
+                    const active = pathname === href;
+                    return (
+                      <Link
+                        key={category.key}
+                        href={href}
+                        className={`flex items-center justify-between gap-2 rounded-lg border-l-2 py-2 pr-3 pl-3 text-sm transition-all ${
+                          active
+                            ? `${accent.active} font-medium`
+                            : "border-transparent text-neutral-400 hover:translate-x-0.5 hover:border-white/20 hover:bg-white/5 hover:text-neutral-100"
+                        }`}
                       >
-                        {category.count}
-                      </span>
-                    </Link>
-                  );
-                })}
+                        <span>{category.titleTh}</span>
+                        <span
+                          className={`text-xs tabular-nums ${active ? accent.count : "text-neutral-600"}`}
+                        >
+                          {category.count}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
       )}
     </div>

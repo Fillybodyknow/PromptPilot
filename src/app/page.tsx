@@ -3,36 +3,51 @@ import { getAllCategoriesWithEntries, getCategoriesGrouped } from "@/lib/data";
 import { PhotoAuroraBackground } from "@/components/PhotoAuroraBackground";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
+// Each benefit gets its own hue (icon chip + hover border) instead of a single
+// repeated indigo/fuchsia treatment — full class strings are literal so Tailwind's
+// scanner can find and generate them.
 const BENEFITS = [
   {
     icon: "⚡",
     title: "เพิ่มประสิทธิภาพการทำงาน",
     description: "ลดเวลาทำงานซ้ำๆ ให้ทีมโฟกัสงานที่สร้างมูลค่าได้มากขึ้น",
+    chip: "bg-gradient-to-br from-amber-500/25 to-amber-600/10",
+    hoverBorder: "hover:border-amber-400/30",
   },
   {
     icon: "💰",
     title: "ลดต้นทุนดำเนินงาน",
     description: "อัตโนมัติงานที่ใช้แรงงาน/เวลามาก ลดค่าใช้จ่ายในระยะยาว",
+    chip: "bg-gradient-to-br from-emerald-500/25 to-emerald-600/10",
+    hoverBorder: "hover:border-emerald-400/30",
   },
   {
     icon: "🎯",
     title: "ตัดสินใจแม่นยำขึ้น",
     description: "วิเคราะห์ข้อมูลจำนวนมากได้เร็ว ช่วยตัดสินใจบนพื้นฐานข้อมูลจริง",
+    chip: "bg-gradient-to-br from-sky-500/25 to-sky-600/10",
+    hoverBorder: "hover:border-sky-400/30",
   },
   {
     icon: "🚀",
     title: "เพิ่มความได้เปรียบทางการแข่งขัน",
     description: "องค์กรที่ปรับใช้ AI เร็วมักตอบสนองตลาดและลูกค้าได้ไวกว่าคู่แข่ง",
+    chip: "bg-gradient-to-br from-fuchsia-500/25 to-fuchsia-600/10",
+    hoverBorder: "hover:border-fuchsia-400/30",
   },
   {
     icon: "🧠",
     title: "ปลดปล่อยศักยภาพพนักงาน",
     description: "ให้ AI ช่วยงานซ้ำซาก พนักงานมีเวลาคิดงานเชิงกลยุทธ์มากขึ้น",
+    chip: "bg-gradient-to-br from-violet-500/25 to-violet-600/10",
+    hoverBorder: "hover:border-violet-400/30",
   },
   {
     icon: "🤝",
     title: "ยกระดับประสบการณ์ลูกค้า",
     description: "ตอบสนองลูกค้าได้เร็วและตรงจุดขึ้นด้วยผู้ช่วย AI",
+    chip: "bg-gradient-to-br from-rose-500/25 to-rose-600/10",
+    hoverBorder: "hover:border-rose-400/30",
   },
 ];
 
@@ -120,9 +135,11 @@ export default function MainPage() {
           {BENEFITS.map((benefit) => (
             <div
               key={benefit.title}
-              className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:-translate-y-1 hover:border-indigo-400/30 hover:bg-white/[0.06]"
+              className={`group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:-translate-y-1 hover:bg-white/[0.06] ${benefit.hoverBorder}`}
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/20 text-xl transition-transform group-hover:scale-110">
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl transition-transform group-hover:scale-110 ${benefit.chip}`}
+              >
                 {benefit.icon}
               </div>
               <h3 className="mt-4 font-medium text-neutral-100">{benefit.title}</h3>
