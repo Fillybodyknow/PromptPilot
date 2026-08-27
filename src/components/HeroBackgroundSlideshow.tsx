@@ -32,7 +32,7 @@ export function HeroBackgroundSlideshow() {
           fill
           unoptimized
           priority={i === 0}
-          className="object-cover brightness-110 transition-opacity ease-in-out"
+          className="object-cover object-top brightness-110 transition-opacity ease-in-out"
           style={{
             opacity: i === index ? 1 : 0,
             transitionDuration: `${FADE_MS}ms`,
