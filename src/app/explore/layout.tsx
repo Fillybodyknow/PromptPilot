@@ -14,7 +14,7 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
     <>
       {/* Decorative photo banner — lives in the layout (not the swapping content area)
           so it stays mounted and doesn't re-trigger as you switch categories. */}
-      <section className="relative h-40 overflow-hidden sm:h-52" aria-hidden>
+      <section className="relative h-64 overflow-hidden sm:h-80 lg:h-96" aria-hidden>
         <HeroBackgroundSlideshow />
         <div className="absolute inset-0 bg-black/65" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#08070c]" />
