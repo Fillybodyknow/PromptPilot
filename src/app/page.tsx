@@ -157,7 +157,7 @@ export default function MainPage() {
       <section className="relative overflow-hidden border-t border-white/10">
         <PhotoAuroraBackground
           objectPositionClassName="object-[center_30%]"
-          bottomFadeHeightClassName="h-6 sm:h-10"
+          bottomFadeHeightClassName="h-3 sm:h-5"
         />
         <div className="mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
           <p className="text-2xl font-semibold text-neutral-50 sm:text-3xl">
