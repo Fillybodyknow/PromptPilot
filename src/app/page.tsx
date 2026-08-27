@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getAllCategoriesWithEntries, getCategoriesGrouped } from "@/lib/data";
-import { AuroraBackground } from "@/components/AuroraBackground";
+import { PhotoAuroraBackground } from "@/components/PhotoAuroraBackground";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 const BENEFITS = [
@@ -45,7 +45,7 @@ export default function MainPage() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <AuroraBackground />
+        <PhotoAuroraBackground />
         <div className="mx-auto max-w-4xl px-6 py-20 text-center sm:py-28">
           <span className="animate-fade-up inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
             🤖 ยุคที่ AI เปลี่ยนวิธีทำงานขององค์กรทั่วโลก
@@ -134,7 +134,7 @@ export default function MainPage() {
 
       {/* CTA */}
       <section className="relative overflow-hidden border-t border-white/10">
-        <AuroraBackground />
+        <PhotoAuroraBackground />
         <div className="mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
           <p className="text-2xl font-semibold text-neutral-50 sm:text-3xl">
             พร้อมเริ่มใช้ AI ในองค์กรของคุณแล้วหรือยัง?

@@ -1,13 +1,20 @@
-import { getCategoriesGrouped } from "@/lib/data";
+import { getCategoriesGrouped, getAllCategoriesWithEntries } from "@/lib/data";
 import { ExploreSidebar } from "@/components/ExploreSidebar";
 import { HeroBackgroundSlideshow } from "@/components/HeroBackgroundSlideshow";
 
 export default function ExploreLayout({ children }: { children: React.ReactNode }) {
   // Strip down to plain serializable fields — CategoryMeta carries a Zod schema
   // object, which can't cross the server/client boundary as a prop.
+  const categoriesWithEntries = getAllCategoriesWithEntries();
+  const entryCount = (key: string) =>
+    categoriesWithEntries.find((c) => c.key === key)?.entries.length ?? 0;
   const groups = getCategoriesGrouped().map((g) => ({
     group: g.group,
-    categories: g.categories.map((c) => ({ key: c.key, titleTh: c.titleTh })),
+    categories: g.categories.map((c) => ({
+      key: c.key,
+      titleTh: c.titleTh,
+      count: entryCount(c.key),
+    })),
   }));
 
   return (
@@ -24,7 +31,7 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
       <div className="mx-auto max-w-7xl px-6 py-8 sm:py-10">
         {/* Frosted glass panel — lets the fixed photo background show through blurred,
             same language as Header's backdrop-blur, while keeping content legible. */}
-        <div className="rounded-3xl border border-white/10 bg-black/15 p-5 backdrop-blur-2xl sm:p-8">
+        <div className="rounded-3xl border border-white/10 bg-black/50 p-5 sm:p-8">
           <div className="mb-6 lg:hidden">
             <ExploreSidebar groups={groups} variant="mobile" />
           </div>
