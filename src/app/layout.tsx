@@ -17,7 +17,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="th" className={`${notoSansThai.variable} h-full antialiased`}>
+    <html
+      lang="th"
+      className={`${notoSansThai.variable} h-full antialiased`}
+      // The no-flash script below deliberately adds a "light" class to this
+      // element before React hydrates, so its className will legitimately
+      // differ from what was server-rendered — telling React to ignore that
+      // one mismatch here (not the same thing as attribute correctness).
+      suppressHydrationWarning
+    >
       <body className="flex min-h-full flex-col bg-background text-foreground">
         {/* Applies the saved theme class before hydration so there's no dark->light
             flash. Default (no localStorage entry) stays dark — matches the site's
