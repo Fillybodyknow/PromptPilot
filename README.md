@@ -54,3 +54,4 @@ JSON ยังตรง schema ก่อน commit
   Vals AI แล้วเปิด PR ให้รีวิวก่อน merge
 - Git-based CMS (เช่น Decap CMS) ให้ทีมที่ไม่ใช่ dev แก้ JSON ผ่านหน้าเว็บได้
 - Filter/sort ฝั่ง client ด้วย TanStack Table + Fuse.js
+"# PromptPilot" 
