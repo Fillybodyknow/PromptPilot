@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  // Lazy initializer reads the real DOM state on the client (after the no-flash
-  // script in layout.tsx has already set .dark) — null only during SSR, where
-  // `document` doesn't exist yet, so no effect/extra render is needed to sync it.
-  const [isDark, setIsDark] = useState<boolean | null>(() =>
-    typeof document === "undefined"
-      ? null
-      : document.documentElement.classList.contains("dark")
-  );
+  // Must start as null on BOTH server and the client's first (hydration) render —
+  // `document` doesn't exist during SSR, so the server always renders nothing here.
+  // Reading the real DOM state via a lazy useState initializer instead of this effect
+  // would make the client's first render diverge from that (it'd see .dark already set
+  // by the no-flash script and render immediately), causing a hydration mismatch.
+  // Syncing from an external system (the DOM class set outside React, before hydration)
+  // is exactly the case React's docs carve out as a legitimate use of an effect.
+  const [isDark, setIsDark] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Post-mount sync with DOM state (see comment above) — no way to read this
+    // without a hydration mismatch, so this is a deliberate exception.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsDark(document.documentElement.classList.contains("dark"));
+  }, []);
 
   function toggle() {
     const next = !document.documentElement.classList.contains("dark");

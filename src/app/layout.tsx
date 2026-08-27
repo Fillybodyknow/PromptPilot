@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -15,7 +16,10 @@ export const metadata: Metadata = {
 };
 
 // Sets .dark on <html> before first paint based on saved preference (or system default)
-// so the page never flashes the wrong theme. Runs synchronously via a plain <script> tag.
+// so the page never flashes the wrong theme. Loaded via next/script (strategy="beforeInteractive")
+// rather than a raw <script> tag — React never executes script elements it renders itself, and
+// beforeInteractive is Next's supported mechanism for a script that must run before hydration;
+// it's auto-hoisted into <head> regardless of where the component sits in the tree.
 const NO_FLASH_THEME_SCRIPT = `
 (function () {
   try {
@@ -33,10 +37,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${notoSansThai.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }} />
-      </head>
       <body className="flex min-h-full flex-col bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+        <Script
+          id="no-flash-theme"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }}
+        />
         <Header />
         <div className="flex-1">{children}</div>
         <Footer />
