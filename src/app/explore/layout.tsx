@@ -24,7 +24,7 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
       <div className="mx-auto max-w-7xl px-6 py-8 sm:py-10">
         {/* Frosted glass panel — lets the fixed photo background show through blurred,
             same language as Header's backdrop-blur, while keeping content legible. */}
-        <div className="rounded-3xl border border-white/10 bg-black/30 p-5 backdrop-blur-2xl sm:p-8">
+        <div className="rounded-3xl border border-white/10 bg-black/15 p-5 backdrop-blur-2xl sm:p-8">
           <div className="mb-6 lg:hidden">
             <ExploreSidebar groups={groups} variant="mobile" />
           </div>
