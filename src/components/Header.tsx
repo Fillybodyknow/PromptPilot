@@ -23,7 +23,7 @@ export function Header() {
               className="rounded-lg"
               unoptimized
             />
-            <span className="hidden sm:inline">แนะนำการใช้ AI</span>
+            <span className="hidden sm:inline">PromptPilot</span>
           </Link>
         </div>
 

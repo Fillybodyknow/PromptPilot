@@ -11,8 +11,12 @@ const notoSansThai = Noto_Sans_Thai({
 });
 
 export const metadata: Metadata = {
-  title: "แนะนำการใช้ AI",
+  title: "PromptPilot",
   description: "ฐานข้อมูลเปรียบเทียบเครื่องมือ AI รายหมวด สำหรับผู้ใช้ในประเทศไทย",
+  icons: {
+    icon: "/images/app/app_logo.png",
+    apple: "/images/app/app_logo.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

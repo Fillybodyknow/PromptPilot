@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="border-t border-white/10 bg-black/30 light:border-black/10 light:bg-neutral-50">
       <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-neutral-500">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <p>แนะนำการใช้ AI — ฐานข้อมูลเปรียบเทียบเครื่องมือ AI รายหมวด สำหรับผู้ใช้ในประเทศไทย</p>
+          <p>PromptPilot — ฐานข้อมูลเปรียบเทียบเครื่องมือ AI รายหมวด สำหรับผู้ใช้ในประเทศไทย</p>
           <div className="flex gap-4 text-neutral-400 light:text-neutral-500">
             <Link
               href="/"
