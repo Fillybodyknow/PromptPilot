@@ -16,30 +16,34 @@ const PARTNERS: Partner[] = [
   { name: "Total Quality Services Co., Ltd.", src: "/images/app/company/5_TQS_PNG.png" },
 ];
 
+/**
+ * Compact partner-logo strip for the Header — kept as its own row, separate
+ * from the app logo (per request). Each logo sits on a small white chip
+ * since some files are transparent PNGs with dark-colored marks that would
+ * disappear directly against the header's dark-mode background.
+ */
 export function PartnersSection() {
   return (
-    <section className="mb-14 sm:mb-20">
-      <h2 className="mb-6 text-center text-sm font-semibold tracking-wide text-neutral-500 uppercase dark:text-neutral-500">
+    <div className="flex flex-wrap items-center justify-center gap-2 border-t border-neutral-200 bg-neutral-50 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-950/60">
+      <span className="mr-1 text-xs font-medium whitespace-nowrap text-neutral-400 dark:text-neutral-600">
         พันธมิตรของเรา
-      </h2>
-      <div className="flex flex-wrap items-center justify-center gap-4">
-        {PARTNERS.map((partner) => (
-          <div
-            key={partner.name}
-            className="flex h-20 w-40 items-center justify-center rounded-xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800"
-          >
-            <Image
-              src={partner.src}
-              alt={partner.name}
-              title={partner.name}
-              width={128}
-              height={64}
-              className="max-h-full w-auto object-contain"
-              unoptimized
-            />
-          </div>
-        ))}
-      </div>
-    </section>
+      </span>
+      {PARTNERS.map((partner) => (
+        <div
+          key={partner.name}
+          className="flex h-7 shrink-0 items-center justify-center rounded bg-white px-2 py-1 shadow-sm"
+        >
+          <Image
+            src={partner.src}
+            alt={partner.name}
+            title={partner.name}
+            width={72}
+            height={24}
+            className="h-5 w-auto object-contain"
+            unoptimized
+          />
+        </div>
+      ))}
+    </div>
   );
 }

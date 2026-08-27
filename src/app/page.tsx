@@ -1,7 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getAllCategoriesWithEntries, getCategoriesGrouped } from "@/lib/data";
-import { PartnersSection } from "@/components/PartnersSection";
+import { HeroBackgroundSlideshow } from "@/components/HeroBackgroundSlideshow";
 
 const GROUP_ICON: Record<string, string> = {
   ผู้ช่วยทั่วไป: "💬",
@@ -22,18 +21,11 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Hero — full-bleed background photo, scrim + fade so it blends into the page below */}
+      {/* Hero — cross-fading background photo carousel (all 8), scrim + fade so it blends into the page below */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <Image
-            src="/images/app/backgrounds/4.png"
-            alt=""
-            fill
-            priority
-            unoptimized
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-white/88 dark:bg-neutral-950/85" />
+          <HeroBackgroundSlideshow />
+          <div className="absolute inset-0 bg-white/45 dark:bg-neutral-950/55" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-neutral-950" />
         </div>
 
@@ -81,8 +73,6 @@ export default function HomePage() {
       </section>
 
       <main className="mx-auto max-w-6xl px-6 pb-14 sm:pb-20">
-        <PartnersSection />
-
         {/* Category groups */}
         {groups.map((group) => (
           <div key={group.group} className="mb-12">

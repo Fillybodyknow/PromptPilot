@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ThemeToggle } from "./ThemeToggle";
 import { LogoMarquee } from "./LogoMarquee";
+import { PartnersSection } from "./PartnersSection";
 
 export function Header() {
   return (
@@ -34,6 +35,7 @@ export function Header() {
         <ThemeToggle />
       </div>
 
+      <PartnersSection />
       <LogoMarquee />
     </header>
   );
