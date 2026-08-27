@@ -66,7 +66,7 @@ export default function MainPage() {
             🤖 ยุคที่ AI เปลี่ยนวิธีทำงานขององค์กรทั่วโลก
           </span>
           <h1
-            className="animate-fade-up mt-6 text-4xl leading-tight font-semibold tracking-tight sm:text-6xl"
+            className="animate-fade-up mt-6 text-4xl leading-tight font-semibold tracking-tight text-neutral-50 sm:text-6xl"
             style={{ animationDelay: "80ms" }}
           >
             ปลดล็อกศักยภาพองค์กร
