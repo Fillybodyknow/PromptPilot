@@ -17,29 +17,27 @@ const PARTNERS: Partner[] = [
 ];
 
 /**
- * Compact partner-logo strip for the Header — kept as its own row, separate
- * from the app logo (per request). Each logo sits on a small white chip
- * since some files are transparent PNGs with dark-colored marks that would
- * disappear directly against the header's dark-mode background.
+ * Compact inline partner-logo chips — sits in the same row as the app logo in
+ * Header, to its left, separated by a divider. Small white chips (fixed
+ * height, auto width) keep each logo's real colors legible and undistorted
+ * regardless of its own aspect ratio or background transparency. Hidden below
+ * `lg` since the header row has no space for it at narrower widths.
  */
 export function PartnersSection() {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 border-t border-white/10 bg-black/30 px-4 py-2">
-      <span className="mr-1 text-xs font-medium whitespace-nowrap text-neutral-500">
-        พันธมิตรของเรา
-      </span>
+    <div className="hidden items-center gap-1.5 lg:flex" aria-label="พันธมิตรของเรา">
       {PARTNERS.map((partner) => (
         <div
           key={partner.name}
-          className="flex h-7 shrink-0 items-center justify-center rounded bg-white px-2 py-1 shadow-sm"
+          className="flex h-6 shrink-0 items-center rounded bg-white px-1.5 py-1"
         >
           <Image
             src={partner.src}
             alt={partner.name}
             title={partner.name}
-            width={72}
-            height={24}
-            className="h-5 w-auto object-contain"
+            width={56}
+            height={16}
+            className="h-4 w-auto object-contain"
             unoptimized
           />
         </div>
