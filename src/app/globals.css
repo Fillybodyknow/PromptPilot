@@ -1,9 +1,19 @@
 @import "tailwindcss";
 
-/* Single dark theme — no light/dark toggle. */
+/* Dark-first theme with an opt-in light mode — toggled via a `.light` class on
+   <html> (see ThemeToggle.tsx), not `prefers-color-scheme`. Default (no class)
+   stays the existing dark "AI-era" look; `light:` is a custom variant so every
+   dark utility already in the codebase keeps working unchanged as the base. */
+@custom-variant light (&:where(.light, .light *));
+
 :root {
   --background: #08070c;
   --foreground: #f4f4f5;
+}
+
+:root.light {
+  --background: #fafafa;
+  --foreground: #18181b;
 }
 
 @theme inline {
@@ -16,6 +26,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 /* Gradient text — headline accent, used across hero sections */

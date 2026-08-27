@@ -29,7 +29,7 @@ export function PartnersSection() {
       {PARTNERS.map((partner) => (
         <div
           key={partner.name}
-          className="flex h-6 shrink-0 items-center rounded bg-white px-1.5 py-1"
+          className="flex h-6 shrink-0 items-center rounded bg-white px-1.5 py-1 light:ring-1 light:ring-black/10"
         >
           <Image
             src={partner.src}

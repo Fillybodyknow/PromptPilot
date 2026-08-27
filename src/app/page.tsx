@@ -123,10 +123,10 @@ export default function MainPage() {
       {/* Benefits */}
       <section className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-sm font-semibold tracking-wide text-indigo-400 uppercase">
+          <h2 className="text-sm font-semibold tracking-wide text-indigo-400 uppercase light:text-indigo-600">
             ทำไมองค์กรต้องใช้ AI
           </h2>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-neutral-50 sm:text-4xl">
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-neutral-50 sm:text-4xl light:text-neutral-900">
             ประโยชน์ที่จับต้องได้จริง
           </p>
         </div>
@@ -135,15 +135,19 @@ export default function MainPage() {
           {BENEFITS.map((benefit) => (
             <div
               key={benefit.title}
-              className={`group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:-translate-y-1 hover:bg-white/[0.06] ${benefit.hoverBorder}`}
+              className={`group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:-translate-y-1 hover:bg-white/[0.06] light:border-black/10 light:bg-black/[0.02] light:hover:bg-black/[0.04] ${benefit.hoverBorder}`}
             >
               <div
                 className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl transition-transform group-hover:scale-110 ${benefit.chip}`}
               >
                 {benefit.icon}
               </div>
-              <h3 className="mt-4 font-medium text-neutral-100">{benefit.title}</h3>
-              <p className="mt-1.5 text-sm text-neutral-400">{benefit.description}</p>
+              <h3 className="mt-4 font-medium text-neutral-100 light:text-neutral-900">
+                {benefit.title}
+              </h3>
+              <p className="mt-1.5 text-sm text-neutral-400 light:text-neutral-600">
+                {benefit.description}
+              </p>
             </div>
           ))}
         </div>

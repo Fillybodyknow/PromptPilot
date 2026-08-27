@@ -24,10 +24,14 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  active: "bg-emerald-950/40 text-emerald-300 ring-emerald-800",
-  closing: "bg-amber-950/40 text-amber-300 ring-amber-800",
-  closed: "bg-red-950/40 text-red-300 ring-red-800",
-  restricted: "bg-amber-950/40 text-amber-300 ring-amber-800",
+  active:
+    "bg-emerald-950/40 text-emerald-300 ring-emerald-800 light:bg-emerald-50 light:text-emerald-700 light:ring-emerald-300",
+  closing:
+    "bg-amber-950/40 text-amber-300 ring-amber-800 light:bg-amber-50 light:text-amber-700 light:ring-amber-300",
+  closed:
+    "bg-red-950/40 text-red-300 ring-red-800 light:bg-red-50 light:text-red-700 light:ring-red-300",
+  restricted:
+    "bg-amber-950/40 text-amber-300 ring-amber-800 light:bg-amber-50 light:text-amber-700 light:ring-amber-300",
 };
 
 const ACCESS_METHOD_LABEL: Record<string, string> = {
@@ -48,14 +52,14 @@ export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: T
         return (
           <div
             key={String(entry.id)}
-            className={`animate-fade-up group flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:-translate-y-1 hover:bg-white/[0.06] ${accent.hoverBorder}`}
+            className={`animate-fade-up group flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:-translate-y-1 hover:bg-white/[0.06] light:border-black/10 light:bg-black/[0.02] light:hover:bg-black/[0.04] ${accent.hoverBorder}`}
             style={{ animationDelay: `${Math.min(i, 12) * 60}ms` }}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2.5">
                 <VendorLogo vendor={String(entry.vendor)} size={32} />
                 <div>
-                  <h3 className="font-medium text-neutral-100">
+                  <h3 className="font-medium text-neutral-100 light:text-neutral-900">
                     {typeof entry.url === "string" && entry.url ? (
                       <a
                         href={entry.url}
@@ -79,37 +83,41 @@ export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: T
               </span>
             </div>
 
-            <span className="mt-3 inline-flex w-fit rounded px-1.5 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400">
+            <span className="mt-3 inline-flex w-fit rounded px-1.5 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400 light:ring-neutral-300 light:text-neutral-600">
               {sourceLabel}
             </span>
 
             {entry.summary ? (
-              <p className="mt-2 text-sm text-neutral-400">{String(entry.summary)}</p>
+              <p className="mt-2 text-sm text-neutral-400 light:text-neutral-600">
+                {String(entry.summary)}
+              </p>
             ) : null}
 
             {columns.length > 0 ? (
-              <div className="mt-4 space-y-2.5 border-t border-white/10 pt-3 text-sm">
+              <div className="mt-4 space-y-2.5 border-t border-white/10 pt-3 text-sm light:border-black/10">
                 {columns.map((col) => (
                   <div key={col.key}>
                     <dt className="text-xs text-neutral-500">{col.labelTh}</dt>
-                    <dd className="text-neutral-300">{formatCell(entry[col.key])}</dd>
+                    <dd className="text-neutral-300 light:text-neutral-700">
+                      {formatCell(entry[col.key])}
+                    </dd>
                   </div>
                 ))}
               </div>
             ) : null}
 
             {Array.isArray(entry.installSteps) && entry.installSteps.length > 0 ? (
-              <details className="mt-4 border-t border-white/10 pt-3">
-                <summary className="cursor-pointer text-xs font-medium text-neutral-400 hover:text-neutral-200">
+              <details className="mt-4 border-t border-white/10 pt-3 light:border-black/10">
+                <summary className="cursor-pointer text-xs font-medium text-neutral-400 hover:text-neutral-200 light:text-neutral-600 light:hover:text-neutral-900">
                   📦 วิธีเข้าถึง/ติดตั้ง
                 </summary>
-                <div className="mt-2 rounded border border-white/10 bg-black/40 p-2">
+                <div className="mt-2 rounded border border-white/10 bg-black/40 p-2 light:border-black/10 light:bg-black/[0.03]">
                   {typeof entry.accessMethod === "string" ? (
-                    <span className="mb-1.5 inline-block rounded px-1.5 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400">
+                    <span className="mb-1.5 inline-block rounded px-1.5 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400 light:ring-neutral-300 light:text-neutral-600">
                       {ACCESS_METHOD_LABEL[entry.accessMethod] ?? entry.accessMethod}
                     </span>
                   ) : null}
-                  <ol className="list-decimal space-y-1 pl-4 text-xs leading-relaxed text-neutral-400">
+                  <ol className="list-decimal space-y-1 pl-4 text-xs leading-relaxed text-neutral-400 light:text-neutral-600">
                     {(entry.installSteps as string[]).map((step, si) => (
                       <li key={si}>{step}</li>
                     ))}
@@ -118,7 +126,7 @@ export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: T
               </details>
             ) : null}
 
-            <p className="mt-auto pt-3 text-xs text-neutral-600">
+            <p className="mt-auto pt-3 text-xs text-neutral-600 light:text-neutral-400">
               Verify: {String(entry.verifiedAt)}
             </p>
           </div>

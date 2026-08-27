@@ -29,22 +29,24 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         >
           {accent.icon} {category.group}
         </span>
-        <h1 className="mt-3 text-2xl font-semibold text-neutral-50 sm:text-3xl">
+        <h1 className="mt-3 text-2xl font-semibold text-neutral-50 sm:text-3xl light:text-neutral-900">
           {category.titleTh}
         </h1>
-        <p className="mt-1.5 text-neutral-400">{category.descriptionTh}</p>
+        <p className="mt-1.5 text-neutral-400 light:text-neutral-600">{category.descriptionTh}</p>
       </header>
 
       {guide ? (
         <CategoryGuideSection guide={guide} />
       ) : (
-        <p className="mb-8 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-neutral-500">
+        <p className="mb-8 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-neutral-500 light:border-black/10 light:bg-black/[0.03]">
           หมวดนี้ยังไม่มีคู่มือ &ldquo;วิธีใช้งาน / เขียน prompt / ติดตั้ง&rdquo; —
           ดูรายชื่อเครื่องมือด้านล่างได้ก่อน
         </p>
       )}
 
-      <h2 className="mb-4 text-lg font-medium text-neutral-100">เครื่องมือแนะนำ</h2>
+      <h2 className="mb-4 text-lg font-medium text-neutral-100 light:text-neutral-900">
+        เครื่องมือแนะนำ
+      </h2>
       <ToolCards entries={entries} columns={category.columns} accent={accent} />
     </div>
   );
