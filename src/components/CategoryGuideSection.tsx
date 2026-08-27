@@ -23,26 +23,11 @@ export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
 
       <div className="rounded-lg border border-white/10 bg-white/[0.03] p-5 light:border-black/10 light:bg-black/[0.03]">
         <h2 className="mb-3 text-lg font-medium text-neutral-100 light:text-neutral-900">
-          วิธีเข้าถึง/ติดตั้ง
+          ภาพรวมการเข้าถึง/ข้อควรระวัง
         </h2>
         <span className="inline-block rounded px-2 py-0.5 text-xs ring-1 ring-inset ring-neutral-700 text-neutral-400 light:ring-neutral-300 light:text-neutral-600">
           {ACCESS_METHOD_LABEL[guide.accessMethod] ?? guide.accessMethod}
         </span>
-        {guide.links && guide.links.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {guide.links.map((link) => (
-              <a
-                key={link.url}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm text-neutral-200 transition hover:border-indigo-400/40 hover:bg-white/[0.06] light:border-black/10 light:bg-black/[0.03] light:text-neutral-800 light:hover:border-indigo-500/40 light:hover:bg-black/[0.05]"
-              >
-                {link.label} ↗
-              </a>
-            ))}
-          </div>
-        ) : null}
         {guide.installSteps && guide.installSteps.length > 0 ? (
           <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-neutral-300 light:text-neutral-700">
             {guide.installSteps.map((step, i) => (

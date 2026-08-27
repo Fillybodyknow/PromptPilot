@@ -158,7 +158,7 @@ export default function MainPage() {
         <PhotoAuroraBackground
           objectPositionClassName="object-[center_30%]"
           topFadeHeightClassName="h-3 sm:h-5"
-          bottomFadeHeightClassName="h-3 sm:h-5"
+          bottomFadeHeightClassName="h-0"
         />
         <div className="mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
           <p className="text-2xl font-semibold text-neutral-50 sm:text-3xl">
