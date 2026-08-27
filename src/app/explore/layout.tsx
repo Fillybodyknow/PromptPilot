@@ -22,16 +22,20 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
       </div>
 
       <div className="mx-auto max-w-7xl px-6 py-8 sm:py-10">
-        <div className="mb-6 lg:hidden">
-          <ExploreSidebar groups={groups} variant="mobile" />
-        </div>
-        <div className="flex gap-8">
-          <aside className="hidden w-64 shrink-0 lg:block">
-            <div className="sticky top-24">
-              <ExploreSidebar groups={groups} variant="sidebar" />
-            </div>
-          </aside>
-          <main className="min-w-0 flex-1">{children}</main>
+        {/* Frosted glass panel — lets the fixed photo background show through blurred,
+            same language as Header's backdrop-blur, while keeping content legible. */}
+        <div className="rounded-3xl border border-white/10 bg-black/30 p-5 backdrop-blur-2xl sm:p-8">
+          <div className="mb-6 lg:hidden">
+            <ExploreSidebar groups={groups} variant="mobile" />
+          </div>
+          <div className="flex gap-8">
+            <aside className="hidden w-64 shrink-0 lg:block">
+              <div className="sticky top-24">
+                <ExploreSidebar groups={groups} variant="sidebar" />
+              </div>
+            </aside>
+            <main className="min-w-0 flex-1">{children}</main>
+          </div>
         </div>
       </div>
     </>
