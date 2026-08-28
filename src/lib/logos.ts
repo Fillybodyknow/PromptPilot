@@ -269,6 +269,10 @@ const VENDOR_ALIASES: Record<string, string> = {
   Otter: "Otter.ai",
   "n8n GmbH": "n8n",
   "OpenAI (open source)": "OpenAI",
+  // Celonis acquired Make (formerly Integromat) in 2022 and is credited as the
+  // vendor, but there's no Celonis-branded logo — the tool shown is Make, so
+  // its product logo stands in rather than falling back to initials.
+  Celonis: "Make",
   "GitHub / Microsoft": "GitHub",
   "Ideogram / Recraft": "Ideogram",
   "Anthropic / OpenAI / Google": "Anthropic",
