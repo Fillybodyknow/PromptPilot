@@ -4,13 +4,26 @@ import { useEffect, useState } from "react";
 import { VendorLogo } from "./VendorLogo";
 import { getAllVendorDisplayNames } from "@/lib/logos";
 
-const BATCH_SIZE = 8;
+const TARGET_BATCH_SIZE = 7;
 const INTERVAL_MS = 4000;
 const FADE_MS = 700;
 
-function chunk<T>(items: T[], size: number): T[][] {
+/** Splits into as-even-as-possible batches (sizes differ by at most 1) around
+ * `targetSize`, instead of fixed-size chunks — a plain fixed-size chunk leaves
+ * a small/lonely remainder batch whenever the total isn't a clean multiple
+ * (41 vendors ÷ 8 left a batch of just 1, which read as a mistake on screen). */
+function chunkEvenly<T>(items: T[], targetSize: number): T[][] {
+  if (items.length === 0) return [];
+  const batchCount = Math.max(1, Math.round(items.length / targetSize));
+  const base = Math.floor(items.length / batchCount);
+  const remainder = items.length % batchCount;
   const batches: T[][] = [];
-  for (let i = 0; i < items.length; i += size) batches.push(items.slice(i, i + size));
+  let offset = 0;
+  for (let b = 0; b < batchCount; b++) {
+    const size = base + (b < remainder ? 1 : 0);
+    batches.push(items.slice(offset, offset + size));
+    offset += size;
+  }
   return batches;
 }
 
@@ -20,7 +33,7 @@ function chunk<T>(items: T[], size: number): T[][] {
  * scroll strip, now made automatic again the same way the hero photos are). */
 export function LogoMarquee() {
   const vendors = getAllVendorDisplayNames();
-  const batches = chunk(vendors, BATCH_SIZE);
+  const batches = chunkEvenly(vendors, TARGET_BATCH_SIZE);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
