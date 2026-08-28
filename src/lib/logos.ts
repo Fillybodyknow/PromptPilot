@@ -255,9 +255,29 @@ const BADGE_COLORS = [
   "bg-orange-500",
 ];
 
+/**
+ * `vendor` strings that don't exactly match a VENDOR_LOGOS key but do
+ * correspond to one — a combined multi-vendor label ("GitHub / Microsoft")
+ * or a slightly different display name than the registry key ("n8n GmbH",
+ * "OpenAI (open source)"). Kept as an explicit lookup table (not fuzzy
+ * string matching) so the entry still gets its real logo without touching
+ * the vendor label actually shown on the card — every entry here was
+ * checked against src/data by hand, not guessed.
+ */
+const VENDOR_ALIASES: Record<string, string> = {
+  Fireflies: "Fireflies.ai",
+  Otter: "Otter.ai",
+  "n8n GmbH": "n8n",
+  "OpenAI (open source)": "OpenAI",
+  "GitHub / Microsoft": "GitHub",
+  "Ideogram / Recraft": "Ideogram",
+  "Anthropic / OpenAI / Google": "Anthropic",
+};
+
 export function getVendorLogoInfo(vendor: string): VendorLogoInfo {
+  const key = vendor in VENDOR_LOGOS ? vendor : (VENDOR_ALIASES[vendor] ?? vendor);
   return (
-    VENDOR_LOGOS[vendor] ?? { src: null, longSrc: null, initials: vendor.slice(0, 2).toUpperCase() }
+    VENDOR_LOGOS[key] ?? { src: null, longSrc: null, initials: vendor.slice(0, 2).toUpperCase() }
   );
 }
 
