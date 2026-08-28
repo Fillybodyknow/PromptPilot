@@ -39,6 +39,8 @@ function renderStepText(step: string) {
 
 const STATUS_LABEL: Record<string, string> = {
   active: "เปิดใช้",
+  preview: "พรีวิว/ทดลอง",
+  "not-recommended-th": "ไม่แนะนำสำหรับงานภาษาไทย",
   closing: "กำลังปิด",
   closed: "ปิดแล้ว",
   restricted: "ถูกจำกัด",
@@ -47,6 +49,10 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_STYLE: Record<string, string> = {
   active:
     "bg-emerald-950/40 text-emerald-300 ring-emerald-800 light:bg-emerald-50 light:text-emerald-700 light:ring-emerald-300",
+  preview:
+    "bg-sky-950/40 text-sky-300 ring-sky-800 light:bg-sky-50 light:text-sky-700 light:ring-sky-300",
+  "not-recommended-th":
+    "bg-rose-950/40 text-rose-300 ring-rose-800 light:bg-rose-50 light:text-rose-700 light:ring-rose-300",
   closing:
     "bg-amber-950/40 text-amber-300 ring-amber-800 light:bg-amber-50 light:text-amber-700 light:ring-amber-300",
   closed:
@@ -57,6 +63,8 @@ const STATUS_STYLE: Record<string, string> = {
 
 const STATUS_DOT: Record<string, string> = {
   active: "bg-emerald-400",
+  preview: "bg-sky-400",
+  "not-recommended-th": "bg-rose-400",
   closing: "bg-amber-400",
   closed: "bg-red-400",
   restricted: "bg-amber-400",
@@ -64,11 +72,11 @@ const STATUS_DOT: Record<string, string> = {
 
 const ACCESS_METHOD_LABEL: Record<string, string> = {
   web: "ใช้ผ่านเว็บ ไม่ต้องติดตั้ง",
-  "browser-extension": "Browser Extension",
-  "desktop-installer": "ติดตั้งโปรแกรมบนเครื่อง",
+  api: "เรียกผ่าน API",
   cli: "เครื่องมือบรรทัดคำสั่ง (CLI)",
-  "self-hosted": "ต้องมี IT รันเซิร์ฟเวอร์เอง",
-  "sso-license": "ต้องขอ license ผ่าน SSO องค์กร",
+  desktop: "ติดตั้งโปรแกรมบนเครื่อง",
+  "self-host": "ต้องมี IT รันเซิร์ฟเวอร์เอง",
+  "ide-extension": "ส่วนขยายใน IDE",
 };
 
 export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: ToolCardsProps) {
@@ -79,6 +87,26 @@ export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: T
 
   const status = String(selected.status ?? "active");
   const sourceLabel = selected.sourceLabel === "official" ? "Official" : "Community";
+
+  // benchmark/price/bestFor are now common fields on every entry (used to be
+  // category-specific "columns") — folded into the same spec grid as whatever
+  // genuinely category-specific columns this category still has (researchType,
+  // outputType, thaiSupport, hardwareNote), instead of two separate-looking blocks.
+  const priceParts: string[] = [];
+  if (typeof selected.priceUsdIn === "number" && typeof selected.priceUsdOut === "number") {
+    priceParts.push(
+      `$${selected.priceUsdIn} / $${selected.priceUsdOut} ต่อ 1M token (input/output)`
+    );
+  }
+  if (selected.priceNote) priceParts.push(String(selected.priceNote));
+
+  const specs: { label: string; value: string }[] = [];
+  if (selected.benchmark) specs.push({ label: "Benchmark", value: String(selected.benchmark) });
+  if (priceParts.length) specs.push({ label: "ราคา", value: priceParts.join(" — ") });
+  if (selected.bestFor) specs.push({ label: "เหมาะกับ", value: String(selected.bestFor) });
+  for (const col of columns) {
+    specs.push({ label: col.labelTh, value: formatCell(selected[col.key]) });
+  }
 
   return (
     <div className="animate-fade-up flex flex-col gap-6 lg:flex-row lg:gap-8">
@@ -184,14 +212,18 @@ export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: T
           </p>
         ) : null}
 
-        {columns.length > 0 ? (
+        {selected.warning ? (
+          <p className="mt-3 rounded border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-300/90 light:border-amber-400/30 light:bg-amber-50 light:text-amber-700">
+            ⚠️ {String(selected.warning)}
+          </p>
+        ) : null}
+
+        {specs.length > 0 ? (
           <div className="mt-5 grid gap-3.5 border-t border-white/10 pt-4 text-sm sm:grid-cols-2 light:border-black/10">
-            {columns.map((col) => (
-              <div key={col.key}>
-                <dt className="text-xs text-neutral-500">{col.labelTh}</dt>
-                <dd className="text-neutral-300 light:text-neutral-700">
-                  {formatCell(selected[col.key])}
-                </dd>
+            {specs.map((spec) => (
+              <div key={spec.label}>
+                <dt className="text-xs text-neutral-500">{spec.label}</dt>
+                <dd className="text-neutral-300 light:text-neutral-700">{spec.value}</dd>
               </div>
             ))}
           </div>

@@ -2,12 +2,22 @@ import type { CategoryGuide } from "@/lib/schema";
 
 const ACCESS_METHOD_LABEL: Record<string, string> = {
   web: "ใช้ผ่านเว็บ ไม่ต้องติดตั้ง",
-  "browser-extension": "Browser Extension",
-  "desktop-installer": "ติดตั้งโปรแกรมบนเครื่อง",
+  api: "เรียกผ่าน API",
   cli: "เครื่องมือบรรทัดคำสั่ง (CLI)",
-  "self-hosted": "ต้องมี IT รันเซิร์ฟเวอร์เอง",
-  "sso-license": "ต้องขอ license ผ่าน SSO องค์กร",
+  desktop: "ติดตั้งโปรแกรมบนเครื่อง",
+  "self-host": "ต้องมี IT รันเซิร์ฟเวอร์เอง",
+  "ide-extension": "ส่วนขยายใน IDE",
 };
+
+/** Guide-level extra notes — not every category has every one of these, so this
+ * drives a single generic render loop instead of five near-identical JSX blocks. */
+const EXTRA_NOTES: { key: keyof CategoryGuide; icon: string; labelTh: string }[] = [
+  { key: "benchmarkNote", icon: "📊", labelTh: "หมายเหตุเรื่อง Benchmark" },
+  { key: "thaiContextNote", icon: "🇹🇭", labelTh: "บริบทสำหรับประเทศไทย" },
+  { key: "adoptionNote", icon: "📈", labelTh: "หมายเหตุการนำไปใช้" },
+  { key: "costNote", icon: "💰", labelTh: "หมายเหตุเรื่องต้นทุน" },
+  { key: "accuracyNote", icon: "🎯", labelTh: "หมายเหตุความแม่นยำ" },
+];
 
 export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
   return (
@@ -36,6 +46,24 @@ export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
           </ol>
         ) : null}
       </div>
+
+      {EXTRA_NOTES.map((note) => {
+        const value = guide[note.key];
+        if (!value || typeof value !== "string") return null;
+        return (
+          <div
+            key={note.key}
+            className="rounded-lg border border-white/10 bg-white/[0.03] p-5 light:border-black/10 light:bg-black/[0.03]"
+          >
+            <h2 className="mb-2 text-lg font-medium text-neutral-100 light:text-neutral-900">
+              {note.icon} {note.labelTh}
+            </h2>
+            <p className="text-sm leading-relaxed text-neutral-300 light:text-neutral-700">
+              {value}
+            </p>
+          </div>
+        );
+      })}
 
       <div className="rounded-lg border border-amber-400/20 bg-amber-500/10 p-5 light:border-amber-400/30 light:bg-amber-50">
         <h2 className="mb-2 text-lg font-medium text-amber-200 light:text-amber-800">
@@ -84,9 +112,15 @@ export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
                 )}
               </div>
 
-              {template.tested && template.testedWith?.length ? (
+              {template.tested && template.testedWith.length > 0 ? (
                 <p className="mb-3 text-xs text-neutral-500">
                   ทดสอบกับ: {template.testedWith.join(", ")}
+                </p>
+              ) : null}
+
+              {!template.tested && template.draftNote ? (
+                <p className="mb-3 rounded border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-300/90 light:border-amber-400/30 light:bg-amber-50 light:text-amber-700">
+                  📝 {template.draftNote}
                 </p>
               ) : null}
 
