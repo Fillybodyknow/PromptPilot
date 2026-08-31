@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getGroupAccent } from "@/lib/groupAccent";
+import { useScrollActiveIntoView } from "@/lib/useScrollActiveIntoView";
 
 interface SidebarCategory {
   key: string;
@@ -25,6 +26,7 @@ interface ExploreSidebarProps {
 export function ExploreSidebar({ groups, variant = "sidebar" }: ExploreSidebarProps) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
+  const activeRef = useScrollActiveIntoView<HTMLAnchorElement>(pathname);
 
   if (variant === "mobile") {
     const flat = groups.flatMap((g) =>
@@ -50,6 +52,7 @@ export function ExploreSidebar({ groups, variant = "sidebar" }: ExploreSidebarPr
                 <Link
                   key={category.key}
                   href={href}
+                  ref={active ? activeRef : undefined}
                   className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                     active
                       ? accent.solid

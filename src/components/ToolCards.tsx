@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { ColumnDef } from "@/lib/categories";
 import { VendorLogo } from "./VendorLogo";
 import { DEFAULT_GROUP_ACCENT, type GroupAccent } from "@/lib/groupAccent";
+import { useScrollActiveIntoView } from "@/lib/useScrollActiveIntoView";
 
 interface ToolCardsProps {
   entries: Record<string, unknown>[];
@@ -82,6 +83,7 @@ const ACCESS_METHOD_LABEL: Record<string, string> = {
 export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: ToolCardsProps) {
   const [selectedId, setSelectedId] = useState(entries[0] ? String(entries[0].id) : "");
   const selected = entries.find((e) => String(e.id) === selectedId) ?? entries[0];
+  const activeChipRef = useScrollActiveIntoView<HTMLButtonElement>(selectedId);
 
   if (!selected) return null;
 
@@ -122,6 +124,7 @@ export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: T
             return (
               <button
                 key={id}
+                ref={isActive ? activeChipRef : undefined}
                 type="button"
                 onClick={() => setSelectedId(id)}
                 className={`flex shrink-0 items-center gap-1.5 rounded-full py-1 pr-3 pl-1.5 text-xs font-medium transition-colors ${
