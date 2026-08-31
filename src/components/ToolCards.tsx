@@ -124,16 +124,17 @@ export function ToolCards({ entries, columns, accent = DEFAULT_GROUP_ACCENT }: T
                 key={id}
                 type="button"
                 onClick={() => setSelectedId(id)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-full py-1 pr-3 pl-1.5 text-xs font-medium transition-colors ${
                   isActive
                     ? accent.solid
                     : "bg-white/5 text-neutral-400 ring-1 ring-inset ring-white/15 hover:bg-white/10 hover:text-neutral-200 light:bg-black/5 light:text-neutral-500 light:ring-black/15 light:hover:bg-black/10 light:hover:text-neutral-900"
                 }`}
               >
+                <VendorLogo vendor={String(entry.vendor)} size={16} className="rounded-full" />
+                {String(entry.name)}
                 <span
                   className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT[String(entry.status ?? "active")] ?? STATUS_DOT.active}`}
                 />
-                {String(entry.name)}
               </button>
             );
           })}
