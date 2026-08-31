@@ -31,25 +31,38 @@ export function ExploreSidebar({ groups, variant = "sidebar" }: ExploreSidebarPr
       g.categories.map((c) => ({ ...c, group: g.group }))
     );
     return (
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {flat.map((category) => {
-          const href = `/explore/${category.key}`;
-          const active = pathname === href;
-          const accent = getGroupAccent(category.group);
-          return (
-            <Link
-              key={category.key}
-              href={href}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                active
-                  ? accent.solid
-                  : "bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 light:bg-black/5 light:text-neutral-500 light:hover:bg-black/10 light:hover:text-neutral-900"
-              }`}
-            >
-              {category.titleTh}
-            </Link>
-          );
-        })}
+      <div>
+        <p className="mb-2 flex items-center gap-1 text-xs text-neutral-500">
+          หมวดหมู่ทั้งหมด
+          <span aria-hidden>—</span>
+          <span aria-hidden>เลื่อนดูเพิ่มเติม →</span>
+        </p>
+        {/* Fade + explicit label above are both there because a plain overflow-x-auto
+            strip alone read as a complete, self-contained list on mobile — nothing
+            signaled it kept going, so it went unnoticed as scrollable. */}
+        <div className="relative">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {flat.map((category) => {
+              const href = `/explore/${category.key}`;
+              const active = pathname === href;
+              const accent = getGroupAccent(category.group);
+              return (
+                <Link
+                  key={category.key}
+                  href={href}
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    active
+                      ? accent.solid
+                      : "bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 light:bg-black/5 light:text-neutral-500 light:hover:bg-black/10 light:hover:text-neutral-900"
+                  }`}
+                >
+                  {category.titleTh}
+                </Link>
+              );
+            })}
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-black/50 to-transparent light:from-white/90" />
+        </div>
       </div>
     );
   }

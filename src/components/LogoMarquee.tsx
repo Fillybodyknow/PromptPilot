@@ -45,29 +45,33 @@ export function LogoMarquee() {
   }, [batches.length]);
 
   return (
-    <div className="overflow-hidden border-t border-white/10 bg-black/40 py-2.5 light:border-black/10 light:bg-white/60">
-      <div className="relative mx-auto h-9 max-w-6xl px-4">
+    <div className="overflow-hidden border-t border-white/10 bg-black/40 py-2 light:border-black/10 light:bg-white/60">
+      <div className="relative mx-auto h-11 max-w-6xl px-4">
         {batches.map((batch, bi) => (
           <div
             key={bi}
-            className="absolute inset-0 flex items-center justify-center gap-3 overflow-x-auto transition-opacity ease-in-out"
+            className="absolute inset-0 flex items-center justify-center gap-2.5 overflow-x-auto transition-opacity ease-in-out"
             style={{
               opacity: bi === index ? 1 : 0,
               transitionDuration: `${FADE_MS}ms`,
               pointerEvents: bi === index ? "auto" : "none",
             }}
           >
-            {batch.map((vendor) => (
+            {batch.map((vendor, vi) => (
               // Real logo colors, kept legible against the dark header via a plain white
               // card — works uniformly regardless of whether the source file is
               // transparent or opaque, and regardless of how dark its text/mark is.
               // In light mode the header background is also near-white, so a ring
-              // keeps each chip's edge visible instead of blending in.
+              // keeps each chip's edge visible instead of blending in. Only the
+              // first 4 of each batch show on mobile — a full 7 logos plus the now-
+              // larger partner strip above doesn't fit a narrow header comfortably.
               <div
                 key={vendor}
-                className="flex shrink-0 items-center rounded-lg bg-white px-3 py-1.5 shadow-sm light:ring-1 light:ring-black/10"
+                className={`shrink-0 items-center rounded-lg bg-white px-3 py-2 shadow-sm light:ring-1 light:ring-black/10 ${
+                  vi >= 4 ? "hidden sm:flex" : "flex"
+                }`}
               >
-                <VendorLogo vendor={vendor} variant="long" size={20} />
+                <VendorLogo vendor={vendor} variant="long" size={24} />
               </div>
             ))}
           </div>

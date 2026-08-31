@@ -24,7 +24,7 @@ export function CategoryGuideSection({ guide }: { guide: CategoryGuide }) {
     <section className="mb-10 space-y-8">
       <div className="rounded-lg border border-white/10 bg-white/[0.03] p-5 light:border-black/10 light:bg-black/[0.03]">
         <h2 className="mb-2 text-lg font-medium text-neutral-100 light:text-neutral-900">
-          วิธีใช้งาน
+          วัตถุประสงค์การใช้งาน
         </h2>
         <p className="text-sm leading-relaxed text-neutral-300 light:text-neutral-700">
           {guide.howToUse}

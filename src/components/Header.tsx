@@ -9,12 +9,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur-xl light:border-black/10 light:bg-white/70">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <PartnersSection />
-          <div className="hidden h-6 w-px bg-white/15 light:bg-black/10 lg:block" aria-hidden />
+          <div
+            className="h-6 w-px shrink-0 bg-white/15 sm:h-7 light:bg-black/10"
+            aria-hidden
+          />
           <Link
             href="/"
-            className="flex items-center gap-2.5 font-semibold text-neutral-100 light:text-neutral-900"
+            className="flex shrink-0 items-center gap-2.5 font-semibold text-neutral-100 light:text-neutral-900"
           >
             <Image
               src={withBasePath("/images/app/app_logo.png")}
