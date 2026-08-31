@@ -50,12 +50,13 @@ export function ExploreSidebar({ groups, variant = "sidebar" }: ExploreSidebarPr
                 <Link
                   key={category.key}
                   href={href}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                     active
                       ? accent.solid
                       : "bg-white/5 text-neutral-400 ring-1 ring-inset ring-white/15 hover:bg-white/10 hover:text-neutral-200 light:bg-black/5 light:text-neutral-500 light:ring-black/15 light:hover:bg-black/10 light:hover:text-neutral-900"
                   }`}
                 >
+                  <span aria-hidden>{accent.icon}</span>
                   {category.titleTh}
                 </Link>
               );
