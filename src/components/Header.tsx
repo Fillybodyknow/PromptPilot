@@ -8,8 +8,8 @@ import { withBasePath } from "@/lib/basePath";
 export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur-xl light:border-black/10 light:bg-white/70">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
-        <div className="flex min-w-0 items-center gap-2">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-1.5">
           <PartnersSection />
           <div
             className="h-6 w-px shrink-0 bg-white/15 sm:h-7 light:bg-black/10"
@@ -24,22 +24,14 @@ export function Header() {
               alt="PromptPilot"
               width={32}
               height={32}
-              className="rounded-lg"
+              className="h-7 w-7 rounded-lg sm:h-8 sm:w-8"
               unoptimized
             />
             <span className="hidden sm:inline">PromptPilot</span>
           </Link>
         </div>
 
-        <nav className="flex items-center gap-1 text-sm">
-          <Link
-            href="/explore"
-            className="rounded-md px-3 py-1.5 font-medium text-neutral-300 transition-colors hover:bg-white/10 hover:text-white light:text-neutral-600 light:hover:bg-black/5 light:hover:text-neutral-900"
-          >
-            สำรวจหมวดหมู่ AI
-          </Link>
-          <ThemeToggle />
-        </nav>
+        <ThemeToggle />
       </div>
 
       <LogoMarquee />

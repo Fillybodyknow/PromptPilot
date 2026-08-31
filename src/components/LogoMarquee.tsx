@@ -50,32 +50,32 @@ export function LogoMarquee() {
         {batches.map((batch, bi) => (
           <div
             key={bi}
-            className="absolute inset-0 flex items-center justify-center gap-2.5 overflow-x-auto transition-opacity ease-in-out"
+            className="absolute inset-0 flex items-center justify-start gap-2.5 overflow-hidden transition-opacity ease-in-out"
             style={{
               opacity: bi === index ? 1 : 0,
               transitionDuration: `${FADE_MS}ms`,
               pointerEvents: bi === index ? "auto" : "none",
             }}
           >
-            {batch.map((vendor, vi) => (
+            {batch.map((vendor) => (
               // Real logo colors, kept legible against the dark header via a plain white
               // card — works uniformly regardless of whether the source file is
               // transparent or opaque, and regardless of how dark its text/mark is.
               // In light mode the header background is also near-white, so a ring
-              // keeps each chip's edge visible instead of blending in. Only the
-              // first 4 of each batch show on mobile — a full 7 logos plus the now-
-              // larger partner strip above doesn't fit a narrow header comfortably.
+              // keeps each chip's edge visible instead of blending in. No scroll here —
+              // overflow-hidden just clips whatever doesn't fit the width (left-packed,
+              // not centered, so only the trailing edge ever gets cut); the fade below
+              // masks that cut instead of leaving a logo abruptly sliced in half.
               <div
                 key={vendor}
-                className={`shrink-0 items-center rounded-lg bg-white px-3 py-2 shadow-sm light:ring-1 light:ring-black/10 ${
-                  vi >= 4 ? "hidden sm:flex" : "flex"
-                }`}
+                className="flex shrink-0 items-center rounded-lg bg-white px-3 py-2 shadow-sm light:ring-1 light:ring-black/10"
               >
                 <VendorLogo vendor={vendor} variant="long" size={24} />
               </div>
             ))}
           </div>
         ))}
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-black/40 to-transparent light:from-white/60" />
       </div>
     </div>
   );

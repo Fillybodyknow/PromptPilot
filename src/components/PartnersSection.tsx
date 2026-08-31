@@ -21,20 +21,24 @@ const PARTNERS: Partner[] = [
  * Compact inline partner-logo chips — sits in the same row as the app logo in
  * Header, to its left, separated by a divider. Small white chips (fixed
  * height, auto width) keep each logo's real colors legible and undistorted
- * regardless of its own aspect ratio or background transparency. Visible at
- * every width (previously hidden below `lg`) — scrolls internally on very
- * narrow screens instead of overflowing the header row.
+ * regardless of its own aspect ratio or background transparency.
+ *
+ * Sized so all 5 fit on one line on a phone without scrolling — at the real
+ * aspect ratios of these 5 files (2.5, 1.0, 2.2, 1.0, 1.44), a 20px logo
+ * height needs ~163px total, which fits a 360px-wide header with the tighter
+ * mobile padding/gaps used here (checked by hand, not just eyeballed).
+ * overflow-x-auto stays only as a safety net for anything narrower.
  */
 export function PartnersSection() {
   return (
     <div
-      className="flex min-w-0 items-center gap-1 overflow-x-auto"
+      className="flex min-w-0 items-center gap-0.5 overflow-x-auto sm:gap-1"
       aria-label="พันธมิตรของเรา"
     >
       {PARTNERS.map((partner) => (
         <div
           key={partner.name}
-          className="flex h-7 shrink-0 items-center rounded bg-white px-1.5 py-1 sm:h-8 lg:h-9 light:ring-1 light:ring-black/10"
+          className="flex h-6 shrink-0 items-center rounded bg-white px-1 py-0.5 sm:h-8 sm:px-1.5 sm:py-1 lg:h-9 light:ring-1 light:ring-black/10"
         >
           <Image
             src={withBasePath(partner.src)}
