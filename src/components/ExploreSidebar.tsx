@@ -32,14 +32,14 @@ export function ExploreSidebar({ groups, variant = "sidebar" }: ExploreSidebarPr
     );
     return (
       <div>
-        <p className="mb-2 flex items-center gap-1 text-xs text-neutral-500">
-          หมวดหมู่ทั้งหมด
-          <span aria-hidden>—</span>
-          <span aria-hidden>เลื่อนดูเพิ่มเติม →</span>
+        <p className="mb-2 text-xs font-medium text-neutral-500">
+          👇 แตะเพื่อเลือกหมวดหมู่ <span aria-hidden>·</span> เลื่อนดูเพิ่มเติม →
         </p>
         {/* Fade + explicit label above are both there because a plain overflow-x-auto
-            strip alone read as a complete, self-contained list on mobile — nothing
-            signaled it kept going, so it went unnoticed as scrollable. */}
+            strip of pills alone read as a static, informational list on mobile —
+            nothing signaled it was tappable or that it kept scrolling. The ring on
+            inactive chips is the same fix as the label, aimed at "is this a
+            button" rather than "does this scroll". */}
         <div className="relative">
           <div className="flex gap-2 overflow-x-auto pb-1">
             {flat.map((category) => {
@@ -53,7 +53,7 @@ export function ExploreSidebar({ groups, variant = "sidebar" }: ExploreSidebarPr
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                     active
                       ? accent.solid
-                      : "bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 light:bg-black/5 light:text-neutral-500 light:hover:bg-black/10 light:hover:text-neutral-900"
+                      : "bg-white/5 text-neutral-400 ring-1 ring-inset ring-white/15 hover:bg-white/10 hover:text-neutral-200 light:bg-black/5 light:text-neutral-500 light:ring-black/15 light:hover:bg-black/10 light:hover:text-neutral-900"
                   }`}
                 >
                   {category.titleTh}

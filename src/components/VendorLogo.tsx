@@ -8,6 +8,11 @@ interface VendorLogoProps {
   variant?: "square" | "long";
   size?: number;
   className?: string;
+  /** "long" variant only — responsive Tailwind height classes (e.g. "h-5 sm:h-6 lg:h-7")
+   * that replace the fixed `size`-driven inline height, so the logo can scale per
+   * breakpoint the same way a plain <Image> with a className would. `size` still sets
+   * the intrinsic height/width props Next uses for the image's aspect ratio. */
+  heightClassName?: string;
 }
 
 /**
@@ -21,6 +26,7 @@ export function VendorLogo({
   variant = "square",
   size = 28,
   className = "",
+  heightClassName,
 }: VendorLogoProps) {
   const info = getVendorLogoInfo(vendor);
 
@@ -33,8 +39,8 @@ export function VendorLogo({
         title={vendor}
         width={160}
         height={size}
-        className={`w-auto shrink-0 object-contain ${className}`}
-        style={{ height: size, width: "auto" }}
+        className={`w-auto shrink-0 object-contain ${heightClassName ?? ""} ${className}`}
+        style={heightClassName ? { width: "auto" } : { height: size, width: "auto" }}
         unoptimized
       />
     );

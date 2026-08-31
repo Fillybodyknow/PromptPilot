@@ -38,7 +38,9 @@ function chunkEvenly<T>(items: T[], targetSize: number): T[][] {
 function Chip({ vendor }: { vendor: string }) {
   return (
     <div className="flex shrink-0 items-center rounded-lg bg-white px-3 py-2 shadow-sm light:ring-1 light:ring-black/10">
-      <VendorLogo vendor={vendor} variant="long" size={24} />
+      {/* Same responsive height progression as PartnersSection's company logos
+       * (h-5/h-6/h-7), so both logo rows in the header scale together. */}
+      <VendorLogo vendor={vendor} variant="long" size={28} heightClassName="h-5 sm:h-6 lg:h-7" />
     </div>
   );
 }
@@ -102,7 +104,7 @@ export function LogoMarquee() {
 
   return (
     <div className="overflow-hidden border-t border-white/10 bg-black/40 py-2 light:border-black/10 light:bg-white/60">
-      <div className="relative mx-auto h-11 max-w-6xl px-4">
+      <div className="relative mx-auto h-9 max-w-6xl px-4 sm:h-10 lg:h-11">
         {batches.map((batch, bi) => (
           <div
             key={bi}
