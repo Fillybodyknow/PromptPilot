@@ -19,10 +19,9 @@ const nextConfig: NextConfig = {
       { source: "/explore/:category", destination: "/guides/:category", permanent: true },
     ];
   },
+  // รูปพื้นหลังผ่าน image optimizer ของ Next (ย่อตามจอ + AVIF/WebP) — โลโก้ต่างๆ ยังส่ง `unoptimized` เองทีละตัว
   images: {
-    // Every <Image> already passes `unoptimized`; kept global so behavior
-    // matches what was deployed on GitHub Pages.
-    unoptimized: true,
+    formats: ["image/avif", "image/webp"],
   },
 };
 

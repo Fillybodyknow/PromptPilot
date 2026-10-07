@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { publisherOf } from "@/lib/news/publisher";
 import { ExternalIcon } from "@/components/site/icons";
+import { PageBanner } from "@/components/site/PageBanner";
 import { Breadcrumb, ToolStatusBadge, card } from "@/components/site/ui";
 import { VendorLogo } from "@/components/VendorLogo";
 import { getCategory } from "@/lib/categories";
@@ -11,6 +12,7 @@ import { getCategoryEntries, getToolIndex } from "@/lib/data";
 import { formatIsoDate, formatNewsTime } from "@/lib/format";
 import { ACCESS_LABEL_LONG } from "@/lib/labels";
 import { listApprovedNews } from "@/lib/news/public";
+import { groupVisual } from "@/lib/visuals";
 import { one, type SearchParams } from "@/lib/params";
 import type { BaseEntry } from "@/lib/schema";
 
@@ -60,37 +62,45 @@ export default async function ToolPage({ params, searchParams }: Props) {
       : null;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-7 sm:px-6">
-      <Breadcrumb items={[{ label: "เครื่องมือ", href: "/tools" }, { label: category.titleTh, href: `/guides/${key}` }, { label: tool.name }]} />
-
-      <div className="mt-5 flex flex-wrap items-start justify-between gap-5">
+    <>
+    <PageBanner visual={groupVisual(category.group)}>
+      <Breadcrumb onDark items={[{ label: "เครื่องมือ", href: "/tools" }, { label: category.titleTh, href: `/guides/${key}` }, { label: tool.name }]} />
+      <div className="mt-5 flex flex-wrap items-end justify-between gap-5 pb-8">
         <div className="flex min-w-0 items-center gap-4">
-          <VendorLogo vendor={tool.vendor} size={64} className="rounded-2xl" />
+          <span className="rounded-2xl bg-white p-2 shadow-lg">
+            <VendorLogo vendor={tool.vendor} size={56} />
+          </span>
           <div className="min-w-0">
-            <h1 className="text-[28px] font-bold leading-tight sm:text-[32px]">{tool.name}</h1>
-            <p className="mt-1.5 text-[15px] text-muted">
+            <h1 className="text-3xl font-bold leading-tight sm:text-[40px]">{tool.name}</h1>
+            <p className="mt-1.5 text-[15px] text-white/80">
               {tool.vendor}
               {tool.modelId && ` · ${tool.modelId}`} · ข้อมูลจากแหล่ง{tool.sourceLabel === "official" ? " Official" : "ชุมชน"}
             </p>
           </div>
         </div>
-        <a href={tool.url} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center gap-2 rounded-xl bg-ink px-5 font-semibold text-background">
+        <a
+          href={tool.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-5 font-semibold text-white shadow-lg shadow-fuchsia-500/20 hover:brightness-110"
+        >
           ไปที่เว็บไซต์ <ExternalIcon size={16} />
         </a>
       </div>
-
-      <dl className="mt-6 flex flex-wrap gap-3">
-        <div className={`${card} flex-[1_1_200px] p-4`}>
+    </PageBanner>
+    <main className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+      <dl className="relative z-10 -mt-6 flex flex-wrap gap-3">
+        <div className={`${card} flex-[1_1_200px] p-4 shadow-lg shadow-black/10`}>
           <dt className="text-[13px] text-muted">สถานะ</dt>
           <dd className="mt-1">
             <ToolStatusBadge status={tool.status} />
           </dd>
         </div>
-        <div className={`${card} flex-[1_1_200px] p-4`}>
+        <div className={`${card} flex-[1_1_200px] p-4 shadow-lg shadow-black/10`}>
           <dt className="text-[13px] text-muted">เข้าถึงผ่าน</dt>
           <dd className="mt-1 font-semibold">{ACCESS_LABEL_LONG[tool.accessMethod] ?? tool.accessMethod}</dd>
         </div>
-        <div className={`${card} flex-[1_1_200px] p-4`}>
+        <div className={`${card} flex-[1_1_200px] p-4 shadow-lg shadow-black/10`}>
           <dt className="text-[13px] text-muted">ตรวจข้อมูลล่าสุด</dt>
           <dd className="mt-1 font-semibold">{formatIsoDate(tool.verifiedAt)}</dd>
         </div>
@@ -255,5 +265,6 @@ export default async function ToolPage({ params, searchParams }: Props) {
         </aside>
       </div>
     </main>
+    </>
   );
 }

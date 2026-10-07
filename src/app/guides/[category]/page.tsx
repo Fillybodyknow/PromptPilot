@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { CopyButton } from "@/components/guides/CopyButton";
 import { NewsList } from "@/components/news/NewsCards";
+import { PageBanner } from "@/components/site/PageBanner";
+import { groupVisual } from "@/lib/visuals";
 import { Breadcrumb, EmptyState, GroupDot, ToolStatusBadge, card } from "@/components/site/ui";
 import { CATEGORIES, GROUP_SLUGS, getCategoriesGrouped, getCategory } from "@/lib/categories";
 import { getCategoryEntries, getCategoryGuide } from "@/lib/data";
@@ -46,16 +48,18 @@ export default async function GuidePage({ params, searchParams }: Props) {
   const otherGroups = getCategoriesGrouped().filter((g) => g.group !== category.group);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-7 sm:px-6">
-      <Breadcrumb items={[{ label: "คู่มือตามงาน", href: "/guides" }, { label: category.titleTh }]} />
-      <span className="mt-3.5 inline-flex items-center gap-2 rounded-full bg-chip px-3 py-1 text-[13px] font-semibold">
+    <>
+    <PageBanner visual={groupVisual(category.group)}>
+      <Breadcrumb onDark items={[{ label: "คู่มือตามงาน", href: "/guides" }, { label: category.titleTh }]} />
+      <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[13px] font-semibold backdrop-blur-sm">
         <GroupDot group={category.group} />
         {category.group}
       </span>
-      <h1 className="mt-3 text-[30px] font-bold sm:text-[34px]">{category.titleTh}</h1>
-      <p className="mt-2 text-[17px] text-muted">{category.descriptionTh}</p>
-
-      <nav aria-label="ส่วนของคู่มือ" className="mt-6 flex flex-wrap gap-1 border-b border-line">
+      <h1 className="mt-3 text-4xl font-bold sm:text-[44px]">{category.titleTh}</h1>
+      <p className="mt-2 max-w-2xl text-lg text-white/85">{category.descriptionTh}</p>
+    </PageBanner>
+    <main className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+      <nav aria-label="ส่วนของคู่มือ" className="mt-4 flex flex-wrap gap-1 border-b border-line">
         {TABS.map((t) => (
           <Link
             key={t}
@@ -265,5 +269,6 @@ export default async function GuidePage({ params, searchParams }: Props) {
         </aside>
       </div>
     </main>
+    </>
   );
 }

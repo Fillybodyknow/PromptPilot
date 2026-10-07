@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { PageBanner, brandGradientText } from "@/components/site/PageBanner";
 import { EmptyState, ToolStatusBadge, card } from "@/components/site/ui";
+import { PAGE_VISUALS } from "@/lib/visuals";
 import { VendorLogo } from "@/components/VendorLogo";
 import { CATEGORIES, getCategory } from "@/lib/categories";
 import { getAllCategoriesWithEntries } from "@/lib/data";
@@ -39,13 +41,19 @@ export default async function ToolsPage({ searchParams }: { searchParams: Promis
   const field = "h-11 rounded-lg border border-line bg-background px-3 text-ink";
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
-      <h1 className="text-[32px] font-bold">เครื่องมือ AI ที่ทีมตรวจสอบแล้ว</h1>
-      <p className="mt-2 max-w-3xl leading-relaxed text-muted">
-        {all.length} เครื่องมือใน {CATEGORIES.length} หมวดงาน ทุกรายการมีแหล่งอ้างอิงและวันที่ตรวจล่าสุด ราคาเปลี่ยนบ่อย ตรวจกับผู้ให้บริการก่อนตัดสินใจซื้อ
-      </p>
-
-      <form method="get" aria-label="ตัวกรองเครื่องมือ" className={`${card} mt-6 flex flex-wrap items-end gap-3.5 p-4`}>
+    <>
+    <PageBanner visual={PAGE_VISUALS.tools}>
+      <div className="pb-10">
+        <h1 className="text-4xl font-bold sm:text-[44px]">
+          เครื่องมือ AI <span className={brandGradientText}>ที่ทีมตรวจสอบแล้ว</span>
+        </h1>
+        <p className="mt-3 max-w-2xl text-lg leading-relaxed text-white/85">
+          {all.length} เครื่องมือใน {CATEGORIES.length} หมวดงาน ทุกรายการมีแหล่งอ้างอิงและวันที่ตรวจล่าสุด ราคาเปลี่ยนบ่อย ตรวจกับผู้ให้บริการก่อนตัดสินใจซื้อ
+        </p>
+      </div>
+    </PageBanner>
+    <main className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+      <form method="get" aria-label="ตัวกรองเครื่องมือ" className={`${card} relative z-10 -mt-8 flex flex-wrap items-end gap-3.5 p-4 shadow-xl shadow-black/10`}>
         <label className="flex flex-[2_1_220px] flex-col gap-1.5 text-[13px] text-muted">
           ค้นหาชื่อ ผู้ให้บริการ หรือการใช้งาน
           <input type="search" name="q" defaultValue={sp.q} placeholder="เช่น Copilot, Typhoon, ประชุม" className={field} />
@@ -97,7 +105,7 @@ export default async function ToolsPage({ searchParams }: { searchParams: Promis
             <Link
               key={`${t.categoryKey}/${t.id}`}
               href={`/tools/${t.categoryKey}/${t.id}`}
-              className={`${card} flex min-w-0 flex-[1_1_300px] flex-col gap-2.5 p-5 hover:border-ink`}
+              className={`${card} flex min-w-0 flex-[1_1_300px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
             >
               <span className="flex items-center gap-3">
                 <VendorLogo vendor={t.vendor} size={40} />
@@ -118,5 +126,6 @@ export default async function ToolsPage({ searchParams }: { searchParams: Promis
         </div>
       )}
     </main>
+    </>
   );
 }

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NewsList } from "@/components/news/NewsCards";
+import { PageBanner, brandGradientText } from "@/components/site/PageBanner";
 import { Pagination } from "@/components/site/Pagination";
+import { PAGE_VISUALS } from "@/lib/visuals";
 import { EmptyState, card } from "@/components/site/ui";
 import { GROUP_SLUGS, categoryKeysOfGroup, getCategoriesGrouped } from "@/lib/categories";
 import { bangkokDayKey, formatDayHeading } from "@/lib/format";
@@ -58,13 +60,19 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const field = "h-11 rounded-lg border border-line bg-background px-3 text-ink";
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
-      <h1 className="text-[32px] font-bold">ข่าว AI สำหรับองค์กร</h1>
-      <p className="mt-2 max-w-3xl text-base leading-relaxed text-muted">
-        สรุปข่าวที่มีผลต่อการเลือกและใช้เครื่องมือ AI ในองค์กรไทย คัดด้วย AI และตรวจโดยทีมก่อนเผยแพร่ทุกชิ้น พร้อมลิงก์ไปข่าวต้นฉบับ
-      </p>
-
-      <form method="get" aria-label="ตัวกรองข่าว" className={`${card} mt-6 flex flex-wrap items-end gap-3.5 p-4`}>
+    <>
+    <PageBanner visual={PAGE_VISUALS.news}>
+      <div className="pb-10">
+        <h1 className="text-4xl font-bold sm:text-[44px]">
+          ข่าว AI <span className={brandGradientText}>สำหรับองค์กร</span>
+        </h1>
+        <p className="mt-3 max-w-2xl text-lg leading-relaxed text-white/85">
+          สรุปข่าวที่มีผลต่อการเลือกและใช้เครื่องมือ AI ในองค์กรไทย คัดด้วย AI และตรวจโดยทีมก่อนเผยแพร่ทุกชิ้น พร้อมลิงก์ไปข่าวต้นฉบับ
+        </p>
+      </div>
+    </PageBanner>
+    <main className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+      <form method="get" aria-label="ตัวกรองข่าว" className={`${card} relative z-10 -mt-8 flex flex-wrap items-end gap-3.5 p-4 shadow-xl shadow-black/10`}>
         <label className="flex flex-[1_1_180px] flex-col gap-1.5 text-[13px] text-muted">
           กลุ่มงาน
           <select name="group" defaultValue={categories ? sp.group : ""} className={field}>
@@ -132,5 +140,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
 
       <Pagination basePath="/news" params={{ ...keep, importance: importance ? String(importance) : undefined }} page={page} totalPages={Math.ceil(total / PAGE_SIZE)} />
     </main>
+    </>
   );
 }

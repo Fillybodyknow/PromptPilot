@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { NewsLead, NewsList, NewsSecondary } from "@/components/news/NewsCards";
-import { AlertIcon } from "@/components/site/icons";
-import { EmptyState, GroupDot, SectionHeader, card } from "@/components/site/ui";
+import { GroupCard } from "@/components/site/GroupCard";
+import { AlertIcon, SearchIcon } from "@/components/site/icons";
+import { PageBanner, brandGradientText } from "@/components/site/PageBanner";
+import { EmptyState, SectionHeader, card } from "@/components/site/ui";
 import { VendorLogo } from "@/components/VendorLogo";
-import { GROUP_SLUGS, categoryKeysOfGroup } from "@/lib/categories";
+import { withBasePath } from "@/lib/basePath";
+import { GROUP_SLUGS, categoryKeysOfGroup, getCategory } from "@/lib/categories";
+import { HERO_VISUAL, groupVisual } from "@/lib/visuals";
 import { getAllCategoriesWithEntries, getCategoriesGrouped, getFeaturedTools } from "@/lib/data";
 import { formatClock, formatLongDate } from "@/lib/format";
 import { getTopStories, listApprovedNews } from "@/lib/news/public";
@@ -21,12 +25,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   await connection();
   const group = one((await searchParams).group);
   const groupCategories = categoryKeysOfGroup(group);
-  const [top, latest, categories, featured, updatedAt] = await Promise.all([
+  const [top, latest, categories, featured, updatedAt, week] = await Promise.all([
     getTopStories(7, 3),
     listApprovedNews({ categories: groupCategories, pageSize: 10 }),
     getAllCategoriesWithEntries(),
     getFeaturedTools(),
     lastSuccessfulFetchAt(),
+    listApprovedNews({ sinceDays: 7, pageSize: 1 }),
   ]);
   const [lead, ...secondary] = top;
   const urgent = top.find((n) => n.importance === 3);
@@ -37,32 +42,55 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const totalTools = categories.reduce((sum, c) => sum + c.entries.length, 0);
   const groups = getCategoriesGrouped();
 
+  const leadGroup = lead?.categories.map(getCategory).find(Boolean)?.group;
+
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-7 sm:px-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b-2 border-ink pb-4">
-        <h1 className="text-[28px] font-bold sm:text-3xl">ข่าวเด่นวันนี้</h1>
-        <p className="text-sm text-muted">
-          {formatLongDate()}
-          {updatedAt && ` · อัปเดตล่าสุด ${formatClock(updatedAt)} น.`} · ทุกข่าวผ่านการตรวจของทีมก่อนเผยแพร่
-        </p>
-      </div>
+    <>
+      <PageBanner visual={HERO_VISUAL} size="lg">
+        <div className={lead ? "pb-16" : ""}>
+          <p className="text-sm text-white/75">
+            {formatLongDate()}
+            {updatedAt && ` · อัปเดตล่าสุด ${formatClock(updatedAt)} น.`}
+          </p>
+          <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.2] sm:text-[52px]">
+            ข่าว AI ที่<span className={brandGradientText}>องค์กรไทย</span>ต้องรู้ วันนี้
+          </h1>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-white/85">
+            สรุปข่าวที่มีผลต่อการเลือกและใช้เครื่องมือ AI คัดด้วย AI และตรวจโดยทีมทุกชิ้น พร้อมคู่มือและเครื่องมือที่ทดสอบแล้ว
+          </p>
+          <form action={withBasePath("/search")} role="search" className="mt-6 flex max-w-xl gap-2">
+            <label className="flex h-12 flex-1 items-center gap-2.5 rounded-xl border border-white/25 bg-white/10 px-4 text-white/80 backdrop-blur-md focus-within:border-white/60">
+              <SearchIcon />
+              <input type="search" name="q" placeholder="ค้นหาข่าว เครื่องมือ หรือคู่มือ" aria-label="ค้นหา" className="w-full bg-transparent text-white outline-none placeholder:text-white/60" />
+            </label>
+            <button type="submit" className="h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-6 font-semibold text-white shadow-lg shadow-fuchsia-500/20 hover:brightness-110">
+              ค้นหา
+            </button>
+          </form>
+          <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm text-white/80">
+            <div><dt className="sr-only">ข่าว 7 วัน</dt><dd><strong className="text-xl text-white">{week.total}</strong> ข่าวในสัปดาห์นี้</dd></div>
+            <div><dt className="sr-only">เครื่องมือ</dt><dd><strong className="text-xl text-white">{totalTools}</strong> เครื่องมือที่ตรวจแล้ว</dd></div>
+            <div><dt className="sr-only">คู่มือ</dt><dd><strong className="text-xl text-white">{categories.length}</strong> คู่มือตามงาน</dd></div>
+          </dl>
+          {urgent && (
+            <Link
+              href={`/news/${urgent.id}`}
+              className="mt-6 flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-rose-300/30 bg-rose-500/20 px-4 py-3 backdrop-blur-md hover:bg-rose-500/30"
+            >
+              <AlertIcon size={18} className="text-rose-200" />
+              <span className="text-sm font-bold text-rose-100">องค์กรต้องรู้</span>
+              <span className="flex-[1_1_240px] text-[15px] text-white">{urgent.titleTh ?? urgent.title}</span>
+              <span className="text-sm font-semibold text-rose-100">อ่านต่อ →</span>
+            </Link>
+          )}
+        </div>
+      </PageBanner>
 
-      {urgent && (
-        <Link
-          href={`/news/${urgent.id}`}
-          className="mt-5 flex flex-wrap items-center gap-x-3.5 gap-y-1 rounded-xl bg-urgent-bg px-4 py-3.5 text-urgent"
-        >
-          <AlertIcon size={20} />
-          <span className="text-sm font-bold">องค์กรต้องรู้</span>
-          <span className="flex-[1_1_280px] text-[15px] text-ink">{urgent.titleTh ?? urgent.title}</span>
-          <span className="text-sm font-semibold">อ่านต่อ →</span>
-        </Link>
-      )}
-
+      <main className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
       {lead ? (
-        <section aria-label="ข่าวนำ" className="mt-6 flex flex-wrap gap-6">
+        <section aria-label="ข่าวเด่นวันนี้" className="relative z-10 -mt-12 flex flex-wrap gap-6">
           <div className="min-w-0 flex-[2_1_560px]">
-            <NewsLead item={lead} />
+            <NewsLead item={lead} visual={leadGroup ? groupVisual(leadGroup) : undefined} />
           </div>
           {secondary.length > 0 && (
             <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-6">
@@ -111,18 +139,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </SectionHeader>
         <div className="mt-4 flex flex-wrap gap-4">
           {groups.map((g) => (
-            <Link
+            <GroupCard
               key={g.group}
+              group={g.group}
               href={`/guides/${g.categories[0].key}`}
-              className={`${card} flex min-w-0 flex-[1_1_260px] flex-col gap-2 px-5 py-4 hover:border-ink`}
-            >
-              <span className="flex items-center gap-2.5 text-[17px] font-bold">
-                <GroupDot group={g.group} className="h-2.5 w-2.5 rounded-[3px]" />
-                {g.group}
-              </span>
-              <span className="text-sm leading-relaxed text-muted">{g.categories.map((c) => c.titleTh).join(" · ")}</span>
-              <span className="text-[13px] text-muted">{toolCount(g.categories.map((c) => c.key))} เครื่องมือ</span>
-            </Link>
+              categories={g.categories.map((c) => c.titleTh)}
+              toolCount={toolCount(g.categories.map((c) => c.key))}
+            />
           ))}
         </div>
       </section>
@@ -135,7 +158,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               <Link
                 key={`${t.categoryKey}/${t.id}`}
                 href={`/tools/${t.categoryKey}/${t.id}`}
-                className={`${card} flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 hover:border-ink`}
+                className={`${card} flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
               >
                 <span className="flex items-center gap-3">
                   <VendorLogo vendor={t.vendor} size={40} />
@@ -156,7 +179,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <SectionHeader id="roles" title="อ่านตามบทบาทของคุณ" />
         <div className="mt-4 flex flex-wrap gap-4">
           {ROLES.map((r) => (
-            <Link key={r.role} href={r.href} className={`${card} flex min-w-0 flex-[1_1_300px] flex-col gap-2 p-5 hover:border-ink`}>
+            <Link
+              key={r.role}
+              href={r.href}
+              className={`${card} relative flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
+            >
+              <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
               <span className="text-[13px] font-semibold text-brand">{r.role}</span>
               <span className="text-lg font-bold">{r.title}</span>
               <span className="text-sm leading-relaxed text-muted">{r.body}</span>
@@ -164,6 +192,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           ))}
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 }

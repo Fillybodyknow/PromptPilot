@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { publisherOf } from "@/lib/news/publisher";
 import { ShareButtons } from "@/components/news/ShareButtons";
+import { PageBanner } from "@/components/site/PageBanner";
 import { ExternalIcon } from "@/components/site/icons";
 import { Breadcrumb, CategoryChip, ImportanceBadge, card } from "@/components/site/ui";
 import { getCategory } from "@/lib/categories";
@@ -10,6 +11,7 @@ import { getToolIndex } from "@/lib/data";
 import { formatNewsTime } from "@/lib/format";
 import { ROLE_LABEL } from "@/lib/labels";
 import { getApprovedNews, getRelatedNews } from "@/lib/news/public";
+import { HERO_VISUAL, groupVisual } from "@/lib/visuals";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -42,23 +44,28 @@ export default async function NewsDetailPage({ params }: Props) {
   const publisher = publisherOf(item);
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-wrap gap-10 px-4 pb-16 pt-7 sm:px-6">
-      <article className="min-w-0 flex-[999_1_640px]">
+    <>
+    <PageBanner visual={mainCategory ? groupVisual(mainCategory.group) : HERO_VISUAL}>
+      <div className="max-w-4xl pb-4">
         <Breadcrumb
+          onDark
           items={[{ label: "ข่าว AI", href: "/news" }, ...(mainCategory ? [{ label: mainCategory.titleTh, href: `/guides/${mainCategory.key}` }] : [])]}
         />
         <div className="mt-4 flex flex-wrap gap-2">
           <ImportanceBadge level={item.importance} />
           {item.categories.map((c) => (
-            <CategoryChip key={c} categoryKey={c} link />
+            <CategoryChip key={c} categoryKey={c} link onDark />
           ))}
         </div>
-        <h1 className="mt-3.5 text-[28px] font-bold leading-snug sm:text-[38px] sm:leading-[1.35]">{title}</h1>
-        <p className="mt-3 text-sm text-muted">
+        <h1 className="mt-3.5 text-[28px] font-bold leading-snug sm:text-[40px] sm:leading-[1.3]">{title}</h1>
+        <p className="mt-3 text-sm text-white/75">
           {publisher} · {formatNewsTime(item.publishedAt)} · ตรวจโดยทีมบรรณาธิการ
         </p>
-
-        {item.summaryTh && <p className="mt-6 text-lg leading-[1.85] sm:text-[19px]">{item.summaryTh}</p>}
+      </div>
+    </PageBanner>
+    <main className="mx-auto flex max-w-6xl flex-wrap gap-10 px-4 pb-16 pt-8 sm:px-6">
+      <article className="min-w-0 flex-[999_1_640px]">
+        {item.summaryTh && <p className="text-lg leading-[1.85] sm:text-[19px]">{item.summaryTh}</p>}
 
         {item.aiReason && (
           <div className="mt-6 rounded-2xl bg-brand-soft px-5 py-4">
@@ -148,5 +155,6 @@ export default async function NewsDetailPage({ params }: Props) {
         <ShareButtons title={title} />
       </aside>
     </main>
+    </>
   );
 }

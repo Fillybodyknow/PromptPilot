@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import type { Visual } from "@/lib/visuals";
 import { getCategory } from "@/lib/categories";
 import { formatNewsTime } from "@/lib/format";
 import type { PublicNews } from "@/lib/news/public";
@@ -18,9 +20,16 @@ function Meta({ item, className = "" }: { item: PublicNews; className?: string }
   );
 }
 
-export function NewsLead({ item }: { item: PublicNews }) {
+export function NewsLead({ item, visual }: { item: PublicNews; visual?: Visual }) {
   return (
-    <article className={`${card} flex flex-col gap-3.5 p-6 sm:p-7`}>
+    <article className={`${card} flex flex-col gap-3.5 overflow-hidden shadow-xl shadow-black/10 ${visual ? "" : "p-6 sm:p-7"}`}>
+      {visual && (
+        <Link href={href(item)} className="relative block aspect-[21/9] w-full overflow-hidden" tabIndex={-1} aria-hidden>
+          <Image src={visual.src} alt="" fill placeholder="blur" sizes="(min-width: 1024px) 700px, 100vw" className="object-cover transition-transform duration-500 hover:scale-105" />
+          <span className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        </Link>
+      )}
+      <div className={visual ? "flex flex-col gap-3.5 px-6 pb-6 sm:px-7 sm:pb-7" : "contents"}>
       <div className="flex flex-wrap items-center gap-2">
         <ImportanceBadge level={item.importance} />
         {item.categories.slice(0, 2).map((c) => (
@@ -44,13 +53,14 @@ export function NewsLead({ item }: { item: PublicNews }) {
           อ่านสรุปเต็ม →
         </Link>
       </div>
+      </div>
     </article>
   );
 }
 
 export function NewsSecondary({ item }: { item: PublicNews }) {
   return (
-    <article className={`${card} flex flex-1 flex-col gap-2.5 p-5`}>
+    <article className={`${card} flex flex-1 flex-col gap-2.5 p-5 shadow-xl shadow-black/10 transition-colors hover:border-brand/50`}>
       <div className="flex flex-wrap items-center gap-2">
         <ImportanceBadge level={item.importance} />
         {item.categories[0] && <CategoryChip categoryKey={item.categories[0]} />}
