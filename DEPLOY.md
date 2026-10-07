@@ -2,6 +2,13 @@
 
 สำหรับทีม IT Support ทำตามทีละขั้นจากบนลงล่างได้เลย ทุกคำสั่งให้รันใน **PowerShell แบบ Run as Administrator**
 
+งานส่วนใหญ่ทำผ่านสคริปต์ที่มากับโปรเจกต์ IT ทำเองแค่ 4 อย่าง:
+
+1. ติดตั้งซอฟต์แวร์พื้นฐาน
+2. สร้างฐานข้อมูล
+3. กรอกไฟล์ตั้งค่า
+4. ตั้ง IIS หรือ Apache
+
 ## ภาพรวม
 
 ```
@@ -14,6 +21,7 @@
                MySQL 8.0 ขึ้นไป (ฐานข้อมูล promptpilot)
 
 Task Scheduler ──ทุกวัน 06:00──▶ ดึงข่าว AI จากอินเทอร์เน็ต → ให้ AI สรุป → บันทึกลง MySQL
+               ──ทุกคืน 02:00──▶ สำรองฐานข้อมูลเป็นไฟล์ .sql
 ```
 
 - เว็บเป็นแอป Node.js ไม่ใช่ไฟล์ static จึงต้องรัน process ค้างไว้ตลอด แล้วให้ IIS/Apache ส่งต่อ request เข้ามา
@@ -27,6 +35,7 @@ Task Scheduler ──ทุกวัน 06:00──▶ ดึงข่าว AI 
 | port ภายในของแอป | `3000` |
 | ชื่อเว็บ | `promptpilot.company.local` |
 | ชื่อฐานข้อมูล / ผู้ใช้ MySQL | `promptpilot` |
+| โฟลเดอร์เก็บไฟล์สำรอง | `C:\Apps\backup` |
 
 ---
 
@@ -35,27 +44,27 @@ Task Scheduler ──ทุกวัน 06:00──▶ ดึงข่าว AI 
 | รายการ | ใช้ทำอะไร |
 |---|---|
 | สิทธิ์เข้าถึง repository `https://github.com/Fillybodyknow/PromptPilot` (ติดตั้งจาก branch `main`) | ดาวน์โหลดโค้ด |
-| ไฟล์ `promptpilot.sql` (dump ฐานข้อมูลจากเครื่องผู้พัฒนา) | ย้ายข้อมูลปัจจุบัน (ข่าวที่อนุมัติแล้ว, เครื่องมือที่แก้ไว้) ขึ้น server ถ้าไม่มี ให้ใช้ข้อมูลตั้งต้นแทนได้ (ขั้นที่ 5 ทางเลือก B) |
+| ไฟล์ `promptpilot-....sql` (สำรองฐานข้อมูลจากเครื่องผู้พัฒนา) | ย้ายข้อมูลปัจจุบัน (ข่าวที่อนุมัติแล้ว, เครื่องมือที่แก้ไว้) ขึ้น server ถ้าไม่มี ระบบจะใส่ข้อมูลตั้งต้นให้แทน |
 | `ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` | ให้ AI สรุปข่าว ระบบใช้ Claude ก่อน ถ้าใช้ไม่ได้จะใช้ OpenAI แทน มีอย่างน้อย 1 ตัว |
 | ชื่อผู้ใช้/รหัสผ่านสำหรับหน้า admin | ตั้ง `ADMIN_USER` / `ADMIN_PASSWORD` |
 
 > ส่ง API key และรหัสผ่านผ่านช่องทางที่ปลอดภัย (เช่น password manager ของบริษัท) ห้ามส่งทางแชตหรืออีเมลธรรมดา
 
-ผู้พัฒนาสร้างไฟล์ dump จากเครื่องตัวเองด้วยคำสั่ง:
+**สำหรับผู้พัฒนา:** สร้างไฟล์สำรองจากเครื่องตัวเองด้วยสคริปต์เดียวกับที่ server ใช้ (ไม่ต้องเปิดแบบ Administrator):
 
 ```powershell
-& "C:\Program Files\MySQL\MySQL Server 9.5\bin\mysqldump.exe" -u promptpilot -p --single-transaction --default-character-set=utf8mb4 --result-file=promptpilot.sql promptpilot
+powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1 -OutDir C:\Temp
 ```
 
 ## 1. สเปกเครื่องและเครือข่าย
 
 - **ระบบปฏิบัติการ:** Windows Server 2019 / 2022 / 2025 (x64)
-- **ทรัพยากร:** RAM ว่างอย่างน้อย 1 GB สำหรับแอป, พื้นที่ดิสก์ 3 GB
+- **ทรัพยากร:** RAM ว่างอย่างน้อย 1 GB สำหรับแอป, พื้นที่ดิสก์ 3 GB (ไม่รวมไฟล์สำรอง)
 - **การเชื่อมต่อขาออก (outbound HTTPS 443) ที่ต้องเปิด:**
-  - ตอนติดตั้ง: `registry.npmjs.org`, `github.com`, `fonts.googleapis.com`, `fonts.gstatic.com` (build ดาวน์โหลดฟอนต์)
+  - ตอนติดตั้ง/อัปเดต: `registry.npmjs.org`, `github.com`, `fonts.googleapis.com`, `fonts.gstatic.com` (build ดาวน์โหลดฟอนต์)
   - ตอนใช้งาน: `api.anthropic.com`, `api.openai.com` และเว็บแหล่งข่าว เช่น `news.google.com`, `blog.google`, `deepmind.google`, `openai.com`, `huggingface.co`, `github.blog`, `github.com`, `aws.amazon.com`, `azure.microsoft.com`, `www.microsoft.com`, `cloudblog.withgoogle.com`, `www.blognone.com`
   - ผู้ดูแลเนื้อหาเพิ่มแหล่งข่าวใหม่ได้เองจากหน้า admin ถ้า firewall ใช้ allowlist ต้องเพิ่มโดเมนตามไปด้วย
-- **ถ้าองค์กรออกอินเทอร์เน็ตผ่าน HTTP proxy:** ดูหัวข้อ "ใช้ผ่าน proxy ขององค์กร" ท้ายขั้นที่ 4
+- **ถ้าองค์กรออกอินเทอร์เน็ตผ่าน HTTP proxy:** ดูหัวข้อ "ใช้ผ่าน proxy ขององค์กร" ในขั้นที่ 4
 - **ขาเข้า:** เปิดแค่ 443 (และ 80 ถ้าจะ redirect ไป HTTPS) ที่ IIS/Apache ส่วน port 3000 **ไม่ต้องเปิด** เพราะแอปรับเฉพาะจากเครื่องตัวเอง
 
 ## 2. ติดตั้งซอฟต์แวร์พื้นฐาน
@@ -63,13 +72,13 @@ Task Scheduler ──ทุกวัน 06:00──▶ ดึงข่าว AI 
 1. **Node.js 24 LTS (x64)** จาก https://nodejs.org ติดตั้งด้วยไฟล์ `.msi` ค่าเริ่มต้นทั้งหมด (ให้เพิ่มเข้า PATH)
 2. **Git for Windows** จาก https://git-scm.com
 3. **MySQL Server 8.0 ขึ้นไป** ถ้ายังไม่มี (ใช้ MySQL ที่องค์กรมีอยู่แล้วก็ได้ ไม่จำเป็นต้องอยู่เครื่องเดียวกัน)
+   - ถ้า MySQL อยู่เครื่องอื่น ให้ลง **MySQL client tools** บนเครื่องนี้ด้วย เพื่อให้มี `mysqldump.exe` ไว้สำรองข้อมูล
 4. **NSSM** (ตัวช่วยรันโปรแกรมเป็น Windows Service) จาก https://nssm.cc/download แตกไฟล์แล้ววาง `win64\nssm.exe` ไว้ที่ `C:\Tools\nssm\nssm.exe`
 
 ปิด PowerShell แล้วเปิดใหม่ (แบบ Administrator) แล้วตรวจ:
 
 ```powershell
 node -v      # ต้องขึ้นต้นด้วย v24
-npm -v
 git --version
 ```
 
@@ -92,152 +101,100 @@ EXIT;
 ```
 
 - ต้องเป็น `utf8mb4` เพราะเนื้อหาเป็นภาษาไทย
+- ตั้งชื่อผู้ใช้ให้ตรงกับชื่อฐานข้อมูล จะได้ไม่ต้องใส่ `DB_USER` ในไฟล์ตั้งค่า
 - ถ้า MySQL อยู่คนละเครื่องกับแอป ให้เปลี่ยน `'localhost'` เป็น IP ของเครื่องแอป และเปิด port 3306 ระหว่างสองเครื่องเท่านั้น
 - แอปต้องการสิทธิ์สร้าง/แก้ตารางด้วย (ใช้ตอนอัปเดตเวอร์ชัน) จึงให้ `ALL PRIVILEGES` เฉพาะฐานข้อมูลนี้
 
-## 4. ดาวน์โหลดโค้ดและตั้งค่า
+## 4. ดาวน์โหลดโค้ดและกรอกไฟล์ตั้งค่า
 
 ```powershell
 New-Item -ItemType Directory -Force C:\Apps | Out-Null
 git clone --branch main https://github.com/Fillybodyknow/PromptPilot.git C:\Apps\PromptPilot
 Set-Location C:\Apps\PromptPilot
+Copy-Item .env.example .env.local
+notepad .env.local
 ```
 
-สร้างไฟล์ตั้งค่า `C:\Apps\PromptPilot\.env.local`:
+กรอกค่าในไฟล์ตามคำอธิบายในไฟล์ แล้วบันทึก
 
-```powershell
-notepad C:\Apps\PromptPilot\.env.local
-```
+> รหัสผ่านและชื่อผู้ใช้ **ห้ามมี** `$` `#` `"` `'` `` ` `` `\` และช่องว่าง และห้ามใส่เครื่องหมายคำพูดครอบค่า (สคริปต์ติดตั้งจะตรวจให้) ถ้ารหัสผ่าน MySQL ที่ตั้งในขั้นที่ 3 มีอักขระพวกนี้ ให้เปลี่ยนรหัสก่อน
 
-ใส่ค่าตามนี้ แล้วบันทึกเป็น UTF-8:
 
-```ini
-# ฐานข้อมูล
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=promptpilot
-DB_PASS=รหัสผ่าน MySQL จากขั้นที่ 3
-# DB_USER=        ← ใส่เฉพาะเมื่อชื่อผู้ใช้ MySQL ไม่ใช่ชื่อเดียวกับ DB_NAME
+| ค่า | ใส่อะไร |
+|---|---|
+| `DB_HOST`, `DB_PORT` | ที่อยู่ MySQL (ค่าเริ่มต้น `localhost`, `3306`) |
+| `DB_NAME` | `promptpilot` |
+| `DB_PASS` | รหัสผ่าน MySQL จากขั้นที่ 3 |
+| `DB_USER` | เว้นว่าง ยกเว้นชื่อผู้ใช้ MySQL ไม่ใช่ชื่อเดียวกับ `DB_NAME` |
+| `ADMIN_USER`, `ADMIN_PASSWORD` | บัญชีเข้าหน้า admin (รหัสยาวอย่างน้อย 16 ตัวอักษร) |
+| `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | API key จากผู้พัฒนา (มีอย่างน้อย 1 ตัว) |
 
-# บัญชีเข้าหน้า /admin
-ADMIN_USER=ชื่อผู้ใช้ admin
-ADMIN_PASSWORD=รหัสผ่าน admin (ยาวอย่างน้อย 16 ตัวอักษร)
-
-# AI สำหรับสรุปข่าว (มีอย่างน้อย 1 ตัว — ใช้ Claude ก่อน ไม่ได้จะใช้ OpenAI)
-ANTHROPIC_API_KEY=
-OPENAI_API_KEY=
-```
-
-ล็อกไฟล์ให้อ่านได้เฉพาะ Administrators และ SYSTEM (ไฟล์มีรหัสผ่านและ API key):
-
-```powershell
-icacls C:\Apps\PromptPilot\.env.local /inheritance:r /grant:r "Administrators:F" "SYSTEM:F"
-```
-
-> ห้าม commit หรือคัดลอกไฟล์ `.env.local` ไปที่อื่น
-
-ติดตั้ง package และ build:
-
-```powershell
-Set-Location C:\Apps\PromptPilot
-npm ci
-npm run build
-```
-
-- ใช้ `npm ci` แบบปกติ **ห้ามใส่ `--omit=dev` หรือตั้ง `NODE_ENV=production` ก่อนรัน** เพราะสคริปต์ดึงข่าวและอัปเดตฐานข้อมูลใช้ package กลุ่ม dev (`tsx`, `drizzle-kit`)
-- ต้องรัน `npm ci` บน server เครื่องนี้เอง ห้ามคัดลอกโฟลเดอร์ `node_modules` มาจากเครื่องอื่น เพราะตัวย่อรูป (`sharp`) ต้องเป็นของ Windows x64
-- ถ้าจะให้เว็บอยู่ใต้ path ย่อย เช่น `https://intranet.company.local/promptpilot` ให้ตั้ง `$env:NEXT_PUBLIC_BASE_PATH="/promptpilot"` ก่อน `npm run build` (ค่านี้ฝังตอน build) ถ้าใช้โดเมนของตัวเองไม่ต้องตั้ง
+> ห้าม commit หรือคัดลอกไฟล์ `.env.local` ไปที่อื่น สคริปต์ติดตั้งจะล็อกให้อ่านได้เฉพาะ Administrators และ SYSTEM
 
 ### ใช้ผ่าน proxy ขององค์กร
 
-ถ้าเครื่องออกอินเทอร์เน็ตได้ผ่าน proxy เท่านั้น:
-
-- **ตอนติดตั้ง:**
-  ```powershell
-  npm config set proxy http://proxy.company.local:8080
-  npm config set https-proxy http://proxy.company.local:8080
-  ```
-- **ตอนใช้งาน:** ตั้งเป็น environment variable ระดับเครื่อง เพราะ Node.js อ่านค่า proxy ตอนเริ่ม process ซึ่งเกิดก่อนอ่าน `.env.local` จึงใส่ใน `.env.local` ไม่ได้
-  ```powershell
-  [Environment]::SetEnvironmentVariable("NODE_USE_ENV_PROXY", "1", "Machine")
-  [Environment]::SetEnvironmentVariable("HTTPS_PROXY", "http://proxy.company.local:8080", "Machine")
-  [Environment]::SetEnvironmentVariable("NO_PROXY", "localhost,127.0.0.1", "Machine")
-  ```
-  ตั้งแล้วให้รีสตาร์ต service PromptPilot (ขั้นที่ 7) เพื่อให้เว็บและงานดึงข่าวเห็นค่าใหม่
-
-## 5. สร้างตารางและใส่ข้อมูล
+ข้ามหัวข้อนี้ได้ถ้าเครื่องออกอินเทอร์เน็ตได้ตรง ถ้าต้องผ่าน proxy ให้ตั้งค่าก่อนขั้นที่ 5:
 
 ```powershell
-Set-Location C:\Apps\PromptPilot
+npm config set proxy http://proxy.company.local:8080
+npm config set https-proxy http://proxy.company.local:8080
+[Environment]::SetEnvironmentVariable("NODE_USE_ENV_PROXY", "1", "Machine")
+[Environment]::SetEnvironmentVariable("HTTPS_PROXY", "http://proxy.company.local:8080", "Machine")
+[Environment]::SetEnvironmentVariable("NO_PROXY", "localhost,127.0.0.1", "Machine")
 ```
 
-เลือกทางใดทางหนึ่ง:
+- 2 บรรทัดแรก: ให้ `npm` ดาวน์โหลด package ผ่าน proxy
+- 3 บรรทัดหลัง: ให้เว็บและงานดึงข่าวออกเน็ตผ่าน proxy
+  - ต้องตั้งเป็น environment variable ระดับเครื่อง เพราะ Node.js อ่านค่า proxy ตอนเริ่ม process ก่อนจะอ่าน `.env.local`
+- สคริปต์ติดตั้งและสคริปต์อัปเดตจะส่งค่าเหล่านี้ให้ service และ build ให้เอง ไม่ต้องรีสตาร์ตเครื่อง
 
-**ทางเลือก A — ย้ายข้อมูลจากเครื่องผู้พัฒนา (แนะนำ)**
+## 5. รันสคริปต์ติดตั้ง
 
-วางไฟล์ไว้ที่ `C:\Apps\promptpilot.sql` แล้วรัน (ใช้ `/` ใน path ของ `source`):
+**ถ้ามีไฟล์สำรองจากผู้พัฒนา (แนะนำ)** วางไฟล์ไว้ที่ `C:\Apps\` แล้วรัน (เปลี่ยนชื่อไฟล์ให้ตรง):
 
 ```powershell
-& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u promptpilot -p --default-character-set=utf8mb4 promptpilot --execute="source C:/Apps/promptpilot.sql"
-npm run db:migrate
+powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1 -SqlDump C:\Apps\promptpilot-2026-10-07_1647.sql
 ```
 
-> อย่านำเข้าด้วยการ pipe (`Get-Content ... | mysql`) ใน Windows PowerShell 5.1 เพราะจะแปลง encoding จนภาษาไทยเสีย
-
-`db:migrate` จะอัปเดตโครงสร้างตารางให้ตรงกับโค้ด ถ้าตรงอยู่แล้วจะไม่เปลี่ยนอะไร
-
-**ทางเลือก B — เริ่มจากข้อมูลตั้งต้น (ไม่มีข่าวเก่า)**
+**ถ้าไม่มีไฟล์สำรอง** (เริ่มจากเครื่องมือและคู่มือตั้งต้น ยังไม่มีข่าว):
 
 ```powershell
-npm run db:migrate
-npm run db:seed
+powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1
 ```
 
-ทั้งสองทางต้องจบด้วยข้อความ `migrations applied successfully` และไม่มี error
+สคริปต์ใช้เวลาประมาณ 3–10 นาที และจะทำตามลำดับนี้ ถ้าขั้นไหนผิดพลาดจะหยุดพร้อมขึ้น `FAILED: ...` เป็นสีแดงบอกสาเหตุ
 
-## 6. ทดสอบรันด้วยมือ
+1. ตรวจว่ารันแบบ Administrator และมี Node.js 24, NSSM, `mysqldump.exe`
+2. ตรวจว่า `.env.local` กรอกครบ แล้วล็อกสิทธิ์ไฟล์
+3. ติดตั้ง package (`npm ci`)
+4. นำเข้าไฟล์สำรอง (ถ้าใส่ `-SqlDump`) แล้วสร้าง/อัปเดตตาราง
+   - ถ้าไม่ได้นำเข้าไฟล์สำรอง จะใส่ข้อมูลตั้งต้นให้
+   - ฐานข้อมูลที่มีข้อมูลอยู่แล้วจะไม่ถูกเขียนทับ
+5. build เว็บ
+6. ติดตั้ง Windows Service ชื่อ `PromptPilot` (เปิดเองเมื่อเครื่องรีสตาร์ต และเปิดใหม่เองถ้าล่ม) แล้วตรวจว่าเว็บตอบ 200
+7. ตั้ง Task Scheduler 2 งาน:
+   - `PromptPilot News Fetch`: ดึงข่าวทุกวัน 06:00
+   - `PromptPilot DB Backup`: สำรองฐานข้อมูลทุกคืน 02:00 ไปที่ `C:\Apps\backup` เก็บย้อนหลัง 30 วัน
 
-```powershell
-Set-Location C:\Apps\PromptPilot
-node node_modules\next\dist\bin\next start -H 127.0.0.1 -p 3000
-```
+จบแล้วต้องขึ้น `Installation complete.` สีเขียว
 
-เปิด PowerShell อีกหน้าต่างแล้วตรวจ:
+ตัวเลือกเพิ่มเติม (ใส่ต่อท้ายคำสั่งได้):
 
-```powershell
-(Invoke-WebRequest http://127.0.0.1:3000/ -UseBasicParsing).StatusCode   # ต้องได้ 200
-```
+| ตัวเลือก | ค่าเริ่มต้น | ใช้เมื่อ |
+|---|---|---|
+| `-Port 3100` | `3000` | port 3000 ถูกโปรแกรมอื่นใช้อยู่ (ต้องแก้ reverse proxy ในขั้นที่ 6 ให้ตรงด้วย) |
+| `-Nssm D:\Tools\nssm.exe` | `C:\Tools\nssm\nssm.exe` | วาง NSSM ไว้ที่อื่น |
+| `-FetchTime 07:30` | `06:00` | อยากเปลี่ยนเวลาดึงข่าว |
+| `-BackupDir D:\Backup\PromptPilot` | `C:\Apps\backup` | อยากเก็บไฟล์สำรองที่อื่น |
+| `-MysqlBin "C:\Program Files\MySQL\MySQL Server 8.0\bin"` | หาเองใน `C:\Program Files\MySQL` | ลง MySQL ไว้ที่อื่น |
 
-ได้ 200 แล้วกด `Ctrl+C` ในหน้าต่างแรกเพื่อหยุด แล้วไปขั้นถัดไป
+**รันซ้ำได้:** ถ้าแก้ `.env.local` หรือแก้ตัวเลือกข้างบน ให้รันสคริปต์เดิมอีกครั้ง (ไม่ต้องใส่ `-SqlDump` ซ้ำ) ระบบจะตั้งค่าใหม่ทั้งหมด โดยข้อมูลในฐานข้อมูลไม่หาย ถ้าการรันซ้ำล้มเหลวกลางทาง สคริปต์จะเปิดเว็บเดิมกลับมาให้
 
-## 7. ติดตั้งเป็น Windows Service (เปิดเองเมื่อเครื่องรีสตาร์ต)
+สคริปต์จะจำกัดสิทธิ์โฟลเดอร์ `C:\Apps\PromptPilot` และ `C:\Appsackup` ให้เฉพาะ Administrators และ SYSTEM เพราะ service และงานตามเวลารันเป็น SYSTEM ถ้าผู้ใช้ทั่วไปวางไฟล์ในโฟลเดอร์นี้ได้ ก็จะสั่งให้ SYSTEM รันโปรแกรมได้
 
-```powershell
-$nssm = "C:\Tools\nssm\nssm.exe"
-& $nssm install PromptPilot "C:\Program Files\nodejs\node.exe"
-& $nssm set PromptPilot AppParameters "node_modules\next\dist\bin\next start -H 127.0.0.1 -p 3000"
-& $nssm set PromptPilot AppDirectory "C:\Apps\PromptPilot"
-& $nssm set PromptPilot DisplayName "PromptPilot Web"
-& $nssm set PromptPilot Start SERVICE_AUTO_START
-& $nssm set PromptPilot AppStdout "C:\Apps\PromptPilot\logs\web.log"
-& $nssm set PromptPilot AppStderr "C:\Apps\PromptPilot\logs\web.log"
-& $nssm set PromptPilot AppRotateFiles 1
-& $nssm set PromptPilot AppRotateBytes 10485760
-New-Item -ItemType Directory -Force C:\Apps\PromptPilot\logs | Out-Null
-& $nssm start PromptPilot
-```
+ถ้าจะให้เว็บอยู่ใต้ path ย่อย เช่น `https://intranet.company.local/promptpilot` แทนการใช้โดเมนของตัวเอง ให้ตั้ง `[Environment]::SetEnvironmentVariable("NEXT_PUBLIC_BASE_PATH", "/promptpilot", "Machine")` ก่อนรันสคริปต์ และแจ้งผู้พัฒนาด้วย
 
-- `AppDirectory` ต้องเป็นโฟลเดอร์โปรเจกต์ เพราะแอปอ่าน `.env.local` และเขียน `logs\` จากโฟลเดอร์ที่รันอยู่
-- service รันเป็น LocalSystem โดยค่าเริ่มต้น ถ้าองค์กรกำหนดให้ใช้ service account แยก บัญชีนั้นต้องอ่าน `.env.local` และเขียน `C:\Apps\PromptPilot\logs` กับ `C:\Apps\PromptPilot\.next` ได้
-
-ตรวจว่า service ทำงาน:
-
-```powershell
-Get-Service PromptPilot                                                    # Status ต้องเป็น Running
-(Invoke-WebRequest http://127.0.0.1:3000/ -UseBasicParsing).StatusCode    # ต้องได้ 200
-```
-
-## 8. ตั้ง Reverse Proxy
+## 6. ตั้ง Reverse Proxy
 
 เลือกตามที่ server ใช้ **IIS หรือ Apache อย่างใดอย่างหนึ่ง**
 
@@ -246,7 +203,7 @@ Get-Service PromptPilot                                                    # Sta
 1. **ส่ง Host header เดิมต่อให้แอป** แอปตรวจว่าคำขอบันทึกข้อมูลมาจากโดเมนเดียวกัน (กัน CSRF) ถ้า proxy เปลี่ยน Host เป็น `127.0.0.1:3000` การกดบันทึกในหน้า admin จะล้มเหลว
 2. **ส่ง error 401 ของแอปผ่านไปตรงๆ** หน้า admin ใช้ Basic Authentication ของแอปเอง ถ้า proxy เอาหน้า error ของตัวเองมาแทน browser จะไม่ขึ้นช่องให้ใส่รหัสผ่าน
 
-### 8A. IIS
+### 6A. IIS
 
 1. ติดตั้ง **URL Rewrite** และ **Application Request Routing (ARR) 3.0** จาก https://www.iis.net/downloads/microsoft
 2. เปิด proxy ของ ARR และให้ส่ง Host header เดิม:
@@ -284,7 +241,7 @@ Get-Service PromptPilot                                                    # Sta
    & $appcmd set config -section:system.webServer/proxy /responseBufferLimit:"0" /commit:apphost
    ```
 
-### 8B. Apache (httpd บน Windows)
+### 6B. Apache (httpd บน Windows)
 
 1. ใน `httpd.conf` เปิดโมดูล (เอา `#` หน้าบรรทัดออก): `mod_proxy`, `mod_proxy_http`, `mod_headers`, `mod_ssl`
 2. เพิ่ม VirtualHost:
@@ -305,25 +262,20 @@ Get-Service PromptPilot                                                    # Sta
 
 > ใช้ HTTPS เสมอ เพราะ Basic Authentication ของหน้า admin ส่งรหัสผ่านไปกับทุก request ถ้าเป็น HTTP ธรรมดาจะถูกดักอ่านได้
 
-## 9. ตั้งงานดึงข่าวรายวัน
+## 7. ทดสอบดึงข่าวและตรวจรับงาน
+
+สั่งดึงข่าวทันทีหนึ่งรอบ:
 
 ```powershell
-schtasks /Create /TN "PromptPilot News Fetch" /SC DAILY /ST 06:00 /RU SYSTEM /RL HIGHEST /F `
-  /TR "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\news-task.ps1"
+Start-ScheduledTask -TaskName "PromptPilot News Fetch"
 ```
 
-ทดสอบรันทันทีหนึ่งครั้ง:
-
-```powershell
-schtasks /Run /TN "PromptPilot News Fetch"
-```
-
-รอ 1–3 นาทีแล้วดู log ของวันนี้ที่ `C:\Apps\PromptPilot\logs\news-YYYY-MM-DD.log` บรรทัดสุดท้ายต้องขึ้นต้นด้วย `✅`
+รอ 1–3 นาทีแล้วเปิด log ของวันนี้ที่ `C:\Apps\PromptPilot\logs\news-YYYY-MM-DD.log` บรรทัดสุดท้ายต้องขึ้นต้นด้วย `✅`
 
 - ข่าวที่ดึงมาจะอยู่สถานะ "รออนุมัติ" ยังไม่ขึ้นเว็บจนกว่าผู้ดูแลเนื้อหาจะอนุมัติในหน้า admin
 - ผู้ดูแลเนื้อหากดปุ่มดึงข่าวเองจากหน้า admin ได้ด้วย ระบบกันไม่ให้รันซ้อนกัน
 
-## 10. ตรวจรับงาน
+ตรวจรับงาน:
 
 | # | ทดสอบ | ผลที่ต้องได้ |
 |---|---|---|
@@ -332,74 +284,71 @@ schtasks /Run /TN "PromptPilot News Fetch"
 | 3 | เปิด `/admin` | browser ขึ้นช่องให้ใส่ชื่อผู้ใช้/รหัสผ่าน |
 | 4 | ใส่ `ADMIN_USER` / `ADMIN_PASSWORD` | เข้าหน้า admin ได้ |
 | 5 | แก้ข้อมูลเล็กน้อยในหน้า admin แล้วกดบันทึก (แล้วแก้กลับ) | บันทึกสำเร็จ หน้าเว็บเปลี่ยนตาม |
-| 6 | หน้า admin > ประวัติการดึงข่าว | เห็นรอบที่ทดสอบในขั้นที่ 9 สถานะสำเร็จ |
-| 7 | รีสตาร์ตเครื่อง | เว็บกลับมาเองโดยไม่ต้องทำอะไร |
+| 6 | หน้า admin > ประวัติการดึงข่าว | เห็นรอบที่เพิ่งทดสอบ สถานะสำเร็จ |
+| 7 | `Start-ScheduledTask -TaskName "PromptPilot DB Backup"` แล้วดู `C:\Apps\backup` | มีไฟล์ `promptpilot-....sql` ใหม่ |
+| 8 | รีสตาร์ตเครื่อง | เว็บกลับมาเองโดยไม่ต้องทำอะไร |
 
-## 11. สำรองข้อมูล
+## 8. สำรองและกู้คืนข้อมูล
 
 สิ่งที่ต้องสำรองมีแค่ **ฐานข้อมูล** กับไฟล์ **`.env.local`** ส่วนโค้ดดึงใหม่จาก git ได้เสมอ
 
-ตั้งสำรองฐานข้อมูลทุกคืน:
+- **ฐานข้อมูล:** งาน `PromptPilot DB Backup` สำรองให้ทุกคืนไปที่ `C:\Apps\backup` อยู่แล้ว ควรให้ระบบ backup ขององค์กรเก็บโฟลเดอร์นี้ไปไว้นอกเครื่องด้วย
+- **`.env.local`:** เก็บสำเนาไว้ใน password manager ขององค์กร
 
-1. สร้างไฟล์ `C:\Apps\backup\my.cnf` (ล็อกสิทธิ์แบบเดียวกับ `.env.local`) เพื่อไม่ต้องใส่รหัสผ่านในคำสั่ง:
-   ```ini
-   [mysqldump]
-   user=promptpilot
-   password=รหัสผ่าน MySQL
-   ```
-2. สร้างสคริปต์ `C:\Apps\backup\backup-promptpilot.ps1`:
-   ```powershell
-   $out = "C:\Apps\backup\promptpilot-{0}.sql" -f (Get-Date -Format "yyyy-MM-dd")
-   & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe" --defaults-extra-file=C:\Apps\backup\my.cnf `
-     --single-transaction --default-character-set=utf8mb4 --result-file=$out promptpilot
-   # เก็บย้อนหลัง 30 วัน
-   Get-ChildItem C:\Apps\backup\promptpilot-*.sql | Where-Object LastWriteTime -lt (Get-Date).AddDays(-30) | Remove-Item
-   ```
-3. ตั้งเวลา:
-   ```powershell
-   schtasks /Create /TN "PromptPilot DB Backup" /SC DAILY /ST 02:00 /RU SYSTEM /F `
-     /TR "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Apps\backup\backup-promptpilot.ps1"
-   ```
+สำรองทันทีด้วยมือ:
 
-กู้คืน: หยุดเว็บก่อน (`Stop-Service PromptPilot`) แล้วใช้คำสั่ง `mysql ... --execute="source ..."` แบบขั้นที่ 5 ทางเลือก A โดยชี้ไปที่ไฟล์ backup ที่ต้องการ จากนั้น `Start-Service PromptPilot`
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\backup-db.ps1
+```
 
-## 12. อัปเดตเป็นเวอร์ชันใหม่
-
-เมื่อผู้พัฒนาแจ้งว่ามีเวอร์ชันใหม่:
+กู้คืนจากไฟล์สำรอง (ทุกตารางในฐานข้อมูลจะถูกลบแล้วสร้างใหม่จากไฟล์ ข้อมูลปัจจุบันหายทั้งหมด):
 
 ```powershell
 Set-Location C:\Apps\PromptPilot
-# 1) สำรองฐานข้อมูลก่อนเสมอ
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\Apps\backup\backup-promptpilot.ps1
-# 2) ดึงโค้ด ติดตั้ง build
-git pull
-npm ci
-npm run build
-# 3) อัปเดตโครงสร้างตาราง
+Stop-Service PromptPilot
+npx tsx scripts/db/import-dump.ts C:\Apps\backup\promptpilot-2026-10-07_0200.sql --force
 npm run db:migrate
-# 4) รีสตาร์ตเว็บ
-Restart-Service PromptPilot
+Start-Service PromptPilot
 ```
 
-- ถ้า `npm run build` ล้มเหลว เว็บเดิมยังทำงานต่อได้ตามปกติ (ยังไม่ได้รีสตาร์ต) ให้แจ้งผู้พัฒนาพร้อมข้อความ error
-- **ย้อนกลับเวอร์ชัน:** `git log --oneline -5` เพื่อดูเวอร์ชันก่อนหน้า แล้ว `git checkout <รหัส commit>` → `npm ci` → `npm run build` → `Restart-Service PromptPilot`
-  - ถ้าเวอร์ชันใหม่ไปเปลี่ยนโครงสร้างตารางด้วย ให้กู้ฐานข้อมูลจาก backup ที่ทำในข้อ 1 ด้วย
+## 9. อัปเดตเป็นเวอร์ชันใหม่
 
-## 13. แก้ปัญหาที่พบบ่อย
+เมื่อผู้พัฒนาแจ้งว่ามีเวอร์ชันใหม่ รันคำสั่งเดียว:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\update.ps1
+```
+
+สคริปต์จะทำตามลำดับ:
+
+1. สำรองฐานข้อมูลก่อน ถ้าสำรองไม่ได้จะหยุดโดยไม่แตะอะไร
+2. ดึงโค้ดล่าสุด ถ้าไม่มีเวอร์ชันใหม่จะจบตรงนี้
+3. หยุดเว็บ แล้วติดตั้ง package และ build (เว็บหยุดประมาณ 1–3 นาที)
+4. อัปเดตตาราง
+5. เปิดเว็บ แล้วตรวจว่าตอบ 200
+
+**ถ้าขั้นไหนผิดพลาด** สคริปต์จะคืนเว็บเป็นเวอร์ชันเดิมและเปิดกลับมาให้เอง แล้วขึ้นข้อความ error สีแดง ให้ส่งข้อความนั้นให้ผู้พัฒนา ถ้ารันซ้ำแล้วไม่มีเวอร์ชันใหม่แต่เว็บยังไม่ทำงาน สคริปต์จะ build และเปิดเว็บใหม่ให้
+
+ไม่ต้องใส่ port หรือที่เก็บไฟล์สำรอง สคริปต์อ่านค่าที่ตั้งไว้ตอนติดตั้งเอง
+
+## 10. แก้ปัญหาที่พบบ่อย
 
 | อาการ | สาเหตุที่เป็นไปได้ | วิธีแก้ |
 |---|---|---|
+| `install.ps1` ขึ้น `Run PowerShell as Administrator` | ไม่ได้เปิด PowerShell แบบ Administrator | คลิกขวา PowerShell > Run as Administrator |
+| `install.ps1` ขึ้น `Empty in .env.local: ...` | ยังไม่ได้กรอกค่าตามที่บอก | กรอกใน `.env.local` แล้วรันใหม่ |
+| `install.ps1` ขึ้น `มีตารางอยู่แล้ว ... ไม่นำเข้า` | ฐานข้อมูลมีข้อมูลอยู่แล้ว สคริปต์จึงไม่เขียนทับ | ถ้าตั้งใจแทนที่ทั้งหมด ใช้วิธีกู้คืนในขั้นที่ 8 ถ้าไม่ได้ตั้งใจ ให้รันใหม่โดยไม่ใส่ `-SqlDump` |
 | IIS ขึ้น 502.3 / Apache ขึ้น 503 | service PromptPilot ไม่ได้รัน | `Get-Service PromptPilot` แล้วดู `logs\web.log` |
-| `logs\web.log` มี `ยังไม่ได้ตั้งค่าฐานข้อมูล` | ไม่เจอ `.env.local` | ตรวจว่า `AppDirectory` ของ NSSM เป็น `C:\Apps\PromptPilot` และไฟล์ชื่อ `.env.local` จริง (ไม่ใช่ `.env.local.txt`) |
 | `ER_ACCESS_DENIED_ERROR` | ชื่อผู้ใช้/รหัสผ่าน MySQL ไม่ตรง | ตรวจ `DB_NAME`, `DB_PASS` (และ `DB_USER`) แล้ว `Restart-Service PromptPilot` |
 | `ECONNREFUSED ...:3306` | MySQL ไม่ได้รัน หรือ host/port ผิด | ตรวจ service MySQL และ `DB_HOST`, `DB_PORT` |
-| เข้า `/admin` แล้วไม่ขึ้นช่องรหัสผ่าน หรือขึ้นหน้า error ของ IIS | IIS เอาหน้า error ของตัวเองมาแทน หรือเปิด Windows Authentication ไว้ | ตรวจ `<httpErrors existingResponse="PassThrough" />` และ Authentication ของ Site (ขั้นที่ 8A) |
-| ใส่รหัส admin ถูกแล้วยังเข้าไม่ได้ | `.env.local` ไม่มี `ADMIN_USER`/`ADMIN_PASSWORD` หรือแก้แล้วยังไม่รีสตาร์ต | แก้ไฟล์แล้ว `Restart-Service PromptPilot` |
-| กดบันทึกในหน้า admin แล้วไม่เกิดอะไร / log มี `Invalid Server Actions request` | proxy ไม่ได้ส่ง Host header เดิม | IIS: `preserveHostHeader` (ขั้นที่ 8A ข้อ 2) / Apache: `ProxyPreserveHost On` |
-| รูปไม่ขึ้น หรือ `/_next/image` ได้ 500 | `sharp` ไม่ใช่ของ Windows x64 | ลบโฟลเดอร์ `node_modules` แล้ว `npm ci` ใหม่บน server นี้ |
-| `npm run build` ค้างหรือ error ตอนโหลดฟอนต์ | เครื่องออก `fonts.googleapis.com` ไม่ได้ | เปิด outbound หรือตั้ง proxy (ขั้นที่ 4) |
+| เข้า `/admin` แล้วไม่ขึ้นช่องรหัสผ่าน หรือขึ้นหน้า error ของ IIS | IIS เอาหน้า error ของตัวเองมาแทน หรือเปิด Windows Authentication ไว้ | ตรวจ `<httpErrors existingResponse="PassThrough" />` และ Authentication ของ Site (ขั้นที่ 6A) |
+| ใส่รหัส admin ถูกแล้วยังเข้าไม่ได้ | แก้ `.env.local` แล้วยังไม่รีสตาร์ต | `Restart-Service PromptPilot` |
+| กดบันทึกในหน้า admin แล้วไม่เกิดอะไร / log มี `Invalid Server Actions request` | proxy ไม่ได้ส่ง Host header เดิม | IIS: `preserveHostHeader` (ขั้นที่ 6A ข้อ 2) / Apache: `ProxyPreserveHost On` |
+| รูปไม่ขึ้น หรือ `/_next/image` ได้ 500 | `node_modules` ถูกคัดลอกมาจากเครื่องอื่น | ลบโฟลเดอร์ `node_modules` แล้วรัน `install.ps1` ใหม่ |
+| build ค้างหรือ error ตอนโหลดฟอนต์ | เครื่องออก `fonts.googleapis.com` ไม่ได้ | เปิด outbound หรือตั้ง proxy (ขั้นที่ 4) |
 | log ข่าวขึ้น `ดึงข่าวไม่ได้เลยสักแหล่ง` | ออกอินเทอร์เน็ตไม่ได้ | ตรวจ firewall / proxy (ขั้นที่ 1 และ 4) |
 | log ข่าวขึ้น `credit balance is too low` หรือ `insufficient_quota` | เครดิต API หมด | ระบบสลับไปใช้อีกเจ้าให้เองถ้ามี key อีกตัว ถ้าหมดทั้งคู่ให้แจ้งผู้ดูแลบัญชีเติมเครดิต |
+| `backup-db.ps1` ขึ้น `mysqldump.exe not found` | ไม่มี MySQL client tools บนเครื่องนี้ | ลง MySQL client tools หรือใส่ `-MysqlBin <โฟลเดอร์ bin>` |
 | แก้ข้อมูลใน MySQL ตรงๆ แล้วหน้าเว็บไม่เปลี่ยน | เว็บเก็บ cache 10 นาที | รอ 10 นาที หรือ `Restart-Service PromptPilot` (แนะนำให้แก้ผ่านหน้า admin ซึ่งเห็นผลทันที) |
 
 **ไฟล์ log**
@@ -407,3 +356,47 @@ Restart-Service PromptPilot
 - `C:\Apps\PromptPilot\logs\web.log`: log ของเว็บ
 - `C:\Apps\PromptPilot\logs\news-YYYY-MM-DD.log`: log การดึงข่าวแต่ละวัน
 - หน้า admin > ประวัติการดึงข่าว: ผลการดึงข่าวทุกรอบ
+
+---
+
+## ภาคผนวก: ติดตั้งด้วยมือ (ใช้เมื่อสคริปต์ใช้ไม่ได้)
+
+สิ่งที่ `install.ps1` ทำ ถ้าต้องทำเองทีละขั้น (หลังขั้นที่ 4):
+
+```powershell
+Set-Location C:\Apps\PromptPilot
+
+# ติดตั้ง package — ห้ามใส่ --omit=dev เพราะสคริปต์ดึงข่าวและ migrate ใช้ tsx กับ drizzle-kit
+npm ci
+
+# ฐานข้อมูล: นำเข้าไฟล์สำรอง (ถ้ามี) แล้วสร้าง/อัปเดตตาราง และใส่ข้อมูลตั้งต้นถ้ายังว่าง
+npx tsx scripts/db/import-dump.ts C:\Apps\promptpilot-....sql
+npm run db:migrate
+npm run db:seed
+
+# build
+npm run build
+
+# Windows Service
+$nssm = "C:\Tools\nssm\nssm.exe"
+New-Item -ItemType Directory -Force C:\Apps\PromptPilot\logs | Out-Null
+& $nssm install PromptPilot "C:\Program Files\nodejs\node.exe"
+& $nssm set PromptPilot AppParameters "node_modules\next\dist\bin\next start -H 127.0.0.1 -p 3000"
+& $nssm set PromptPilot AppDirectory "C:\Apps\PromptPilot"
+& $nssm set PromptPilot Start SERVICE_AUTO_START
+& $nssm set PromptPilot AppStdout "C:\Apps\PromptPilot\logs\web.log"
+& $nssm set PromptPilot AppStderr "C:\Apps\PromptPilot\logs\web.log"
+& $nssm start PromptPilot
+
+# งานดึงข่าวทุกวัน 06:00
+schtasks /Create /TN "PromptPilot News Fetch" /SC DAILY /ST 06:00 /RU SYSTEM /RL HIGHEST /F `
+  /TR "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\news-task.ps1"
+
+# งานสำรองฐานข้อมูลทุกคืน 02:00
+schtasks /Create /TN "PromptPilot DB Backup" /SC DAILY /ST 02:00 /RU SYSTEM /RL HIGHEST /F `
+  /TR "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\backup-db.ps1"
+```
+
+- `AppDirectory` ต้องเป็นโฟลเดอร์โปรเจกต์ เพราะแอปอ่าน `.env.local` และเขียน `logs\` จากโฟลเดอร์ที่รันอยู่
+- ต้องรัน `npm ci` บน server เครื่องนี้เอง ห้ามคัดลอก `node_modules` มาจากเครื่องอื่น เพราะตัวย่อรูป (`sharp`) ต้องเป็นของ Windows x64
+- ถ้าองค์กรกำหนดให้ service ใช้ service account แยกแทน LocalSystem บัญชีนั้นต้องอ่าน `.env.local` และเขียน `C:\Apps\PromptPilot\logs` กับ `C:\Apps\PromptPilot\.next` ได้

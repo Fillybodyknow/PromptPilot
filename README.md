@@ -30,7 +30,7 @@ drizzle/            # ไฟล์ migration
 
 ## รันโปรเจกต์
 
-ตั้งค่าใน `.env.local`: `DB_NAME`, `DB_PASS` (+ `DB_HOST`, `DB_PORT` ถ้าไม่ใช่ `localhost:3306` และ `DB_USER` ถ้าชื่อผู้ใช้ MySQL ไม่ตรงกับ `DB_NAME`),
+คัดลอก `.env.example` เป็น `.env.local` แล้วกรอก: `DB_NAME`, `DB_PASS` (+ `DB_HOST`, `DB_PORT` ถ้าไม่ใช่ `localhost:3306` และ `DB_USER` ถ้าชื่อผู้ใช้ MySQL ไม่ตรงกับ `DB_NAME`),
 `ADMIN_USER`, `ADMIN_PASSWORD` และ `ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` (ใช้ Claude ก่อน ถ้าเรียกไม่สำเร็จจะใช้ OpenAI แทน)
 
 ```bash
@@ -42,7 +42,7 @@ npm run build
 npm run lint
 ```
 
-ติดตั้งขึ้น Windows Server (IIS/Apache) ดูขั้นตอนเต็มที่ [DEPLOY.md](DEPLOY.md)
+ติดตั้งขึ้น Windows Server (IIS/Apache) ดูขั้นตอนเต็มที่ [DEPLOY.md](DEPLOY.md) — ใช้ `scripts/install.ps1` ติดตั้ง, `scripts/update.ps1` อัปเดต, `scripts/backup-db.ps1` สำรองฐานข้อมูล
 
 ## เพิ่ม/แก้ข้อมูล
 
