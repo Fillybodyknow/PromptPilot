@@ -30,7 +30,7 @@ drizzle/            # ไฟล์ migration
 
 ## รันโปรเจกต์
 
-ตั้งค่าใน `.env.local`: `DB_USER`, `DB_PASS`, `DB_NAME` (+ `DB_HOST`, `DB_PORT` ถ้าไม่ใช่ `localhost:3306`),
+ตั้งค่าใน `.env.local`: `DB_NAME`, `DB_PASS` (+ `DB_HOST`, `DB_PORT` ถ้าไม่ใช่ `localhost:3306` และ `DB_USER` ถ้าชื่อผู้ใช้ MySQL ไม่ตรงกับ `DB_NAME`),
 `ADMIN_USER`, `ADMIN_PASSWORD` และ `OPENAI_API_KEY` หรือ `ANTHROPIC_API_KEY` (+ `NEWS_PROVIDER`)
 
 ```bash
