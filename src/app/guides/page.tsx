@@ -34,9 +34,9 @@ export default async function GuidesPage() {
           {getCategoriesGrouped().map((g) => {
             const visual = groupVisual(g.group);
             return (
-              <section key={g.group} aria-labelledby={`g-${g.group}`} className={`${card} flex flex-wrap overflow-hidden`}>
+              <section key={g.group} aria-labelledby={`g-${g.group}`} className={`${card} reveal group/row flex flex-wrap overflow-hidden`}>
                 <div className="relative min-h-44 flex-[1_1_280px] sm:max-w-sm">
-                  <Image src={visual.src} alt={visual.alt} fill placeholder="blur" sizes="(min-width: 640px) 384px, 100vw" className="object-cover" />
+                  <Image src={visual.src} alt={visual.alt} fill placeholder="blur" sizes="(min-width: 640px) 384px, 100vw" className="object-cover transition-transform duration-700 group-hover/row:scale-105" />
                   <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                   <h2 id={`g-${g.group}`} className="absolute bottom-4 left-5 flex items-center gap-2.5 text-xl font-bold text-white">
                     <GroupDot group={g.group} className="h-2.5 w-2.5 rounded-[3px] ring-2 ring-white/40" />
@@ -45,7 +45,7 @@ export default async function GuidesPage() {
                 </div>
                 <div className="flex min-w-0 flex-[2_1_360px] flex-col divide-y divide-line">
                   {g.categories.map((c) => (
-                    <Link key={c.key} href={`/guides/${c.key}`} className="group flex flex-1 items-center gap-4 p-5 hover:bg-chip">
+                    <Link key={c.key} href={`/guides/${c.key}`} className="spotlight group flex flex-1 items-center gap-4 p-5 hover:bg-chip">
                       <span className="min-w-0 flex-1">
                         <span className="block text-[17px] font-bold group-hover:text-brand">{c.titleTh}</span>
                         <span className="mt-1 block text-sm leading-relaxed text-muted">{c.descriptionTh}</span>

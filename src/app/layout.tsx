@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
+import { Spotlight } from "@/components/site/Spotlight";
 import { withBasePath } from "@/lib/basePath";
 
 const notoSansThai = Noto_Sans_Thai({
@@ -31,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // one mismatch here (not the same thing as attribute correctness).
       suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col bg-background text-foreground">
+      <body id="top" className="flex min-h-full flex-col bg-background text-foreground">
         {/* Applies the theme class before hydration so there's no flash. Follows the
             OS preference until the user picks one with ThemeToggle. Raw <script> JSX
             tags never execute in React; this must go through next/script with
@@ -46,6 +47,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         <div className="flex-1">{children}</div>
         <SiteFooter />
+        <a
+          href="#top"
+          aria-label="กลับขึ้นด้านบน"
+          className="to-top fixed bottom-5 right-5 z-30 h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-xl text-white shadow-lg shadow-fuchsia-500/30 transition hover:brightness-110"
+        >
+          ↑
+        </a>
+        <Spotlight />
       </body>
     </html>
   );

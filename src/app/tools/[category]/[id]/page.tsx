@@ -132,7 +132,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
           </nav>
 
           {show("employee") && (
-            <section className={`${card} mt-4 p-6`}>
+            <section className={`${card} reveal mt-4 p-6`}>
               <h2 className="text-[13px] font-bold text-brand">สำหรับพนักงาน: ใช้ทำอะไรได้ดี</h2>
               <p className="mt-2.5 text-[17px] font-semibold leading-relaxed">{tool.bestFor}</p>
               <p className="mt-2 leading-[1.8] text-muted">{tool.summary}</p>
@@ -143,7 +143,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
           )}
 
           {show("it") && (
-            <section className={`${card} mt-4 p-6`}>
+            <section className={`${card} reveal mt-4 p-6`}>
               <h2 className="text-[13px] font-bold text-brand">สำหรับ IT: ติดตั้งและตั้งค่า</h2>
               {tool.installSteps.length > 0 ? (
                 <ol className="mt-3 list-decimal space-y-1.5 pl-5 leading-relaxed">
@@ -163,7 +163,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
           )}
 
           {show("exec") && (
-            <section className={`${card} mt-4 p-6`}>
+            <section className={`${card} reveal mt-4 p-6`}>
               <h2 className="text-[13px] font-bold text-brand">สำหรับผู้บริหาร: ต้นทุนและการตัดสินใจ</h2>
               <p className="mt-2.5 leading-[1.8]">{tool.priceNote}</p>
               {tokenPrice && <p className="mt-2 text-sm text-muted">ราคา API: {tokenPrice}</p>}

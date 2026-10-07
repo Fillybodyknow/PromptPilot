@@ -3,13 +3,15 @@ import Link from "next/link";
 import { withBasePath } from "@/lib/basePath";
 import { PartnersSection } from "../PartnersSection";
 import { ThemeToggle } from "../ThemeToggle";
-import { SearchIcon } from "./icons";
+import { CommandPalette } from "./CommandPalette";
 import { MainNav } from "./MainNav";
 import { MobileNav } from "./MobileNav";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-surface">
+    <header className="header-scroll sticky top-0 z-40 isolate border-b border-line">
+      {/* blur อยู่บนชั้นพื้นหลังแยก ไม่ใส่ที่ header ตรงๆ เพราะ backdrop-filter ทำให้เมนูมือถือ (position: fixed) ถูกขังอยู่ในกรอบ header */}
+      <div aria-hidden className="absolute inset-0 -z-10 bg-surface/85 backdrop-blur-lg" />
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:px-6 md:gap-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <PartnersSection />
@@ -32,25 +34,7 @@ export function SiteHeader() {
           <MainNav />
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <form action={withBasePath("/search")} role="search" className="hidden xl:block">
-            <label className="flex h-11 w-56 items-center gap-2 rounded-lg border border-line bg-background px-3 text-muted">
-              <SearchIcon />
-              <input
-                type="search"
-                name="q"
-                placeholder="ค้นหาข่าว เครื่องมือ หรือคู่มือ"
-                aria-label="ค้นหา"
-                className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-muted"
-              />
-            </label>
-          </form>
-          <Link
-            href="/search"
-            aria-label="ค้นหา"
-            className="hidden h-11 w-11 items-center justify-center rounded-lg text-ink hover:bg-chip lg:flex xl:hidden"
-          >
-            <SearchIcon />
-          </Link>
+          <CommandPalette />
           <ThemeToggle />
           <MobileNav />
         </div>

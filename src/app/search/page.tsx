@@ -60,7 +60,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             ) : (
               <div className="mt-3 flex flex-wrap gap-3">
                 {guideHits.map((c) => (
-                  <Link key={c.key} href={`/guides/${c.key}`} className={`${card} flex-[1_1_260px] p-4 hover:border-ink`}>
+                  <Link key={c.key} href={`/guides/${c.key}`} className={`${card} spotlight flex-[1_1_260px] p-4 hover:border-ink`}>
                     <span className="block font-semibold">{c.titleTh}</span>
                     <span className="block text-sm text-muted">{c.descriptionTh}</span>
                   </Link>

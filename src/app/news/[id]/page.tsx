@@ -45,6 +45,7 @@ export default async function NewsDetailPage({ params }: Props) {
 
   return (
     <>
+    <div aria-hidden className="read-progress fixed inset-x-0 top-0 z-50 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
     <PageBanner visual={mainCategory ? groupVisual(mainCategory.group) : HERO_VISUAL}>
       <div className="max-w-4xl pb-4">
         <Breadcrumb
@@ -75,13 +76,13 @@ export default async function NewsDetailPage({ params }: Props) {
         )}
 
         {roles.length > 0 && (
-          <section className="mt-9" aria-labelledby="roles">
+          <section className="reveal mt-9" aria-labelledby="roles">
             <h2 id="roles" className="text-xl font-bold">
               สิ่งที่แต่ละบทบาทควรทำ
             </h2>
             <div className="mt-3.5 flex flex-wrap gap-3.5">
               {roles.map((r) => (
-                <div key={r} className={`${card} min-w-0 flex-[1_1_220px] p-[18px]`}>
+                <div key={r} className={`${card} spotlight min-w-0 flex-[1_1_220px] p-[18px]`}>
                   <h3 className="text-sm font-bold text-brand">{ROLE_LABEL[r]}</h3>
                   <p className="mt-2 text-[15px] leading-relaxed">{item[r]}</p>
                 </div>
@@ -101,7 +102,7 @@ export default async function NewsDetailPage({ params }: Props) {
         </a>
 
         {item.otherSources.length > 0 && (
-          <div className="mt-7 rounded-2xl border border-dashed border-line px-5 py-4">
+          <div className="reveal mt-7 rounded-2xl border border-dashed border-line px-5 py-4">
             <h2 className="font-bold">แหล่งอื่นที่รายงานเรื่องนี้</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5 leading-relaxed">
               {item.otherSources.map((s) => (

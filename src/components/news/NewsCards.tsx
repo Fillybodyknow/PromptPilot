@@ -22,7 +22,7 @@ function Meta({ item, className = "" }: { item: PublicNews; className?: string }
 
 export function NewsLead({ item, visual }: { item: PublicNews; visual?: Visual }) {
   return (
-    <article className={`${card} flex flex-col gap-3.5 overflow-hidden shadow-xl shadow-black/10 ${visual ? "" : "p-6 sm:p-7"}`}>
+    <article className={`${card} spotlight flex flex-col gap-3.5 overflow-hidden shadow-xl shadow-black/10 ${visual ? "" : "p-6 sm:p-7"}`}>
       {visual && (
         <Link href={href(item)} className="relative block aspect-[21/9] w-full overflow-hidden" tabIndex={-1} aria-hidden>
           <Image src={visual.src} alt="" fill placeholder="blur" sizes="(min-width: 1024px) 700px, 100vw" className="object-cover transition-transform duration-500 hover:scale-105" />
@@ -60,7 +60,7 @@ export function NewsLead({ item, visual }: { item: PublicNews; visual?: Visual }
 
 export function NewsSecondary({ item }: { item: PublicNews }) {
   return (
-    <article className={`${card} flex flex-1 flex-col gap-2.5 p-5 shadow-xl shadow-black/10 transition-colors hover:border-brand/50`}>
+    <article className={`${card} spotlight flex flex-1 flex-col gap-2.5 p-5 shadow-xl shadow-black/10 transition-colors hover:border-brand/50`}>
       <div className="flex flex-wrap items-center gap-2">
         <ImportanceBadge level={item.importance} />
         {item.categories[0] && <CategoryChip categoryKey={item.categories[0]} />}

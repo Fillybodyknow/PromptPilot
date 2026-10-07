@@ -70,3 +70,133 @@ body {
     background-color 0.2s ease,
     color 0.2s ease;
 }
+
+/* ---------- ลูกเล่นการเคลื่อนไหว ----------
+   ใช้ CSS ล้วน (scroll-driven animation / @property) จึงไม่ต้องรอ JS และไม่กระพริบตอน hydrate
+   browser ที่ไม่รองรับจะเห็นหน้าปกติแบบไม่มี animation และปิดทั้งหมดถ้าผู้ใช้ตั้งลดการเคลื่อนไหว */
+
+/* ตัวเลขนับขึ้น — ค่าจริงอยู่ใน --n เสมอ animation แค่เริ่มจาก 0 */
+@property --n {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+.count-up {
+  counter-reset: n var(--n);
+}
+.count-up::after {
+  content: counter(n);
+}
+
+@keyframes count-from-zero {
+  from {
+    --n: 0;
+  }
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes ken-burns {
+  from {
+    transform: scale(1.12);
+  }
+}
+@keyframes gradient-pan {
+  to {
+    background-position: 200% center;
+  }
+}
+@keyframes grow-x {
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes appear {
+  to {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+  }
+}
+@keyframes header-shadow {
+  to {
+    box-shadow: 0 8px 24px -12px rgb(0 0 0 / 0.35);
+  }
+}
+
+/* แถบความคืบหน้าการอ่าน และปุ่มกลับขึ้นบน ซ่อนไว้ใน browser ที่ทำ scroll-driven animation ไม่ได้ */
+.read-progress,
+.to-top {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+  .count-up {
+    animation: count-from-zero 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s backwards;
+  }
+  .fade-up {
+    animation: fade-up 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
+  .ken-burns {
+    animation: ken-burns 18s ease-out both;
+  }
+  .gradient-pan {
+    background-size: 200% auto;
+    animation: gradient-pan 6s linear infinite;
+  }
+
+  @supports (animation-timeline: view()) {
+    /* ค่อยๆ โผล่ขึ้นตอนเลื่อนมาถึง */
+    .reveal {
+      animation: fade-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+    /* ค่าตั้งต้นคือซ่อน แล้วให้ animation เผยออกมา — หน้าที่สั้นจนเลื่อนไม่ได้ timeline จะไม่ทำงานและคงสถานะซ่อนไว้ */
+    .read-progress {
+      display: block;
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: grow-x linear both;
+      animation-timeline: scroll(root);
+    }
+    .to-top {
+      display: flex;
+      opacity: 0;
+      transform: translateY(12px);
+      visibility: hidden;
+      animation: appear linear both;
+      animation-timeline: scroll(root);
+      animation-range: 300px 500px;
+    }
+    .header-scroll {
+      animation: header-shadow linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 80px;
+    }
+  }
+}
+
+/* แสงตามเมาส์บนการ์ด (ตำแหน่งมาจาก Spotlight.tsx) */
+.spotlight {
+  position: relative;
+}
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--brand) 16%, transparent), transparent 65%);
+}
+.spotlight:hover::before {
+  opacity: 1;
+}

@@ -27,7 +27,7 @@ export function PageBanner({
         priority={priority}
         placeholder="blur"
         sizes="100vw"
-        className="-z-20 object-cover object-center"
+        className="ken-burns -z-20 object-cover object-center"
       />
       {/* ไล่เข้มจากซ้าย (ฝั่งข้อความ) และจากล่าง ให้ข้อความขาวผ่าน contrast บนทุกส่วนของรูป */}
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0c0d11]/95 via-[#0c0d11]/75 to-[#0c0d11]/25" />
@@ -38,4 +38,5 @@ export function PageBanner({
 }
 
 /** ไล่สีแบรนด์บนพื้นเข้ม (ใช้ใน banner) */
-export const brandGradientText = "bg-gradient-to-r from-indigo-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent";
+// ไล่สีกลับมาที่ indigo ทั้งสองปลาย ให้ gradient-pan วนต่อกันได้ไม่เห็นรอยต่อ
+export const brandGradientText = "gradient-pan bg-gradient-to-r from-indigo-300 via-fuchsia-300 to-indigo-300 bg-clip-text text-transparent";

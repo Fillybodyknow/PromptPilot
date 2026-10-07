@@ -4,7 +4,7 @@ import { NewsLead, NewsList, NewsSecondary } from "@/components/news/NewsCards";
 import { GroupCard } from "@/components/site/GroupCard";
 import { AlertIcon, SearchIcon } from "@/components/site/icons";
 import { PageBanner, brandGradientText } from "@/components/site/PageBanner";
-import { EmptyState, SectionHeader, card } from "@/components/site/ui";
+import { CountUp, EmptyState, SectionHeader, card } from "@/components/site/ui";
 import { VendorStrip } from "@/components/site/VendorStrip";
 import { VendorLogo } from "@/components/VendorLogo";
 import { withBasePath } from "@/lib/basePath";
@@ -58,17 +58,21 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <>
       <PageBanner visual={HERO_VISUAL} size="lg">
         <div className={lead ? "pb-16" : ""}>
-          <p className="text-sm text-white/75">
+          <p className="fade-up flex items-center gap-2 text-sm text-white/75">
+            <span aria-hidden className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            </span>
             {formatLongDate()}
             {updatedAt && ` · อัปเดตล่าสุด ${formatClock(updatedAt)} น.`}
           </p>
-          <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.2] sm:text-[52px]">
+          <h1 style={{ animationDelay: "100ms" }} className="fade-up mt-3 max-w-3xl text-4xl font-bold leading-[1.2] sm:text-[52px]">
             ข่าว AI ที่<span className={brandGradientText}>องค์กรไทย</span>ต้องรู้ วันนี้
           </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-white/85">
+          <p style={{ animationDelay: "200ms" }} className="fade-up mt-4 max-w-2xl text-lg leading-relaxed text-white/85">
             สรุปข่าวที่มีผลต่อการเลือกและใช้เครื่องมือ AI คัดด้วย AI และตรวจโดยทีมทุกชิ้น พร้อมคู่มือและเครื่องมือที่ทดสอบแล้ว
           </p>
-          <form action={withBasePath("/search")} role="search" className="mt-6 flex max-w-xl gap-2">
+          <form action={withBasePath("/search")} role="search" style={{ animationDelay: "300ms" }} className="fade-up mt-6 flex max-w-xl gap-2">
             <label className="flex h-12 flex-1 items-center gap-2.5 rounded-xl border border-white/25 bg-white/10 px-4 text-white/80 backdrop-blur-md focus-within:border-white/60">
               <SearchIcon />
               <input type="search" name="q" placeholder="ค้นหาข่าว เครื่องมือ หรือคู่มือ" aria-label="ค้นหา" className="w-full bg-transparent text-white outline-none placeholder:text-white/60" />
@@ -77,17 +81,21 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               ค้นหา
             </button>
           </form>
-          <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm text-white/80">
-            <div><dt className="sr-only">ข่าว 7 วัน</dt><dd><strong className="text-xl text-white">{week.total}</strong> ข่าวในสัปดาห์นี้</dd></div>
-            <div><dt className="sr-only">เครื่องมือ</dt><dd><strong className="text-xl text-white">{totalTools}</strong> เครื่องมือที่ตรวจแล้ว</dd></div>
-            <div><dt className="sr-only">คู่มือ</dt><dd><strong className="text-xl text-white">{categories.length}</strong> คู่มือตามงาน</dd></div>
+          <dl style={{ animationDelay: "400ms" }} className="fade-up mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm text-white/80">
+            <div><dt className="sr-only">ข่าว 7 วัน</dt><dd><strong className="text-xl text-white"><CountUp value={week.total} /></strong> ข่าวในสัปดาห์นี้</dd></div>
+            <div><dt className="sr-only">เครื่องมือ</dt><dd><strong className="text-xl text-white"><CountUp value={totalTools} /></strong> เครื่องมือที่ตรวจแล้ว</dd></div>
+            <div><dt className="sr-only">คู่มือ</dt><dd><strong className="text-xl text-white"><CountUp value={categories.length} /></strong> คู่มือตามงาน</dd></div>
           </dl>
           {urgent && (
             <Link
               href={`/news/${urgent.id}`}
-              className="mt-6 flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-rose-300/30 bg-rose-500/20 px-4 py-3 backdrop-blur-md hover:bg-rose-500/30"
+              style={{ animationDelay: "500ms" }}
+              className="fade-up mt-6 flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-rose-300/30 bg-rose-500/20 px-4 py-3 backdrop-blur-md hover:bg-rose-500/30"
             >
-              <AlertIcon size={18} className="text-rose-200" />
+              <span className="relative flex">
+                <span aria-hidden className="absolute inset-0 rounded-full bg-rose-400/60 motion-safe:animate-ping" />
+                <AlertIcon size={18} className="relative text-rose-200" />
+              </span>
               <span className="text-sm font-bold text-rose-100">องค์กรต้องรู้</span>
               <span className="flex-[1_1_240px] text-[15px] text-white">{urgent.titleTh ?? urgent.title}</span>
               <span className="text-sm font-semibold text-rose-100">อ่านต่อ →</span>
@@ -117,7 +125,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       )}
 
       {vendors.length > 0 && (
-        <section aria-labelledby="vendors" className={`${card} mt-10 overflow-hidden bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-fuchsia-500/10 px-5 py-6 sm:px-8`}>
+        <section aria-labelledby="vendors" className={`${card} reveal mt-10 overflow-hidden bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-fuchsia-500/10 px-5 py-6 sm:px-8`}>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="vendors" className="text-lg font-bold">
               ครอบคลุมเครื่องมือจาก <span className="text-brand">{vendors.length}</span> ผู้ให้บริการ
@@ -132,7 +140,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </section>
       )}
 
-      <section aria-labelledby="latest" className="mt-14 scroll-mt-20" id="latest-section">
+      <section aria-labelledby="latest" className="reveal mt-14 scroll-mt-20" id="latest-section">
         <SectionHeader id="latest" title="ข่าวล่าสุด" href="/news" linkLabel="ดูข่าวทั้งหมด" />
         <nav aria-label="กรองตามกลุ่มงาน" className="mt-3.5 flex flex-wrap gap-2">
           {[{ name: "ทั้งหมด", slug: undefined as string | undefined }, ...groups.map((g) => ({ name: g.group, slug: GROUP_SLUGS[g.group] }))].map(
@@ -159,7 +167,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </div>
       </section>
 
-      <section aria-labelledby="groups" className="mt-14">
+      <section aria-labelledby="groups" className="reveal mt-14">
         <SectionHeader id="groups" title="เริ่มใช้ AI ตามงานของคุณ">
           คู่มือพร้อม prompt ตัวอย่างและเครื่องมือที่ทีมตรวจสอบแล้ว แยกตามลักษณะงาน
         </SectionHeader>
@@ -177,14 +185,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       </section>
 
       {featured.length > 0 && (
-        <section aria-labelledby="tools" className="mt-14">
+        <section aria-labelledby="tools" className="reveal mt-14">
           <SectionHeader id="tools" title="เครื่องมือแนะนำ" href="/tools" linkLabel={`ดูเครื่องมือทั้ง ${totalTools} รายการ`} />
           <div className="mt-4 flex flex-wrap gap-4">
             {featured.map((t) => (
               <Link
                 key={`${t.categoryKey}/${t.id}`}
                 href={`/tools/${t.categoryKey}/${t.id}`}
-                className={`${card} flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
+                className={`${card} spotlight flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
               >
                 <span className="flex items-center gap-3">
                   <VendorLogo vendor={t.vendor} size={40} />
@@ -201,14 +209,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </section>
       )}
 
-      <section aria-labelledby="roles" className="mt-14">
+      <section aria-labelledby="roles" className="reveal mt-14">
         <SectionHeader id="roles" title="อ่านตามบทบาทของคุณ" />
         <div className="mt-4 flex flex-wrap gap-4">
           {ROLES.map((r) => (
             <Link
               key={r.role}
               href={r.href}
-              className={`${card} relative flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
+              className={`${card} spotlight flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
             >
               <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
               <span className="text-[13px] font-semibold text-brand">{r.role}</span>

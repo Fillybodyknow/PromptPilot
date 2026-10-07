@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { getCategory } from "@/lib/categories";
 import { getGroupAccent } from "@/lib/groupAccent";
 import { IMPORTANCE_LABEL, TOOL_STATUS_LABEL, TOOL_STATUS_WARN } from "@/lib/labels";
@@ -94,5 +94,15 @@ export function Breadcrumb({ items, onDark = false }: { items: { label: string; 
         </span>
       ))}
     </nav>
+  );
+}
+
+/** ตัวเลขที่นับขึ้นจาก 0 ด้วย CSS (ดู .count-up ใน globals.css) — screen reader อ่านค่าจริงจาก sr-only */
+export function CountUp({ value }: { value: number }) {
+  return (
+    <>
+      <span className="sr-only">{value}</span>
+      <span aria-hidden className="count-up tabular-nums" style={{ "--n": value } as CSSProperties} />
+    </>
   );
 }
