@@ -99,9 +99,41 @@ export function insertItems(items: NewItem[]): number {
 
 export function listByStatus(status: NewsStatus, limit = 100): NewsItem[] {
   const rows = getDb()
-    .prepare(`SELECT * FROM news_items WHERE status = ? ORDER BY published_at DESC LIMIT ?`)
+    .prepare(
+      `SELECT * FROM news_items WHERE status = ?
+       ORDER BY COALESCE(importance, 0) DESC, published_at DESC LIMIT ?`,
+    )
     .all(status, limit) as Row[];
   return rows.map(toItem);
+}
+
+/** คืน false ถ้าไม่พบข่าว หรือจะอนุมัติข่าวที่ยังไม่มีหัวข้อ/คำสรุปภาษาไทย */
+export function setStatus(id: string, status: NewsStatus, reviewedBy: string): boolean {
+  const needsText = status === "approved" ? "AND title_th IS NOT NULL AND summary_th IS NOT NULL" : "";
+  const res = getDb()
+    .prepare(
+      `UPDATE news_items SET status = ?, reviewed_by = ?, reviewed_at = ?
+       WHERE id = ? ${needsText}`,
+    )
+    .run(status, reviewedBy, new Date().toISOString(), id);
+  return Number(res.changes) > 0;
+}
+
+export interface NewsEdit {
+  titleTh: string;
+  summaryTh: string;
+  categories: string[];
+  importance: number;
+}
+
+export function updateContent(id: string, edit: NewsEdit): boolean {
+  const res = getDb()
+    .prepare(
+      `UPDATE news_items SET title_th = ?, summary_th = ?, categories = ?, importance = ?
+       WHERE id = ?`,
+    )
+    .run(edit.titleTh, edit.summaryTh, JSON.stringify(edit.categories), edit.importance, id);
+  return Number(res.changes) > 0;
 }
 
 export function countByStatus(): Record<string, number> {

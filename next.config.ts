@@ -7,14 +7,14 @@ import type { NextConfig } from "next";
 // auto-prefixed by basePath the way next/link hrefs are).
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
+// Runs as a Node server (not `output: "export"`): the news admin needs Proxy,
+// Server Actions and live SQLite reads, none of which static export supports.
 const nextConfig: NextConfig = {
-  output: "export",
   basePath,
   assetPrefix: basePath ? `${basePath}/` : undefined,
   images: {
-    // GitHub Pages has no image optimization server — every <Image> in this
-    // app already passes `unoptimized` individually, but this is the
-    // required global flag for `output: "export"` regardless.
+    // Every <Image> already passes `unoptimized`; kept global so behavior
+    // matches what was deployed on GitHub Pages.
     unoptimized: true,
   },
 };
