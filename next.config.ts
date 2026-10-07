@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
-// Set by the GitHub Pages deploy workflow (.github/workflows/deploy.yml) to
-// "/PromptPilot" — empty locally, so `next dev`/`next build` outside CI still
-// serve from the domain root. See src/lib/basePath.ts for the matching
+// Set at build time only when the site is served under a sub-path (e.g.
+// "/promptpilot" behind a shared intranet host — see DEPLOY.md); empty means
+// the domain root. See src/lib/basePath.ts for the matching
 // client-side helper that prefixes raw asset paths (next/image's src is not
 // auto-prefixed by basePath the way next/link hrefs are).
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";

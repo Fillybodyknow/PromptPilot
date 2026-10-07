@@ -34,7 +34,7 @@ Task Scheduler ──ทุกวัน 06:00──▶ ดึงข่าว AI 
 
 | รายการ | ใช้ทำอะไร |
 |---|---|
-| สิทธิ์เข้าถึง repository `https://github.com/Fillybodyknow/PromptPilot` และชื่อ branch ที่จะติดตั้ง (ตอนนี้คือ `feature/news-pipeline`) | ดาวน์โหลดโค้ด |
+| สิทธิ์เข้าถึง repository `https://github.com/Fillybodyknow/PromptPilot` (ติดตั้งจาก branch `main`) | ดาวน์โหลดโค้ด |
 | ไฟล์ `promptpilot.sql` (dump ฐานข้อมูลจากเครื่องผู้พัฒนา) | ย้ายข้อมูลปัจจุบัน (ข่าวที่อนุมัติแล้ว, เครื่องมือที่แก้ไว้) ขึ้น server ถ้าไม่มี ให้ใช้ข้อมูลตั้งต้นแทนได้ (ขั้นที่ 5 ทางเลือก B) |
 | `ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` | ให้ AI สรุปข่าว ระบบใช้ Claude ก่อน ถ้าใช้ไม่ได้จะใช้ OpenAI แทน มีอย่างน้อย 1 ตัว |
 | ชื่อผู้ใช้/รหัสผ่านสำหรับหน้า admin | ตั้ง `ADMIN_USER` / `ADMIN_PASSWORD` |
@@ -99,7 +99,7 @@ EXIT;
 
 ```powershell
 New-Item -ItemType Directory -Force C:\Apps | Out-Null
-git clone --branch feature/news-pipeline https://github.com/Fillybodyknow/PromptPilot.git C:\Apps\PromptPilot
+git clone --branch main https://github.com/Fillybodyknow/PromptPilot.git C:\Apps\PromptPilot
 Set-Location C:\Apps\PromptPilot
 ```
 
