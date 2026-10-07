@@ -9,7 +9,7 @@ export function GroupCard({ group, href, categories, toolCount }: { group: strin
   return (
     <Link
       href={href}
-      className="group relative isolate flex min-h-52 min-w-0 flex-[1_1_260px] flex-col justify-end overflow-hidden rounded-2xl p-5 text-white shadow-lg shadow-black/10"
+      className="tilt reveal group relative isolate flex min-h-52 min-w-0 flex-[1_1_260px] flex-col justify-end overflow-hidden rounded-2xl p-5 text-white shadow-lg shadow-black/10"
     >
       <Image
         src={visual.src}

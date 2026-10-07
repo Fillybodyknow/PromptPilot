@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
 import Script from "next/script";
+import { ViewTransition } from "react";
 import "./globals.css";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -45,7 +46,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
         <SiteHeader />
-        <div className="flex-1">{children}</div>
+        {/* เปลี่ยนหน้าแบบจางออก-เลื่อนขึ้น (ดู .page ใน globals.css) — header/footer อยู่นอกจึงนิ่ง */}
+        <ViewTransition default="page">
+          <div className="flex-1">{children}</div>
+        </ViewTransition>
         <SiteFooter />
         <a
           href="#top"

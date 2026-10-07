@@ -113,7 +113,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
               key={level ?? "all"}
               href={importanceHref(level)}
               aria-current={active ? "true" : undefined}
-              className={`flex h-10 items-center rounded-full border px-4 text-sm ${
+              className={`flex h-10 items-center rounded-full border px-4 text-sm transition-all duration-200 active:scale-95 ${
                 active ? "border-ink bg-ink font-semibold text-background" : "border-line bg-surface hover:border-ink"
               }`}
             >

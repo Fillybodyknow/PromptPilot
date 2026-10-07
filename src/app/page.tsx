@@ -3,8 +3,8 @@ import { connection } from "next/server";
 import { NewsLead, NewsList, NewsSecondary } from "@/components/news/NewsCards";
 import { GroupCard } from "@/components/site/GroupCard";
 import { AlertIcon, SearchIcon } from "@/components/site/icons";
-import { PageBanner, brandGradientText } from "@/components/site/PageBanner";
-import { CountUp, EmptyState, SectionHeader, card } from "@/components/site/ui";
+import { PageBanner } from "@/components/site/PageBanner";
+import { CountUp, EmptyState, RotatingWords, SectionHeader, card } from "@/components/site/ui";
 import { VendorStrip } from "@/components/site/VendorStrip";
 import { VendorLogo } from "@/components/VendorLogo";
 import { withBasePath } from "@/lib/basePath";
@@ -67,7 +67,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             {updatedAt && ` · อัปเดตล่าสุด ${formatClock(updatedAt)} น.`}
           </p>
           <h1 style={{ animationDelay: "100ms" }} className="fade-up mt-3 max-w-3xl text-4xl font-bold leading-[1.2] sm:text-[52px]">
-            ข่าว AI ที่<span className={brandGradientText}>องค์กรไทย</span>ต้องรู้ วันนี้
+            ข่าว AI ที่<RotatingWords words={["องค์กรไทย", "ฝ่าย IT", "ผู้บริหาร", "ทุกทีม"]} />ต้องรู้ วันนี้
           </h1>
           <p style={{ animationDelay: "200ms" }} className="fade-up mt-4 max-w-2xl text-lg leading-relaxed text-white/85">
             สรุปข่าวที่มีผลต่อการเลือกและใช้เครื่องมือ AI คัดด้วย AI และตรวจโดยทีมทุกชิ้น พร้อมคู่มือและเครื่องมือที่ทดสอบแล้ว
@@ -152,7 +152,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                   href={g.slug ? `/?group=${g.slug}#latest-section` : "/#latest-section"}
                   scroll={false}
                   aria-current={active ? "true" : undefined}
-                  className={`flex h-10 items-center rounded-full border px-4 text-sm ${
+                  className={`flex h-10 items-center rounded-full border px-4 text-sm transition-all duration-200 active:scale-95 ${
                     active ? "border-ink bg-ink font-semibold text-background" : "border-line bg-surface hover:border-ink"
                   }`}
                 >
@@ -192,7 +192,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               <Link
                 key={`${t.categoryKey}/${t.id}`}
                 href={`/tools/${t.categoryKey}/${t.id}`}
-                className={`${card} spotlight flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
+                className={`${card} spotlight tilt reveal flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
               >
                 <span className="flex items-center gap-3">
                   <VendorLogo vendor={t.vendor} size={40} />
@@ -216,7 +216,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <Link
               key={r.role}
               href={r.href}
-              className={`${card} spotlight flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
+              className={`${card} spotlight reveal relative flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
             >
               <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
               <span className="text-[13px] font-semibold text-brand">{r.role}</span>

@@ -106,3 +106,43 @@ export function CountUp({ value }: { value: number }) {
     </>
   );
 }
+
+/**
+ * คำที่สลับวนในหัวข้อ (CSS ล้วน ดู .rotating-words) — screen reader อ่านคำแรกคำเดียว
+ * ถ้าปิดการเคลื่อนไหวจะเห็นแค่คำแรก ความกว้างเท่าคำที่ยาวที่สุดเสมอ ข้อความรอบๆ จึงไม่ขยับ
+ */
+export function RotatingWords({ words, period = 10 }: { words: string[]; period?: number }) {
+  const step = period / words.length;
+  return (
+    <span className="rotating-words">
+      <span className="sr-only">{words[0]}</span>
+      {words.map((w, i) => (
+        <span
+          key={w}
+          aria-hidden
+          style={{ animationDuration: `${period}s, 6s`, animationDelay: `${i * step}s, 0s` }}
+          className="bg-gradient-to-r from-indigo-300 via-fuchsia-300 to-indigo-300 bg-clip-text pb-1 text-transparent"
+        >
+          {w}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+const NEW_WITHIN_MS = 6 * 60 * 60 * 1000;
+
+/** ป้าย "ใหม่" สำหรับข่าวที่เผยแพร่ภายใน 6 ชั่วโมง */
+export function NewBadge({ publishedAt }: { publishedAt: string }) {
+  // eslint-disable-next-line react-hooks/purity -- server component, คิดตอน render ต่อ request
+  if (Date.now() - new Date(publishedAt).getTime() > NEW_WITHIN_MS) return null;
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 px-2.5 py-0.5 text-xs font-semibold text-good ring-1 ring-emerald-500/30">
+      <span aria-hidden className="relative flex h-1.5 w-1.5">
+        <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+      </span>
+      ใหม่
+    </span>
+  );
+}

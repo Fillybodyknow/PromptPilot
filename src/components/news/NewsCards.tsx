@@ -5,7 +5,7 @@ import { getCategory } from "@/lib/categories";
 import { formatNewsTime } from "@/lib/format";
 import type { PublicNews } from "@/lib/news/public";
 import { publisherOf } from "@/lib/news/publisher";
-import { CategoryChip, GroupDot, ImportanceBadge, card } from "../site/ui";
+import { CategoryChip, GroupDot, ImportanceBadge, NewBadge, card } from "../site/ui";
 
 const href = (item: PublicNews) => `/news/${item.id}`;
 const titleOf = (item: PublicNews) => item.titleTh ?? item.title;
@@ -22,7 +22,7 @@ function Meta({ item, className = "" }: { item: PublicNews; className?: string }
 
 export function NewsLead({ item, visual }: { item: PublicNews; visual?: Visual }) {
   return (
-    <article className={`${card} spotlight flex flex-col gap-3.5 overflow-hidden shadow-xl shadow-black/10 ${visual ? "" : "p-6 sm:p-7"}`}>
+    <article className={`${card} glow-border spotlight flex flex-col gap-3.5 overflow-hidden shadow-xl shadow-indigo-500/10 ${visual ? "" : "p-6 sm:p-7"}`}>
       {visual && (
         <Link href={href(item)} className="relative block aspect-[21/9] w-full overflow-hidden" tabIndex={-1} aria-hidden>
           <Image src={visual.src} alt="" fill placeholder="blur" sizes="(min-width: 1024px) 700px, 100vw" className="object-cover transition-transform duration-500 hover:scale-105" />
@@ -31,6 +31,7 @@ export function NewsLead({ item, visual }: { item: PublicNews; visual?: Visual }
       )}
       <div className={visual ? "flex flex-col gap-3.5 px-6 pb-6 sm:px-7 sm:pb-7" : "contents"}>
       <div className="flex flex-wrap items-center gap-2">
+        <NewBadge publishedAt={item.publishedAt} />
         <ImportanceBadge level={item.importance} />
         {item.categories.slice(0, 2).map((c) => (
           <CategoryChip key={c} categoryKey={c} />
@@ -62,6 +63,7 @@ export function NewsSecondary({ item }: { item: PublicNews }) {
   return (
     <article className={`${card} spotlight flex flex-1 flex-col gap-2.5 p-5 shadow-xl shadow-black/10 transition-colors hover:border-brand/50`}>
       <div className="flex flex-wrap items-center gap-2">
+        <NewBadge publishedAt={item.publishedAt} />
         <ImportanceBadge level={item.importance} />
         {item.categories[0] && <CategoryChip categoryKey={item.categories[0]} />}
       </div>
@@ -79,7 +81,8 @@ export function NewsSecondary({ item }: { item: PublicNews }) {
 export function NewsRow({ item, showImportance = false }: { item: PublicNews; showImportance?: boolean }) {
   const cat = item.categories[0] ? getCategory(item.categories[0]) : undefined;
   return (
-    <li className="flex flex-wrap gap-x-5 gap-y-2 border-t border-line px-5 py-4 first:border-t-0 sm:px-6">
+    <li className="group/row relative flex flex-wrap gap-x-5 gap-y-2 border-t border-line px-5 py-4 transition-colors first:border-t-0 hover:bg-chip/60 sm:px-6">
+      <span aria-hidden className="absolute inset-y-3 left-0 w-1 origin-center scale-y-0 rounded-r-full bg-gradient-to-b from-indigo-500 to-fuchsia-500 transition-transform duration-300 group-hover/row:scale-y-100" />
       {showImportance && (
         <div className="w-16 shrink-0">
           <ImportanceBadge level={item.importance} />
@@ -88,7 +91,8 @@ export function NewsRow({ item, showImportance = false }: { item: PublicNews; sh
       <div className="min-w-0 flex-[1_1_420px]">
         <Link href={href(item)} className="text-[17px] font-semibold leading-snug hover:text-brand">
           {titleOf(item)}
-        </Link>
+        </Link>{" "}
+        <NewBadge publishedAt={item.publishedAt} />
         {item.summaryTh && <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted">{item.summaryTh}</p>}
       </div>
       <div className="flex shrink-0 flex-col gap-1 text-[13px] text-muted sm:w-48">

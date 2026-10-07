@@ -52,14 +52,14 @@ export function MobileNav() {
         <MenuIcon size={22} />
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setOpen(false)}>
+        <div className="fade-in fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-label="เมนู"
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-y-0 right-0 flex w-[300px] max-w-[85vw] flex-col bg-surface shadow-2xl"
+            className="drawer-in absolute inset-y-0 right-0 flex w-[300px] max-w-[85vw] flex-col bg-surface shadow-2xl"
           >
             <div className="flex h-14 items-center justify-between border-b border-line pl-5 pr-2">
               <span className="font-semibold">เมนู</span>

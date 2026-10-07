@@ -32,6 +32,14 @@ export function PageBanner({
       {/* ไล่เข้มจากซ้าย (ฝั่งข้อความ) และจากล่าง ให้ข้อความขาวผ่าน contrast บนทุกส่วนของรูป */}
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0c0d11]/95 via-[#0c0d11]/75 to-[#0c0d11]/25" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0c0d11]/80 via-transparent to-transparent" />
+      {size === "lg" && (
+        // แสงสีลอยช้าๆ บน hero หน้าแรก (หยุดนิ่งถ้าผู้ใช้ตั้งลดการเคลื่อนไหว)
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden mix-blend-screen">
+          <div className="orb absolute -left-[10%] top-[5%] h-[55%] w-[45%] rounded-full bg-indigo-600/40 blur-3xl" />
+          <div className="orb absolute left-[30%] top-[45%] h-[50%] w-[35%] rounded-full bg-fuchsia-600/30 blur-3xl [animation-delay:-6s]" />
+          <div className="orb absolute right-[5%] top-[-10%] h-[45%] w-[30%] rounded-full bg-cyan-500/20 blur-3xl [animation-delay:-11s]" />
+        </div>
+      )}
       <div className={`relative mx-auto flex max-w-6xl flex-col justify-end px-4 pb-8 pt-10 text-white sm:px-6 ${height}`}>{children}</div>
     </section>
   );

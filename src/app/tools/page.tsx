@@ -84,7 +84,7 @@ export default async function ToolsPage({ searchParams }: { searchParams: Promis
               key={a ?? "all"}
               href={accessHref(a)}
               aria-current={active ? "true" : undefined}
-              className={`flex h-10 items-center rounded-full border px-4 text-sm ${
+              className={`flex h-10 items-center rounded-full border px-4 text-sm transition-all duration-200 active:scale-95 ${
                 active ? "border-ink bg-ink font-semibold text-background" : "border-line bg-surface hover:border-ink"
               }`}
             >
@@ -105,7 +105,7 @@ export default async function ToolsPage({ searchParams }: { searchParams: Promis
             <Link
               key={`${t.categoryKey}/${t.id}`}
               href={`/tools/${t.categoryKey}/${t.id}`}
-              className={`${card} spotlight flex min-w-0 flex-[1_1_300px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
+              className={`${card} spotlight reveal flex min-w-0 flex-[1_1_300px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
             >
               <span className="flex items-center gap-3">
                 <VendorLogo vendor={t.vendor} size={40} />

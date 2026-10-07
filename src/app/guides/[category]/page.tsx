@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { CopyButton } from "@/components/guides/CopyButton";
@@ -66,11 +67,17 @@ export default async function GuidePage({ params, searchParams }: Props) {
             href={t === "overview" ? `/guides/${key}` : `/guides/${key}?tab=${t}`}
             scroll={false}
             aria-current={t === tab ? "page" : undefined}
-            className={`flex h-12 items-center border-b-[3px] px-4 text-[15px] ${
-              t === tab ? "border-brand font-bold text-brand" : "border-transparent text-muted hover:text-ink"
+            className={`relative flex h-12 items-center px-4 text-[15px] transition-colors ${
+              t === tab ? "font-bold text-brand" : "text-muted hover:text-ink"
             }`}
           >
             {tabLabel[t]}
+            {/* เส้นใต้แท็บที่เลือก เลื่อนไปหาแท็บใหม่ตอนเปลี่ยน (View Transition ชื่อเดียวกันทุกแท็บ) */}
+            {t === tab && (
+              <ViewTransition name="guide-tab" share="slide-indicator">
+                <span aria-hidden className="absolute inset-x-2 -bottom-px h-[3px] rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500" />
+              </ViewTransition>
+            )}
           </Link>
         ))}
       </nav>
@@ -137,7 +144,7 @@ export default async function GuidePage({ params, searchParams }: Props) {
               </p>
               {prompts.length === 0 && <EmptyState>ยังไม่มี prompt ตัวอย่างในหมวดนี้</EmptyState>}
               {prompts.map((p) => (
-                <article key={p.task} className={`${card} spotlight reveal flex flex-col gap-3.5 p-6`}>
+                <article key={p.task} className={`${card} spotlight reveal flex flex-col gap-3.5 p-6 transition-shadow hover:shadow-lg hover:shadow-indigo-500/10`}>
                   <div className="flex flex-wrap items-center justify-between gap-2.5">
                     <h2 className="text-lg font-bold">{p.task}</h2>
                     {p.tested ? (
