@@ -31,7 +31,7 @@ drizzle/            # ไฟล์ migration
 ## รันโปรเจกต์
 
 ตั้งค่าใน `.env.local`: `DB_NAME`, `DB_PASS` (+ `DB_HOST`, `DB_PORT` ถ้าไม่ใช่ `localhost:3306` และ `DB_USER` ถ้าชื่อผู้ใช้ MySQL ไม่ตรงกับ `DB_NAME`),
-`ADMIN_USER`, `ADMIN_PASSWORD` และ `OPENAI_API_KEY` หรือ `ANTHROPIC_API_KEY` (+ `NEWS_PROVIDER`)
+`ADMIN_USER`, `ADMIN_PASSWORD` และ `ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` (ใช้ Claude ก่อน ถ้าเรียกไม่สำเร็จจะใช้ OpenAI แทน)
 
 ```bash
 npm install

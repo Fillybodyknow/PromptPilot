@@ -1,7 +1,8 @@
 /**
  * ดึงข่าว AI จาก RSS → ให้ AI (Claude หรือ OpenAI) คัด/สรุปไทย/จัดหมวด → เก็บลง MySQL เป็นสถานะ pending รอคนอนุมัติ
  * รัน: npm run news:fetch
- * env (.env.local): ANTHROPIC_API_KEY หรือ OPENAI_API_KEY, NEWS_PROVIDER=anthropic|openai (ไม่บังคับ), NEWS_MODEL (ไม่บังคับ)
+ * env (.env.local): ANTHROPIC_API_KEY และ/หรือ OPENAI_API_KEY — ใช้ Claude ก่อน ถ้าเรียกไม่สำเร็จจะใช้ OpenAI แทน
+ *   ANTHROPIC_MODEL, OPENAI_MODEL (ไม่บังคับ) เปลี่ยนรุ่นโมเดลของแต่ละเจ้า
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
@@ -62,16 +63,21 @@ ${CATEGORIES.map((c) => `- ${c.key}: ${c.titleTh} — ${c.descriptionTh}`).join(
 
 interface Enricher {
   label: string;
+  /** key ผิด / ไม่มีสิทธิ์ / เครดิตหรือโควตาหมด — เรียกซ้ำก็ไม่สำเร็จ จึงเลิกใช้เจ้านี้ทั้งรอบ */
   isAuthError(err: unknown): boolean;
   run(userContent: string): Promise<{ items: Enrichment[]; usage: string }>;
 }
 
 function anthropicEnricher(): Enricher {
   const client = new Anthropic();
-  const model = process.env.NEWS_MODEL ?? "claude-haiku-4-5";
+  const model = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5";
   return {
     label: `Claude (${model})`,
-    isAuthError: (err) => err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError,
+    isAuthError: (err) =>
+      err instanceof Anthropic.AuthenticationError ||
+      err instanceof Anthropic.PermissionDeniedError ||
+      // เครดิตหมด Anthropic ตอบเป็น 400 ธรรมดา ต้องดูจากข้อความ
+      (err instanceof Anthropic.BadRequestError && /credit balance/i.test(err.message)),
     async run(userContent) {
       const response = await client.messages.parse({
         model,
@@ -93,12 +99,15 @@ function anthropicEnricher(): Enricher {
 
 function openaiEnricher(): Enricher {
   const client = new OpenAI();
-  const model = process.env.NEWS_MODEL ?? "gpt-5.4-mini";
+  const model = process.env.OPENAI_MODEL || "gpt-5.4-mini";
   // reasoning ใช้ได้เฉพาะโมเดลตระกูล gpt-5 / o-series ส่งให้รุ่นอื่นจะได้ 400
   const reasoning = /^(gpt-5|o\d)/.test(model) ? { reasoning: { effort: "low" as const } } : {};
   return {
     label: `OpenAI (${model})`,
-    isAuthError: (err) => err instanceof OpenAI.AuthenticationError || err instanceof OpenAI.PermissionDeniedError,
+    isAuthError: (err) =>
+      err instanceof OpenAI.AuthenticationError ||
+      err instanceof OpenAI.PermissionDeniedError ||
+      (err instanceof OpenAI.RateLimitError && err.code === "insufficient_quota"),
     async run(userContent) {
       const response = await client.responses.parse({
         model,
@@ -119,15 +128,12 @@ function openaiEnricher(): Enricher {
   };
 }
 
-/** NEWS_PROVIDER ระบุตรงๆ ได้; ถ้าไม่ระบุ ใช้ตัวที่มี key (Claude ก่อน) — null = ไม่มี key เลย */
-function pickEnricher(): Enricher | null {
-  const provider =
-    process.env.NEWS_PROVIDER ||
-    (process.env.ANTHROPIC_API_KEY ? "anthropic" : process.env.OPENAI_API_KEY ? "openai" : null);
-  if (provider === null) return null;
-  if (provider === "anthropic" && process.env.ANTHROPIC_API_KEY) return anthropicEnricher();
-  if (provider === "openai" && process.env.OPENAI_API_KEY) return openaiEnricher();
-  throw new Error(`NEWS_PROVIDER="${provider}" ใช้ไม่ได้: ต้องเป็น anthropic หรือ openai และต้องมี API key ของตัวนั้นใน env`);
+/** เรียงตามลำดับที่จะลอง: Claude ก่อน แล้ว OpenAI — เฉพาะเจ้าที่มี key (ว่าง = ไม่มี key เลย) */
+function pickEnrichers(): Enricher[] {
+  return [
+    ...(process.env.ANTHROPIC_API_KEY ? [anthropicEnricher()] : []),
+    ...(process.env.OPENAI_API_KEY ? [openaiEnricher()] : []),
+  ];
 }
 
 interface KnownStory {
@@ -159,14 +165,19 @@ async function enrichBatch(enricher: Enricher, batch: Candidate[], known: KnownS
   return result;
 }
 
-/** null = ไม่ได้ตั้ง key; ข่าวที่ไม่อยู่ใน results = AI ล้มเหลว (ไม่บันทึก เพื่อให้รอบหน้าลองใหม่) */
+/**
+ * null = ไม่ได้ตั้ง key; ข่าวที่ไม่อยู่ใน results = AI ทุกเจ้าล้มเหลว (ไม่บันทึก เพื่อให้รอบหน้าลองใหม่)
+ * แต่ละ batch ลองเจ้าแรกก่อน ถ้าล้มเหลวลองเจ้าถัดไปกับ batch เดิม — เจ้าที่ key/เครดิตใช้ไม่ได้ถูกตัดออกทั้งรอบ
+ */
 async function enrichAll(
   candidates: Candidate[],
   known: KnownStory[],
-): Promise<{ results: Map<string, Enrichment>; lastError: string | null } | null> {
-  const enricher = pickEnricher();
-  if (!enricher) return null;
-  console.log(`คัดข่าวด้วย ${enricher.label}`);
+): Promise<{ results: Map<string, Enrichment>; lastError: string | null; notes: string[] } | null> {
+  const enrichers = pickEnrichers();
+  if (enrichers.length === 0) return null;
+  console.log(`คัดข่าวด้วย ${enrichers.map((e) => e.label).join(" → สำรอง ")}`);
+  const dead = new Set<Enricher>();
+  const notes = new Set<string>();
   const results = new Map<string, Enrichment>();
   let lastError: string | null = null;
   for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
@@ -175,18 +186,26 @@ async function enrichAll(
     const earlier = candidates
       .filter((c) => results.get(c.id)?.relevant)
       .map((c) => ({ id: c.id, title: results.get(c.id)!.titleTh, source: c.source }));
-    try {
-      for (const [id, e] of await enrichBatch(enricher, batch, [...known, ...earlier])) results.set(id, e);
-    } catch (err) {
-      lastError = `${enricher.label}: ${err instanceof Error ? err.message : err}`.slice(0, 300);
-      if (enricher.isAuthError(err)) {
-        console.error(`❌ API key ใช้ไม่ได้ — หยุดเรียก ${enricher.label} ในรอบนี้`);
+    for (const enricher of enrichers) {
+      if (dead.has(enricher)) continue;
+      try {
+        for (const [id, e] of await enrichBatch(enricher, batch, [...known, ...earlier])) results.set(id, e);
+        if (enricher !== enrichers[0]) notes.add(`ใช้ ${enricher.label} แทน`);
         break;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        lastError = `${enricher.label}: ${msg}`.slice(0, 300);
+        if (enricher.isAuthError(err)) {
+          dead.add(enricher);
+          notes.add(`${enricher.label} ใช้ไม่ได้ (key/เครดิต)`);
+          console.error(`❌ ${enricher.label} ใช้ไม่ได้ (key ผิดหรือเครดิตหมด) — เลิกเรียกในรอบนี้: ${msg}`);
+        } else {
+          console.warn(`⚠️  ${enricher.label} ล้มเหลวใน batch นี้ (${batch.length} ข่าว): ${msg}`);
+        }
       }
-      console.warn(`⚠️  ${enricher.label} ล้มเหลวใน batch นี้ (${batch.length} ข่าว): ${err instanceof Error ? err.message : err}`);
     }
   }
-  return { results, lastError };
+  return { results, lastError, notes: [...notes] };
 }
 
 async function main(): Promise<{ ok: boolean; message: string }> {
@@ -272,6 +291,7 @@ async function main(): Promise<{ ok: boolean; message: string }> {
   let message = `ได้ข่าวใหม่ ${inserted} ชิ้น (รออนุมัติ ${n("pending")}, ข่าวซ้ำ ${n("duplicate")}, AI คัดออก ${n("auto_rejected")})`;
   if (!outcome) message += " · ไม่มี API key จึงยังไม่มีคำสรุป";
   if (skipped > 0) message += ` · ข้าม ${skipped} ชิ้นที่ AI สรุปไม่สำเร็จ (รอบหน้าจะลองใหม่): ${outcome?.lastError}`;
+  if (outcome?.notes.length) message += ` · ${outcome.notes.join(" · ")}`;
   return { ok: skipped === 0, message: message + sourceNote };
 }
 
