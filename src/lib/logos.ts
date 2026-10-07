@@ -278,8 +278,13 @@ const VENDOR_ALIASES: Record<string, string> = {
   "Anthropic / OpenAI / Google": "Anthropic",
 };
 
+/** ชื่อแบรนด์ใน VENDOR_LOGOS ของ vendor นี้ (แปลงชื่อร่วมอย่าง "GitHub / Microsoft" เป็น "GitHub") */
+export function vendorLogoKey(vendor: string): string {
+  return vendor in VENDOR_LOGOS ? vendor : (VENDOR_ALIASES[vendor] ?? vendor);
+}
+
 export function getVendorLogoInfo(vendor: string): VendorLogoInfo {
-  const key = vendor in VENDOR_LOGOS ? vendor : (VENDOR_ALIASES[vendor] ?? vendor);
+  const key = vendorLogoKey(vendor);
   return (
     VENDOR_LOGOS[key] ?? { src: null, longSrc: null, initials: vendor.slice(0, 2).toUpperCase() }
   );

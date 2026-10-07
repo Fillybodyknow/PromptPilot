@@ -5,12 +5,14 @@ import { GroupCard } from "@/components/site/GroupCard";
 import { AlertIcon, SearchIcon } from "@/components/site/icons";
 import { PageBanner, brandGradientText } from "@/components/site/PageBanner";
 import { EmptyState, SectionHeader, card } from "@/components/site/ui";
+import { VendorStrip } from "@/components/site/VendorStrip";
 import { VendorLogo } from "@/components/VendorLogo";
 import { withBasePath } from "@/lib/basePath";
 import { GROUP_SLUGS, categoryKeysOfGroup, getCategory } from "@/lib/categories";
 import { HERO_VISUAL, groupVisual } from "@/lib/visuals";
 import { getAllCategoriesWithEntries, getCategoriesGrouped, getFeaturedTools } from "@/lib/data";
 import { formatClock, formatLongDate } from "@/lib/format";
+import { getVendorLogoInfo, vendorLogoKey } from "@/lib/logos";
 import { getTopStories, listApprovedNews } from "@/lib/news/public";
 import { lastSuccessfulFetchAt } from "@/lib/news/repo";
 import { one, type SearchParams } from "@/lib/params";
@@ -41,6 +43,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     categories.filter((c) => keys.includes(c.key)).reduce((sum, c) => sum + c.entries.length, 0);
   const totalTools = categories.reduce((sum, c) => sum + c.entries.length, 0);
   const groups = getCategoriesGrouped();
+  // ผู้ให้บริการที่มีเครื่องมืออยู่ในฐานข้อมูลจริงและมีไฟล์โลโก้แบบยาว เรียงตามจำนวนเครื่องมือ
+  const vendorTools = new Map<string, number>();
+  for (const c of categories)
+    for (const e of c.entries as { vendor: string }[]) {
+      const key = vendorLogoKey(e.vendor);
+      if (getVendorLogoInfo(key).longSrc) vendorTools.set(key, (vendorTools.get(key) ?? 0) + 1);
+    }
+  const vendors = [...vendorTools].sort((a, b) => b[1] - a[1]).map(([v]) => v);
 
   const leadGroup = lead?.categories.map(getCategory).find(Boolean)?.group;
 
@@ -104,6 +114,22 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <div className="mt-6">
           <EmptyState>ยังไม่มีข่าวที่ผ่านการตรวจในสัปดาห์นี้</EmptyState>
         </div>
+      )}
+
+      {vendors.length > 0 && (
+        <section aria-labelledby="vendors" className={`${card} mt-10 overflow-hidden bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-fuchsia-500/10 px-5 py-6 sm:px-8`}>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="vendors" className="text-lg font-bold">
+              ครอบคลุมเครื่องมือจาก <span className="text-brand">{vendors.length}</span> ผู้ให้บริการ
+            </h2>
+            <Link href="/tools" className="text-sm font-semibold text-brand hover:underline">
+              ดูเครื่องมือทั้งหมด →
+            </Link>
+          </div>
+          <div className="mt-5">
+            <VendorStrip vendors={vendors} />
+          </div>
+        </section>
       )}
 
       <section aria-labelledby="latest" className="mt-14 scroll-mt-20" id="latest-section">
