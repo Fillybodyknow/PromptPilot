@@ -1,7 +1,9 @@
+import { connection } from "next/server";
 import { getAllCategoriesWithEntries, getCategoriesGrouped } from "@/lib/data";
 
-export default function ExploreOverviewPage() {
-  const categories = getAllCategoriesWithEntries();
+export default async function ExploreOverviewPage() {
+  await connection();
+  const categories = await getAllCategoriesWithEntries();
   const groups = getCategoriesGrouped();
   const totalTools = categories.reduce((sum, c) => sum + c.entries.length, 0);
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { getAllCategoriesWithEntries, getCategoriesGrouped } from "@/lib/data";
 import { getGroupAccent } from "@/lib/groupAccent";
 import { PhotoAuroraBackground } from "@/components/PhotoAuroraBackground";
@@ -6,7 +7,7 @@ import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { VendorLogo } from "@/components/VendorLogo";
 
 // One flagship tool per group (matches the 7 groups in the Categories section
-// below) — ids/summaries are pulled from the real src/data/*.json entries, not
+// below) — ids/summaries are pulled from the real tool entries (tools table), not
 // invented, so this stays true if those entries change name/vendor later.
 const SPOTLIGHT = [
   {
@@ -185,8 +186,9 @@ const BENEFITS = [
   },
 ];
 
-export default function MainPage() {
-  const categories = getAllCategoriesWithEntries();
+export default async function MainPage() {
+  await connection();
+  const categories = await getAllCategoriesWithEntries();
   const groups = getCategoriesGrouped();
   const totalTools = categories.reduce((sum, c) => sum + c.entries.length, 0);
 

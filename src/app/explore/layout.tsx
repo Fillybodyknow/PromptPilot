@@ -1,11 +1,13 @@
+import { connection } from "next/server";
 import { getCategoriesGrouped, getAllCategoriesWithEntries } from "@/lib/data";
 import { ExploreSidebar } from "@/components/ExploreSidebar";
 import { HeroBackgroundSlideshow } from "@/components/HeroBackgroundSlideshow";
 
-export default function ExploreLayout({ children }: { children: React.ReactNode }) {
+export default async function ExploreLayout({ children }: { children: React.ReactNode }) {
+  await connection();
   // Strip down to plain serializable fields — CategoryMeta carries a Zod schema
   // object, which can't cross the server/client boundary as a prop.
-  const categoriesWithEntries = getAllCategoriesWithEntries();
+  const categoriesWithEntries = await getAllCategoriesWithEntries();
   const entryCount = (key: string) =>
     categoriesWithEntries.find((c) => c.key === key)?.entries.length ?? 0;
   const groups = getCategoriesGrouped().map((g) => ({

@@ -1,24 +1,25 @@
 import { notFound } from "next/navigation";
-import { CATEGORIES, getCategory, getCategoryEntries, getCategoryGuide } from "@/lib/data";
+import { connection } from "next/server";
+import { getCategory, getCategoryEntries, getCategoryGuide } from "@/lib/data";
 import { ToolCards } from "@/components/ToolCards";
 import { CategoryGuideSection } from "@/components/CategoryGuideSection";
 import { getGroupAccent } from "@/lib/groupAccent";
-
-export function generateStaticParams() {
-  return CATEGORIES.map((category) => ({ category: category.key }));
-}
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
+  // อ่านข้อมูลจาก DB ตอนมี request (มี cache) ไม่ใช่ตอน build — build จึงไม่ต้องต่อ DB
+  await connection();
   const { category: categoryKey } = await params;
   const category = getCategory(categoryKey);
   if (!category) notFound();
 
-  const entries = getCategoryEntries<Record<string, unknown>>(categoryKey);
-  const guide = getCategoryGuide(categoryKey);
+  const [entries, guide] = await Promise.all([
+    getCategoryEntries<Record<string, unknown>>(categoryKey),
+    getCategoryGuide(categoryKey),
+  ]);
   const accent = getGroupAccent(category.group);
 
   return (

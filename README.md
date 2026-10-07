@@ -4,49 +4,54 @@
 
 ## Stack
 
-- **Next.js 16 (App Router) + TypeScript + Tailwind CSS 4**
-- **Zod** — validate ข้อมูลทุกหมวดตอน build เพื่อกันข้อมูลผิดรูปแบบหลุดขึ้นเว็บ
-- **ข้อมูล = ไฟล์ JSON** ใน `src/data/` (ไม่มี database) — อัปเดตด้วยการแก้ไฟล์ + commit
+- **Next.js 16 (App Router) + TypeScript + Tailwind CSS 4** รันเป็น Node server
+- **MySQL 8+ / 9** ผ่าน **Drizzle ORM** (`mysql2`) — เก็บเครื่องมือ คู่มือ prompt ข่าว และแหล่งข่าว
+- **Zod** — ตรวจรูปแบบข้อมูลเครื่องมือ/คู่มือทุกครั้งที่อ่านจาก DB กันข้อมูลผิดรูปแบบหลุดขึ้นเว็บ
 
 ## โครงสร้าง
 
 ```
 src/
+  db/
+    schema.ts      # ตาราง MySQL (Drizzle) — แก้ที่นี่แล้วรัน npm run db:generate
+    client.ts      # connection pool (อ่าน DATABASE_URL)
   lib/
-    schema.ts      # Zod schema: base fields ร่วม + extension ต่อหมวด (16 หมวด)
-    categories.ts  # metadata: ชื่อหมวดภาษาไทย, คำอธิบาย, คอลัมน์ตารางที่จะแสดง
-    data.ts        # โหลด + validate JSON แต่ละหมวดด้วย schema ที่ตรงกัน
-  data/
-    *.json         # ข้อมูลจริงต่อหมวด (แก้ตรงนี้เพื่ออัปเดตเว็บ)
-  components/
-    ComparisonTable.tsx  # ตารางเปรียบเทียบ generic ใช้ร่วมกันทุกหมวด
-  app/
-    page.tsx            # หน้าแรก: การ์ดลิงก์ไปแต่ละหมวด
-    [category]/page.tsx # หน้าตารางเปรียบเทียบต่อหมวด (static generate ล่วงหน้า)
+    schema.ts      # Zod schema: base fields ร่วม + extension ต่อหมวด
+    categories.ts  # หมวดทั้ง 13 หมวด: ชื่อภาษาไทย คำอธิบาย กลุ่มงาน คอลัมน์เฉพาะหมวด
+    data.ts        # อ่านเครื่องมือ/คู่มือจาก DB (มี cache) + validate ด้วย Zod
+    catalog/repo.ts, news/repo.ts  # query ฐานข้อมูล
+  app/              # หน้าเว็บ + /admin/news (หน้าอนุมัติข่าว)
+scripts/
+  fetch-news.ts     # ดึงข่าวรายวัน + ให้ AI คัด/สรุป (npm run news:fetch)
+  db/seed.ts        # ใส่ข้อมูลตั้งต้นจาก scripts/db/seed/ ลง DB ใหม่
+drizzle/            # ไฟล์ migration
 ```
 
 ## รันโปรเจกต์
 
+ตั้งค่าใน `.env.local`: `DATABASE_URL=mysql://user:pass@localhost:3306/promptpilot`,
+`ADMIN_USER`, `ADMIN_PASSWORD` และ `OPENAI_API_KEY` หรือ `ANTHROPIC_API_KEY` (+ `NEWS_PROVIDER`)
+
 ```bash
 npm install
-npm run dev      # http://localhost:3000
-npm run build    # build + validate JSON ทุกหมวดด้วย Zod (fail ถ้าข้อมูลผิด schema)
+npm run db:migrate   # สร้าง/อัปเดตตาราง — รันทุกครั้งที่ deploy เวอร์ชันใหม่
+npm run db:seed      # ครั้งแรกเท่านั้น: ใส่เครื่องมือ คู่มือ และแหล่งข่าวตั้งต้น
+npm run dev          # http://localhost:3000
+npm run build
 npm run lint
 ```
 
 ## เพิ่ม/แก้ข้อมูล
 
-แก้ไฟล์ JSON ที่ตรงหมวดใน `src/data/` ได้เลย ทุก entry ต้องมี field พื้นฐาน (`id`,
-`name`, `vendor`, `sourceLabel`, `verifiedAt`, `status`, `summary`) บวก field
-เฉพาะหมวดตามที่กำหนดใน `src/lib/schema.ts` — รัน `npm run build` เพื่อตรวจว่า
-JSON ยังตรง schema ก่อน commit
+ข้อมูลเครื่องมือและคู่มืออยู่ใน MySQL (ตาราง `tools`, `guides`, `prompt_templates`)
+ไฟล์ใน `scripts/db/seed/` ใช้แค่ตอนตั้ง DB ใหม่ครั้งแรก แก้ไฟล์เหล่านั้นจะไม่มีผลกับเว็บ
+หน้าเว็บ cache ข้อมูลไว้สูงสุด 10 นาที ถ้าแก้ DB ตรงๆ จะเห็นผลหลังจากนั้น
 
 ## เพิ่มหมวดใหม่
 
 1. เพิ่ม schema ในหมวดใน `src/lib/schema.ts` (extend จาก `baseEntrySchema`)
 2. เพิ่ม metadata (ชื่อ, คำอธิบาย, คอลัมน์ตาราง) ใน `src/lib/categories.ts`
-3. สร้างไฟล์ `src/data/<key>.json`
-4. import + เพิ่มใน `RAW_DATA` ที่ `src/lib/data.ts`
+3. ใส่เครื่องมือและคู่มือของหมวดนั้นลงตาราง `tools` / `guides` / `prompt_templates`
 
 ## แผนถัดไป (ยังไม่ทำในสแคฟโฟลด์นี้)
 

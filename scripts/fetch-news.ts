@@ -4,14 +4,14 @@
  * env (.env.local): ANTHROPIC_API_KEY หรือ OPENAI_API_KEY, NEWS_PROVIDER=anthropic|openai (ไม่บังคับ), NEWS_MODEL (ไม่บังคับ)
  */
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import Parser from "rss-parser";
 import { CATEGORIES } from "../src/lib/categories";
-import { enrichmentSchema, isCategoryKey, newsSourceSchema, type Enrichment, type NewsSource } from "../src/lib/news/schema";
+import { listEnabledSources } from "../src/lib/catalog/repo";
+import { enrichmentSchema, isCategoryKey, type Enrichment, type NewsSource } from "../src/lib/news/schema";
 import { closeDb } from "../src/db/client";
 import { beginRun, countByStatus, findExistingIds, finishRun, insertItems, type NewItem } from "../src/lib/news/repo";
 
@@ -211,7 +211,8 @@ async function enrichAll(
 }
 
 async function main(): Promise<{ ok: boolean; message: string }> {
-  const sources = newsSourceSchema.parse(JSON.parse(readFileSync("src/data/news-sources.json", "utf8")));
+  const sources = await listEnabledSources();
+  if (sources.length === 0) throw new Error("ยังไม่มีแหล่งข่าวที่เปิดใช้ในตาราง news_sources (ตั้งฐานข้อมูลใหม่ให้รัน npm run db:seed)");
   const parser = new Parser();
 
   const results = await Promise.allSettled(sources.map((s) => fetchSource(parser, s)));

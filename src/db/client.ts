@@ -28,5 +28,6 @@ export async function closeDb(): Promise<void> {
   const pool = g.__ppPool;
   g.__ppPool = undefined;
   g.__ppDb = undefined;
-  await pool?.end();
+  // ถ้าเชื่อมต่อไม่สำเร็จตั้งแต่แรก end() จะโยน error เดิมซ้ำ — error นั้นถูกรายงานไปแล้ว จึงไม่ให้ crash ตอนปิด
+  await pool?.end().catch(() => {});
 }

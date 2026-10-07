@@ -10,7 +10,8 @@
     "news:fetch": "tsx scripts/fetch-news.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:import-sqlite": "tsx scripts/db/import-sqlite.ts"
+    "db:import-sqlite": "tsx scripts/db/import-sqlite.ts",
+    "db:seed": "tsx scripts/db/seed.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",

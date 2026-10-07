@@ -1,127 +1,46 @@
+import { unstable_cache } from "next/cache";
 import { z } from "zod";
+import { loadAllEntries, loadAllGuides } from "./catalog/repo";
+import { CATEGORIES, getCategory, getCategoriesGrouped, type CategoryMeta } from "./categories";
 import { categoryGuideSchema, type CategoryGuide } from "./schema";
-import {
-  CATEGORIES,
-  getCategory,
-  getCategoriesGrouped,
-  type CategoryMeta,
-} from "./categories";
 
-import generalAssistant from "@/data/general-assistant.json";
-import businessWriting from "@/data/business-writing.json";
-import presentations from "@/data/presentations.json";
-import codingModels from "@/data/coding-models.json";
-import codingTools from "@/data/coding-tools.json";
-import dataAnalysis from "@/data/data-analysis.json";
-import researchDocs from "@/data/research-docs.json";
-import imageGen from "@/data/image-gen.json";
-import designUi from "@/data/design-ui.json";
-import meetingsTranscription from "@/data/meetings-transcription.json";
-import translation from "@/data/translation.json";
-import automation from "@/data/automation.json";
-import openWeightSelfhosted from "@/data/open-weight-selfhosted.json";
+/** tag สำหรับ invalidate cache หลังแก้ข้อมูล (หน้า admin เรียก updateTag/revalidateTag) */
+export const TOOLS_TAG = "tools";
+export const GUIDES_TAG = "guides";
 
-import businessWritingGuide from "@/data/guides/business-writing.json";
-import generalAssistantGuide from "@/data/guides/general-assistant.json";
-import codingModelsGuide from "@/data/guides/coding-models.json";
-import codingToolsGuide from "@/data/guides/coding-tools.json";
-import researchDocsGuide from "@/data/guides/research-docs.json";
-import dataAnalysisGuide from "@/data/guides/data-analysis.json";
-import presentationsGuide from "@/data/guides/presentations.json";
-import translationGuide from "@/data/guides/translation.json";
-import automationGuide from "@/data/guides/automation.json";
-import meetingsTranscriptionGuide from "@/data/guides/meetings-transcription.json";
-import designUiGuide from "@/data/guides/design-ui.json";
-import imageGenGuide from "@/data/guides/image-gen.json";
-import selfHostedGuide from "@/data/guides/self-hosted.json";
+// cache ข้อมูลจาก DB ไว้ข้าม request; revalidate เป็นตาข่ายกันข้อมูลค้าง ถ้ามีคนแก้ DB ตรงโดยไม่ผ่าน admin
+const cachedEntries = unstable_cache(loadAllEntries, ["catalog-entries"], { tags: [TOOLS_TAG], revalidate: 600 });
+const cachedGuides = unstable_cache(loadAllGuides, ["catalog-guides"], { tags: [GUIDES_TAG], revalidate: 600 });
 
-/**
- * แมป category key -> raw JSON (ยังไม่ validate)
- * ไฟล์ JSON เหล่านี้คือ "แหล่งข้อมูลตั้งต้น" ที่ auto-update pipeline / admin จะแก้ไขในอนาคต
- */
-const RAW_DATA: Record<string, unknown[]> = {
-  "general-assistant": generalAssistant,
-  "business-writing": businessWriting,
-  presentations: presentations,
-  "coding-models": codingModels,
-  "coding-tools": codingTools,
-  "data-analysis": dataAnalysis,
-  "research-docs": researchDocs,
-  "image-gen": imageGen,
-  "design-ui": designUi,
-  "meetings-transcription": meetingsTranscription,
-  translation: translation,
-  automation: automation,
-  "self-hosted": openWeightSelfhosted,
-};
-
-/**
- * แมป category key -> raw guide JSON (ยังไม่ validate) — ครบทั้ง 13 หมวดแล้ว
- * (coding-models เป็นหมวดสุดท้ายที่เพิ่ม)
- */
-const RAW_GUIDES: Record<string, unknown> = {
-  "business-writing": businessWritingGuide,
-  "general-assistant": generalAssistantGuide,
-  "coding-models": codingModelsGuide,
-  "coding-tools": codingToolsGuide,
-  "research-docs": researchDocsGuide,
-  "data-analysis": dataAnalysisGuide,
-  presentations: presentationsGuide,
-  translation: translationGuide,
-  automation: automationGuide,
-  "meetings-transcription": meetingsTranscriptionGuide,
-  "design-ui": designUiGuide,
-  "image-gen": imageGenGuide,
-  "self-hosted": selfHostedGuide,
-};
-
-/**
- * อ่าน + validate entries ของหมวดเดียว ด้วย Zod schema ของหมวดนั้น
- * โยน error ที่อ่านง่ายถ้า JSON ไม่ตรง schema — กัน "ข้อมูลผิดรูปแบบหลุดขึ้นเว็บ"
- * ตั้งแต่ตอน build (ตาม caveat ในข้อมูลตั้งต้นเรื่องความน่าเชื่อถือของข้อมูล)
- */
-export function getCategoryEntries<T = unknown>(key: string): T[] {
-  const category = getCategory(key);
-  if (!category) {
-    throw new Error(`ไม่พบหมวด "${key}" ใน CATEGORIES`);
-  }
-
-  const raw = RAW_DATA[key];
-  if (!raw) {
-    throw new Error(`ไม่พบไฟล์ข้อมูลสำหรับหมวด "${key}"`);
-  }
-
-  const result = z.array(category.schema).safeParse(raw);
-  if (!result.success) {
-    const issues = result.error.issues
-      .map((issue) => `  - [${issue.path.join(".")}] ${issue.message}`)
-      .join("\n");
-    throw new Error(
-      `ข้อมูลในหมวด "${key}" (src/data/${key}.json) ไม่ตรง schema:\n${issues}`
-    );
-  }
-
-  return result.data as T[];
+function formatIssues(error: z.ZodError): string {
+  return error.issues.map((issue) => `  - [${issue.path.join(".")}] ${issue.message}`).join("\n");
 }
 
 /**
- * อ่าน + validate guide ("วิธีใช้งาน" + "เขียน prompt" + "ติดตั้ง") ของหมวดเดียว
- * คืน null ถ้าหมวดนั้นยังไม่มี guide (ยังไม่ error — เพราะไม่ใช่ทุกหมวดต้องมี)
+ * อ่าน + validate entries ของหมวดเดียว ด้วย Zod schema ของหมวดนั้น
+ * โยน error ที่อ่านง่ายถ้าข้อมูลไม่ตรง schema — กันข้อมูลผิดรูปแบบหลุดขึ้นเว็บ
  */
-export function getCategoryGuide(key: string): CategoryGuide | null {
-  const raw = RAW_GUIDES[key];
+export async function getCategoryEntries<T = unknown>(key: string): Promise<T[]> {
+  const category = getCategory(key);
+  if (!category) throw new Error(`ไม่พบหมวด "${key}" ใน CATEGORIES`);
+
+  const raw = (await cachedEntries())[key] ?? [];
+  const result = z.array(category.schema).safeParse(raw);
+  if (!result.success) {
+    throw new Error(`ข้อมูลเครื่องมือในหมวด "${key}" (ตาราง tools) ไม่ตรง schema:\n${formatIssues(result.error)}`);
+  }
+  return result.data as T[];
+}
+
+/** คืน null ถ้าหมวดนั้นยังไม่มี guide */
+export async function getCategoryGuide(key: string): Promise<CategoryGuide | null> {
+  const raw = (await cachedGuides())[key];
   if (!raw) return null;
 
   const result = categoryGuideSchema.safeParse(raw);
   if (!result.success) {
-    const issues = result.error.issues
-      .map((issue) => `  - [${issue.path.join(".")}] ${issue.message}`)
-      .join("\n");
-    throw new Error(
-      `Guide ของหมวด "${key}" (src/data/guides/${key}.json) ไม่ตรง schema:\n${issues}`
-    );
+    throw new Error(`Guide ของหมวด "${key}" (ตาราง guides) ไม่ตรง schema:\n${formatIssues(result.error)}`);
   }
-
   return result.data;
 }
 
@@ -129,12 +48,13 @@ export interface CategoryWithEntries extends CategoryMeta {
   entries: Record<string, unknown>[];
 }
 
-/** ใช้ทำหน้ารายการหมวดทั้งหมด (หน้าแรก) */
-export function getAllCategoriesWithEntries(): CategoryWithEntries[] {
-  return CATEGORIES.map((category) => ({
-    ...category,
-    entries: getCategoryEntries(category.key),
-  }));
+export async function getAllCategoriesWithEntries(): Promise<CategoryWithEntries[]> {
+  return Promise.all(
+    CATEGORIES.map(async (category) => ({
+      ...category,
+      entries: await getCategoryEntries<Record<string, unknown>>(category.key),
+    })),
+  );
 }
 
 export { CATEGORIES, getCategory, getCategoriesGrouped };
