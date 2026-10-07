@@ -1,4 +1,5 @@
 import { defineConfig } from "drizzle-kit";
+import { dbConfig } from "./src/db/config";
 
 try {
   process.loadEnvFile(".env.local");
@@ -10,5 +11,5 @@ export default defineConfig({
   dialect: "mysql",
   schema: "./src/db/schema.ts",
   out: "./drizzle",
-  dbCredentials: { url: process.env.DATABASE_URL ?? "" },
+  dbCredentials: dbConfig(),
 });

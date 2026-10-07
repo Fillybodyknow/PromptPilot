@@ -14,7 +14,8 @@
 src/
   db/
     schema.ts      # ตาราง MySQL (Drizzle) — แก้ที่นี่แล้วรัน npm run db:generate
-    client.ts      # connection pool (อ่าน DATABASE_URL)
+    client.ts      # connection pool
+    config.ts      # อ่านค่า DB_* จาก env
   lib/
     schema.ts      # Zod schema: base fields ร่วม + extension ต่อหมวด
     categories.ts  # หมวดทั้ง 13 หมวด: ชื่อภาษาไทย คำอธิบาย กลุ่มงาน คอลัมน์เฉพาะหมวด
@@ -29,7 +30,7 @@ drizzle/            # ไฟล์ migration
 
 ## รันโปรเจกต์
 
-ตั้งค่าใน `.env.local`: `DATABASE_URL=mysql://user:pass@localhost:3306/promptpilot`,
+ตั้งค่าใน `.env.local`: `DB_USER`, `DB_PASS`, `DB_NAME` (+ `DB_HOST`, `DB_PORT` ถ้าไม่ใช่ `localhost:3306`),
 `ADMIN_USER`, `ADMIN_PASSWORD` และ `OPENAI_API_KEY` หรือ `ANTHROPIC_API_KEY` (+ `NEWS_PROVIDER`)
 
 ```bash
