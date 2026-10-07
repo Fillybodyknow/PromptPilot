@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { checkBasicAuth } from "@/lib/adminAuth";
 import { isCategoryKey } from "@/lib/news/schema";
-import { setStatus, updateContent } from "@/lib/news/repo";
+import { latestRun, setStatus, updateContent } from "@/lib/news/repo";
+import { startFetchProcess } from "@/lib/news/runFetch";
 
 // proxy.ts กันหน้า /admin ไว้แล้ว แต่ server action เป็น POST ที่ยิงตรงได้ จึงต้องตรวจซ้ำทุกครั้ง
 async function requireAdmin(): Promise<string> {
@@ -51,6 +52,19 @@ const editSchema = z.object({
   categories: z.array(z.string()).transform((keys) => keys.filter(isCategoryKey).slice(0, 3)),
   importance: z.coerce.number().int().min(1).max(3),
 });
+
+export async function triggerFetch() {
+  const user = await requireAdmin();
+  const before = latestRun();
+  if (before?.status === "running") return done();
+  startFetchProcess(user);
+  // รอให้สคริปต์บันทึกแถว running ก่อน re-render เพื่อให้หน้าแสดงสถานะ "กำลังดึง" ทันที
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 250));
+    if ((latestRun()?.id ?? 0) !== (before?.id ?? 0)) break;
+  }
+  done();
+}
 
 export async function saveAndApprove(formData: FormData) {
   const user = await requireAdmin();

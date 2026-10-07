@@ -33,6 +33,14 @@ function getDb(): DatabaseSync {
       reviewed_at  TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_news_status_published ON news_items (status, published_at DESC);
+    CREATE TABLE IF NOT EXISTS fetch_runs (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      trigger     TEXT NOT NULL,
+      started_at  TEXT NOT NULL,
+      finished_at TEXT,
+      status      TEXT NOT NULL CHECK (status IN ('running','ok','failed')),
+      message     TEXT
+    );
   `);
   return db;
 }
@@ -134,6 +142,52 @@ export function updateContent(id: string, edit: NewsEdit): boolean {
     )
     .run(edit.titleTh, edit.summaryTh, JSON.stringify(edit.categories), edit.importance, id);
   return Number(res.changes) > 0;
+}
+
+export interface FetchRun {
+  id: number;
+  trigger: string;
+  startedAt: string;
+  finishedAt: string | null;
+  status: "running" | "ok" | "failed";
+  message: string | null;
+}
+
+// รอบที่ค้างสถานะ running นานกว่านี้ถือว่าตายไปแล้ว (เช่น process ถูก kill) ไม่บล็อกรอบใหม่
+const STALE_RUN_MS = 15 * 60_000;
+
+/** เริ่มรอบใหม่แบบ atomic — คืน null ถ้ามีรอบอื่นกำลังทำงานอยู่ */
+export function beginRun(trigger: string): number | null {
+  const now = Date.now();
+  const res = getDb()
+    .prepare(
+      `INSERT INTO fetch_runs (trigger, started_at, status)
+       SELECT ?, ?, 'running'
+       WHERE NOT EXISTS (SELECT 1 FROM fetch_runs WHERE status = 'running' AND started_at > ?)`,
+    )
+    .run(trigger, new Date(now).toISOString(), new Date(now - STALE_RUN_MS).toISOString());
+  return Number(res.changes) > 0 ? Number(res.lastInsertRowid) : null;
+}
+
+export function finishRun(id: number, status: "ok" | "failed", message: string): void {
+  getDb()
+    .prepare(`UPDATE fetch_runs SET status = ?, message = ?, finished_at = ? WHERE id = ?`)
+    .run(status, message, new Date().toISOString(), id);
+}
+
+export function latestRun(): FetchRun | null {
+  const r = getDb().prepare(`SELECT * FROM fetch_runs ORDER BY id DESC LIMIT 1`).get() as Row | undefined;
+  if (!r) return null;
+  const startedAt = r.started_at as string;
+  const stale = r.status === "running" && Date.parse(startedAt) < Date.now() - STALE_RUN_MS;
+  return {
+    id: Number(r.id),
+    trigger: r.trigger as string,
+    startedAt,
+    finishedAt: (r.finished_at as string | null) ?? null,
+    status: stale ? "failed" : (r.status as FetchRun["status"]),
+    message: stale ? "รอบนี้หยุดทำงานกลางคันโดยไม่มีผลลัพธ์" : ((r.message as string | null) ?? null),
+  };
 }
 
 export function countByStatus(): Record<string, number> {

@@ -5,9 +5,9 @@ import { notFound } from "next/navigation";
 import { checkBasicAuth } from "@/lib/adminAuth";
 import { CATEGORIES, getCategory } from "@/lib/categories";
 import { getGroupAccent } from "@/lib/groupAccent";
-import { countByStatus, listByStatus } from "@/lib/news/repo";
+import { countByStatus, latestRun, listByStatus, type FetchRun } from "@/lib/news/repo";
 import { NEWS_STATUSES, type NewsItem, type NewsStatus } from "@/lib/news/schema";
-import { approveNews, moveToPending, rejectNews, saveAndApprove } from "./actions";
+import { approveNews, moveToPending, rejectNews, saveAndApprove, triggerFetch } from "./actions";
 
 export const metadata: Metadata = {
   title: "อนุมัติข่าว AI | PromptPilot Admin",
@@ -46,6 +46,50 @@ function IdForm({ action, label, className, id }: { action: (fd: FormData) => Pr
         {label}
       </button>
     </form>
+  );
+}
+
+const RUN_STATUS: Record<FetchRun["status"], { label: string; className: string }> = {
+  running: { label: "กำลังดึงข่าว", className: "border-sky-400/30 bg-sky-500/10 text-sky-300 light:text-sky-700" },
+  ok: { label: "สำเร็จ", className: "border-emerald-400/30 bg-emerald-500/10 text-emerald-300 light:text-emerald-700" },
+  failed: { label: "มีปัญหา", className: "border-rose-400/30 bg-rose-500/10 text-rose-300 light:text-rose-700" },
+};
+
+const triggerLabel = (trigger: string) =>
+  trigger.startsWith("manual:") ? `กดปุ่มโดย ${trigger.slice(7)}` : "ตั้งเวลาอัตโนมัติ";
+
+function FetchPanel({ run }: { run: FetchRun | null }) {
+  const running = run?.status === "running";
+  return (
+    <section className="mt-6 flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 light:border-black/10 light:bg-black/[0.02]">
+      {/* ระหว่างดึงข่าว ให้หน้ารีเฟรชเองจนกว่าจะเสร็จ — ไม่ต้องใช้ JavaScript ฝั่ง client */}
+      {running && <meta httpEquiv="refresh" content="10" />}
+      <div className="min-w-0 flex-1 text-sm">
+        <div className="font-medium text-neutral-100 light:text-neutral-900">ดึงข่าวรอบล่าสุด</div>
+        {run ? (
+          <div className="mt-1 space-y-1 text-neutral-400 light:text-neutral-600">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`${pill} ${RUN_STATUS[run.status].className}`}>{RUN_STATUS[run.status].label}</span>
+              <span>
+                เริ่ม {formatDate(run.startedAt)} · {triggerLabel(run.trigger)}
+              </span>
+            </div>
+            {running ? (
+              <div>ใช้เวลาประมาณ 1–2 นาที หน้านี้จะรีเฟรชเองทุก 10 วินาที</div>
+            ) : (
+              run.message && <div className="break-words">{run.message}</div>
+            )}
+          </div>
+        ) : (
+          <div className="mt-1 text-neutral-500">ยังไม่เคยดึงข่าว</div>
+        )}
+      </div>
+      <form action={triggerFetch}>
+        <button type="submit" disabled={running} className={`${btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}>
+          {running ? "กำลังดึงข่าว…" : "ดึงข่าวล่าสุดตอนนี้"}
+        </button>
+      </form>
+    </section>
   );
 }
 
@@ -174,6 +218,8 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
       <p className="mt-1 text-sm text-neutral-400 light:text-neutral-600">
         ข่าวที่ AI คัดและสรุปไว้ จะขึ้นหน้าเว็บก็ต่อเมื่ออนุมัติแล้วเท่านั้น ตรวจคำสรุปเทียบกับต้นฉบับก่อนกดอนุมัติ
       </p>
+
+      <FetchPanel run={latestRun()} />
 
       <nav className="mt-6 flex flex-wrap gap-2">
         {NEWS_STATUSES.map((s) => (

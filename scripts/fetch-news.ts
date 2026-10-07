@@ -12,7 +12,7 @@ import { zodTextFormat } from "openai/helpers/zod";
 import Parser from "rss-parser";
 import { CATEGORIES } from "../src/lib/categories";
 import { enrichmentSchema, isCategoryKey, newsSourceSchema, type Enrichment, type NewsSource } from "../src/lib/news/schema";
-import { countByStatus, findExistingIds, insertItems, type NewItem } from "../src/lib/news/repo";
+import { beginRun, countByStatus, findExistingIds, finishRun, insertItems, type NewItem } from "../src/lib/news/repo";
 
 try {
   process.loadEnvFile(".env.local");
@@ -159,7 +159,7 @@ function openaiEnricher(): Enricher {
 /** NEWS_PROVIDER ระบุตรงๆ ได้; ถ้าไม่ระบุ ใช้ตัวที่มี key (Claude ก่อน) — null = ไม่มี key เลย */
 function pickEnricher(): Enricher | null {
   const provider =
-    process.env.NEWS_PROVIDER ??
+    process.env.NEWS_PROVIDER ||
     (process.env.ANTHROPIC_API_KEY ? "anthropic" : process.env.OPENAI_API_KEY ? "openai" : null);
   if (provider === null) return null;
   if (provider === "anthropic" && process.env.ANTHROPIC_API_KEY) return anthropicEnricher();
@@ -184,17 +184,21 @@ async function enrichBatch(enricher: Enricher, batch: Candidate[]): Promise<Map<
   return result;
 }
 
-/** null = ไม่ได้ตั้ง key; ข่าวที่ไม่อยู่ใน Map = AI ล้มเหลว (ไม่บันทึก เพื่อให้รอบหน้าลองใหม่) */
-async function enrichAll(candidates: Candidate[]): Promise<Map<string, Enrichment> | null> {
+/** null = ไม่ได้ตั้ง key; ข่าวที่ไม่อยู่ใน results = AI ล้มเหลว (ไม่บันทึก เพื่อให้รอบหน้าลองใหม่) */
+async function enrichAll(
+  candidates: Candidate[],
+): Promise<{ results: Map<string, Enrichment>; lastError: string | null } | null> {
   const enricher = pickEnricher();
   if (!enricher) return null;
   console.log(`คัดข่าวด้วย ${enricher.label}`);
-  const all = new Map<string, Enrichment>();
+  const results = new Map<string, Enrichment>();
+  let lastError: string | null = null;
   for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
     const batch = candidates.slice(i, i + BATCH_SIZE);
     try {
-      for (const [id, e] of await enrichBatch(enricher, batch)) all.set(id, e);
+      for (const [id, e] of await enrichBatch(enricher, batch)) results.set(id, e);
     } catch (err) {
+      lastError = `${enricher.label}: ${err instanceof Error ? err.message : err}`.slice(0, 300);
       if (enricher.isAuthError(err)) {
         console.error(`❌ API key ใช้ไม่ได้ — หยุดเรียก ${enricher.label} ในรอบนี้`);
         break;
@@ -202,26 +206,27 @@ async function enrichAll(candidates: Candidate[]): Promise<Map<string, Enrichmen
       console.warn(`⚠️  ${enricher.label} ล้มเหลวใน batch นี้ (${batch.length} ข่าว): ${err instanceof Error ? err.message : err}`);
     }
   }
-  return all;
+  return { results, lastError };
 }
 
-async function main() {
+async function main(): Promise<{ ok: boolean; message: string }> {
   const sources = newsSourceSchema.parse(JSON.parse(readFileSync("src/data/news-sources.json", "utf8")));
   const parser = new Parser();
 
   const results = await Promise.allSettled(sources.map((s) => fetchSource(parser, s)));
-  let okSources = 0;
+  const failedSources: string[] = [];
   const fetched: Candidate[] = [];
   results.forEach((r, i) => {
     if (r.status === "fulfilled") {
-      okSources++;
       fetched.push(...r.value);
       console.log(`✓ ${sources[i].name}: ${r.value.length} ข่าว`);
     } else {
+      failedSources.push(sources[i].name);
       console.warn(`⚠️  ${sources[i].name}: ${r.reason instanceof Error ? r.reason.message : r.reason}`);
     }
   });
-  if (okSources === 0) throw new Error("ดึงข่าวไม่ได้เลยสักแหล่ง");
+  if (failedSources.length === sources.length) throw new Error("ดึงข่าวไม่ได้เลยสักแหล่ง");
+  const sourceNote = failedSources.length > 0 ? ` · แหล่งที่ดึงไม่ได้: ${failedSources.join(", ")}` : "";
 
   const cutoff = Date.now() - MAX_AGE_DAYS * 86_400_000;
   const unique = new Map<string, Candidate>();
@@ -245,16 +250,12 @@ async function main() {
     }
   }
   console.log(`ข่าวใหม่ใน ${MAX_AGE_DAYS} วัน: ${unique.size} ชิ้น, ยังไม่เคยเก็บ: ${fresh.length} ชิ้น`);
-  if (fresh.length === 0) return;
+  if (fresh.length === 0) return { ok: true, message: `ไม่มีข่าวใหม่${sourceNote}` };
 
-  const enriched = await enrichAll(fresh);
-  if (!enriched) console.warn("⚠️  ไม่มี ANTHROPIC_API_KEY หรือ OPENAI_API_KEY — เก็บข่าวเป็น pending แบบไม่มีคำสรุป");
+  const outcome = await enrichAll(fresh);
+  const enriched = outcome?.results;
   const toSave = enriched ? fresh.filter((c) => enriched.has(c.id)) : fresh;
   const skipped = fresh.length - toSave.length;
-  if (skipped > 0) {
-    console.warn(`⚠️  ข้าม ${skipped} ข่าวที่ AI สรุปไม่สำเร็จ — รอบหน้าจะลองใหม่`);
-    process.exitCode = 1;
-  }
 
   const fetchedAt = new Date().toISOString();
   const rows: NewItem[] = toSave.map((c) => {
@@ -271,10 +272,31 @@ async function main() {
     };
   });
   const inserted = insertItems(rows);
-  console.log(`บันทึก ${inserted} ข่าว | สถานะทั้งหมดใน DB:`, countByStatus());
+  console.log(`สถานะทั้งหมดใน DB:`, countByStatus());
+
+  const pending = rows.filter((r) => r.status === "pending").length;
+  let message = `ได้ข่าวใหม่ ${inserted} ชิ้น (รออนุมัติ ${pending}, AI คัดออก ${rows.length - pending})`;
+  if (!outcome) message += " · ไม่มี API key จึงยังไม่มีคำสรุป";
+  if (skipped > 0) message += ` · ข้าม ${skipped} ชิ้นที่ AI สรุปไม่สำเร็จ (รอบหน้าจะลองใหม่): ${outcome?.lastError}`;
+  return { ok: skipped === 0, message: message + sourceNote };
 }
 
-main().catch((err) => {
-  console.error("❌", err);
-  process.exitCode = 1;
-});
+async function run() {
+  const runId = beginRun(process.env.NEWS_FETCH_TRIGGER ?? "scheduled");
+  if (runId === null) {
+    console.log("มีรอบอื่นกำลังดึงข่าวอยู่ — ข้ามรอบนี้");
+    return;
+  }
+  try {
+    const { ok, message } = await main();
+    finishRun(runId, ok ? "ok" : "failed", message);
+    console.log(ok ? "✅" : "⚠️ ", message);
+    if (!ok) process.exitCode = 1;
+  } catch (err) {
+    finishRun(runId, "failed", err instanceof Error ? err.message : String(err));
+    console.error("❌", err);
+    process.exitCode = 1;
+  }
+}
+
+run();
