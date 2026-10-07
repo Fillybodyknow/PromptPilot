@@ -42,6 +42,8 @@ npm run build
 npm run lint
 ```
 
+ติดตั้งขึ้น Windows Server (IIS/Apache) ดูขั้นตอนเต็มที่ [DEPLOY.md](DEPLOY.md)
+
 ## เพิ่ม/แก้ข้อมูล
 
 แก้ทุกอย่างผ่านหน้า `/admin` (ต้อง login ด้วย `ADMIN_USER`/`ADMIN_PASSWORD`): อนุมัติข่าว, เครื่องมือ,
