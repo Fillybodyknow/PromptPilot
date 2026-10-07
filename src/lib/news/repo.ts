@@ -1,15 +1,16 @@
 import { and, count, desc, eq, gte, inArray, isNotNull, sql } from "drizzle-orm";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getDb, getPool } from "@/db/client";
-import { fetchRuns, newsCategories, newsItems } from "@/db/schema";
+import { fetchRuns, newsCategories, newsItems, newsTools } from "@/db/schema";
 import type { NewsItem, NewsStatus } from "./schema";
 
 type ItemRow = typeof newsItems.$inferSelect;
 
 const iso = (d: Date | null) => (d ? d.toISOString() : null);
 
-function toItem(r: ItemRow, categories: string[]): NewsItem {
+function toItem(r: ItemRow, categories: string[], toolIds: number[]): NewsItem {
   return {
+    toolIds,
     id: r.id,
     url: r.url,
     source: r.source,
@@ -33,8 +34,17 @@ function toItem(r: ItemRow, categories: string[]): NewsItem {
 }
 
 export async function toItems(rows: ItemRow[]): Promise<NewsItem[]> {
-  const cats = await categoriesFor(rows.map((r) => r.id));
-  return rows.map((r) => toItem(r, cats.get(r.id) ?? []));
+  const ids = rows.map((r) => r.id);
+  const [cats, toolMap] = await Promise.all([categoriesFor(ids), toolsFor(ids)]);
+  return rows.map((r) => toItem(r, cats.get(r.id) ?? [], toolMap.get(r.id) ?? []));
+}
+
+async function toolsFor(ids: string[]): Promise<Map<string, number[]>> {
+  const map = new Map<string, number[]>();
+  if (ids.length === 0) return map;
+  const rows = await getDb().select().from(newsTools).where(inArray(newsTools.newsId, ids));
+  for (const r of rows) map.set(r.newsId, [...(map.get(r.newsId) ?? []), r.toolId]);
+  return map;
 }
 
 const affected = (res: [ResultSetHeader, unknown]) => res[0].affectedRows;
@@ -76,6 +86,8 @@ export async function insertItems(items: NewItem[]): Promise<number> {
       );
     const cats = items.flatMap((it) => it.categories.map((categoryKey) => ({ newsId: it.id, categoryKey })));
     if (cats.length > 0) await tx.insert(newsCategories).ignore().values(cats);
+    const links = items.flatMap((it) => it.toolIds.map((toolId) => ({ newsId: it.id, toolId })));
+    if (links.length > 0) await tx.insert(newsTools).ignore().values(links);
     return affected(res);
   });
 }
@@ -189,6 +201,8 @@ export interface NewsEdit {
   roleEmployee: string | null;
   roleIt: string | null;
   roleExec: string | null;
+  /** id เครื่องมือที่มีอยู่จริง (ผู้เรียกกรองมาแล้ว) */
+  toolIds: number[];
 }
 
 export async function updateContent(id: string, edit: NewsEdit): Promise<boolean> {
@@ -209,6 +223,10 @@ export async function updateContent(id: string, edit: NewsEdit): Promise<boolean
     await tx.delete(newsCategories).where(eq(newsCategories.newsId, id));
     if (edit.categories.length > 0) {
       await tx.insert(newsCategories).values(edit.categories.map((categoryKey) => ({ newsId: id, categoryKey })));
+    }
+    await tx.delete(newsTools).where(eq(newsTools.newsId, id));
+    if (edit.toolIds.length > 0) {
+      await tx.insert(newsTools).values([...new Set(edit.toolIds)].map((toolId) => ({ newsId: id, toolId })));
     }
     return true;
   });

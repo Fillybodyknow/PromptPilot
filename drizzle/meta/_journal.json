@@ -22,6 +22,13 @@
       "when": 1791353585573,
       "tag": "0002_news_roles_dedupe",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1791360482550,
+      "tag": "0003_news_tools",
+      "breakpoints": true
     }
   ]
 }

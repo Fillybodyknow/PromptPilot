@@ -3,6 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/adminSession";
+import { loadToolIndex } from "@/lib/catalog/repo";
 import { NEWS_TAG } from "@/lib/news/public";
 import { isCategoryKey } from "@/lib/news/schema";
 import { confirmDuplicate, latestRun, separateDuplicate, setStatus, updateContent } from "@/lib/news/repo";
@@ -98,7 +99,10 @@ export async function saveAndApprove(formData: FormData) {
     roleIt: formData.get("roleIt") ?? "",
     roleExec: formData.get("roleExec") ?? "",
   });
-  if (!(await updateContent(id, edit))) throw new Error("ไม่พบข่าวนี้");
+  // รับเฉพาะ id เครื่องมือที่มีอยู่จริง (id แปลกๆ จะชน foreign key)
+  const known = new Set((await loadToolIndex()).map((t) => t.id));
+  const toolIds = formData.getAll("toolIds").map(Number).filter((n) => known.has(n)).slice(0, 10);
+  if (!(await updateContent(id, { ...edit, toolIds }))) throw new Error("ไม่พบข่าวนี้");
   await setStatus(id, "approved", user);
   done();
 }

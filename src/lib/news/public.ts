@@ -2,7 +2,7 @@ import { and, count, desc, eq, gte, inArray, like, ne, or, type SQL } from "driz
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { getDb } from "@/db/client";
-import { newsCategories, newsItems } from "@/db/schema";
+import { newsCategories, newsItems, newsTools } from "@/db/schema";
 import { publisherOf } from "./publisher";
 import { duplicatesOf, toItems } from "./repo";
 import type { NewsItem } from "./schema";
@@ -17,6 +17,8 @@ export interface PublicNews extends NewsItem {
 
 export interface NewsQuery {
   categories?: string[];
+  /** เฉพาะข่าวที่ผูกกับเครื่องมือตัวนี้ (id แถวในตาราง tools) */
+  toolId?: number;
   importance?: number;
   sinceDays?: number;
   q?: string;
@@ -44,6 +46,10 @@ function approvedWhere(query: NewsQuery): SQL {
       .select({ id: newsCategories.newsId })
       .from(newsCategories)
       .where(inArray(newsCategories.categoryKey, query.categories));
+    conds.push(inArray(newsItems.id, ids));
+  }
+  if (query.toolId) {
+    const ids = getDb().select({ id: newsTools.newsId }).from(newsTools).where(eq(newsTools.toolId, query.toolId));
     conds.push(inArray(newsItems.id, ids));
   }
   if (query.importance) conds.push(eq(newsItems.importance, query.importance));

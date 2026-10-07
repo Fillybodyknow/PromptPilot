@@ -149,6 +149,20 @@ export const newsCategories = mysqlTable(
   (t) => [primaryKey({ columns: [t.newsId, t.categoryKey] }), index("idx_news_categories_key").on(t.categoryKey)],
 );
 
+// ข่าวพูดถึงเครื่องมือตัวไหน — ผูกด้วย id ของแถว (ไม่ใช่ slug) เพื่อให้เปลี่ยน slug ได้โดยลิงก์ไม่หลุด
+export const newsTools = mysqlTable(
+  "news_tools",
+  {
+    newsId: char("news_id", { length: 16 })
+      .notNull()
+      .references(() => newsItems.id, { onDelete: "cascade" }),
+    toolId: int("tool_id")
+      .notNull()
+      .references(() => tools.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.newsId, t.toolId] }), index("idx_news_tools_tool").on(t.toolId)],
+);
+
 export const fetchRuns = mysqlTable("fetch_runs", {
   id: int("id").autoincrement().primaryKey(),
   triggeredBy: varchar("triggered_by", { length: 100 }).notNull(),

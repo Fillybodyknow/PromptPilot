@@ -30,6 +30,8 @@ export const enrichmentSchema = z.object({
       roleExec: z.string(),
       // id ของข่าวที่เป็นเรื่องเดียวกัน (จากรายการข่าวที่มีอยู่แล้ว หรือข่าวอื่นใน batch เดียวกัน) — "" = ไม่ซ้ำ
       duplicateOf: z.string(),
+      // id ของเครื่องมือจากรายการที่ส่งให้ ที่ข่าวพูดถึงโดยตรง ([] = ไม่มี)
+      toolIds: z.array(z.number().int()),
     }),
   ),
 });
@@ -46,6 +48,8 @@ export interface NewsItem {
   titleTh: string | null;
   summaryTh: string | null;
   categories: string[];
+  /** id แถวในตาราง tools ที่ข่าวนี้พูดถึง */
+  toolIds: number[];
   importance: number | null;
   aiReason: string | null;
   roleEmployee: string | null;

@@ -83,6 +83,22 @@ export async function loadAllGuides(): Promise<Record<string, Record<string, unk
   return out;
 }
 
+export interface ToolRef {
+  id: number;
+  categoryKey: string;
+  slug: string;
+  name: string;
+  vendor: string;
+}
+
+/** รายชื่อเครื่องมือแบบย่อ — ใช้ผูกข่าวกับเครื่องมือ (AI เลือก, admin ติ๊ก, หน้าเว็บทำลิงก์) */
+export async function loadToolIndex(): Promise<ToolRef[]> {
+  return getDb()
+    .select({ id: tools.id, categoryKey: tools.categoryKey, slug: tools.slug, name: tools.name, vendor: tools.vendor })
+    .from(tools)
+    .orderBy(asc(tools.categoryKey), asc(tools.sortOrder), asc(tools.id));
+}
+
 export interface FeaturedTool {
   categoryKey: string;
   id: string;

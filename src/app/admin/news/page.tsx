@@ -3,6 +3,7 @@ import { requireAdminPage } from "@/lib/adminSession";
 import Link from "next/link";
 import { CATEGORIES, getCategory } from "@/lib/categories";
 import { getGroupAccent } from "@/lib/groupAccent";
+import { loadToolIndex, type ToolRef } from "@/lib/catalog/repo";
 import { countByStatus, duplicatesOf, getItemsByIds, latestRun, listByStatus, type FetchRun } from "@/lib/news/repo";
 import { NEWS_STATUSES, type NewsItem, type NewsStatus } from "@/lib/news/schema";
 import { publisherOf } from "@/lib/news/publisher";
@@ -101,7 +102,19 @@ function FetchPanel({ run }: { run: FetchRun | null }) {
   );
 }
 
-function EditForm({ item }: { item: NewsItem }) {
+function ToolCheckbox({ tool, checked }: { tool: ToolRef; checked: boolean }) {
+  return (
+    <label className="flex items-center gap-1.5 text-sm text-neutral-300 light:text-neutral-700">
+      <input type="checkbox" name="toolIds" value={tool.id} defaultChecked={checked} />
+      {tool.name}
+    </label>
+  );
+}
+
+function EditForm({ item, tools }: { item: NewsItem; tools: ToolRef[] }) {
+  // เสนอเครื่องมือในหมวดของข่าว + ตัวที่ผูกไว้แล้วก่อน ที่เหลือพับไว้ (มีหลายสิบตัว)
+  const suggested = tools.filter((t) => item.categories.includes(t.categoryKey) || item.toolIds.includes(t.id));
+  const others = tools.filter((t) => !suggested.includes(t));
   return (
     <details className="mt-4 rounded-xl border border-white/10 p-4 light:border-black/10">
       <summary className="cursor-pointer text-sm font-medium text-indigo-300 light:text-indigo-700">
@@ -127,6 +140,23 @@ function EditForm({ item }: { item: NewsItem }) {
               </label>
             ))}
           </div>
+        </fieldset>
+        <fieldset className="space-y-2">
+          <legend className="text-xs text-neutral-400">เครื่องมือที่ข่าวนี้พูดถึง (AI เลือกไว้ ตรวจก่อนอนุมัติ — แสดงในหน้าเครื่องมือนั้น)</legend>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            {suggested.map((t) => (
+              <ToolCheckbox key={t.id} tool={t} checked={item.toolIds.includes(t.id)} />
+            ))}
+            {suggested.length === 0 && <span className="text-sm text-neutral-500">ยังไม่มีเครื่องมือในหมวดของข่าวนี้</span>}
+          </div>
+          <details>
+            <summary className="cursor-pointer text-xs text-neutral-400">เครื่องมือหมวดอื่น ({others.length})</summary>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
+              {others.map((t) => (
+                <ToolCheckbox key={t.id} tool={t} checked={false} />
+              ))}
+            </div>
+          </details>
         </fieldset>
         <label className="block w-40 space-y-1">
           <span className="text-xs text-neutral-400">ความสำคัญ</span>
@@ -163,10 +193,11 @@ const ROLE_FIELDS = [
   { name: "roleExec", label: "ผู้บริหาร" },
 ] as const;
 
-function NewsCard({ item, duplicates, canonical }: { item: NewsItem; duplicates: NewsItem[]; canonical?: NewsItem }) {
+function NewsCard({ item, duplicates, canonical, tools }: { item: NewsItem; duplicates: NewsItem[]; canonical?: NewsItem; tools: ToolRef[] }) {
   const imp = item.importance ? IMPORTANCE[item.importance] : null;
   const hasText = Boolean(item.titleTh && item.summaryTh);
   const roles = ROLE_FIELDS.filter((r) => item[r.name]);
+  const linkedTools = tools.filter((t) => item.toolIds.includes(t.id));
   return (
     <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 light:border-black/10 light:bg-black/[0.02]">
       <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
@@ -197,6 +228,11 @@ function NewsCard({ item, duplicates, canonical }: { item: NewsItem; duplicates:
         </div>
       )}
 
+      {linkedTools.length > 0 && (
+        <p className="mt-3 text-sm text-neutral-400 light:text-neutral-600">
+          เครื่องมือที่พูดถึง: {linkedTools.map((t) => t.name).join(", ")}
+        </p>
+      )}
       {roles.length > 0 && (
         <dl className="mt-3 space-y-1 text-sm">
           {roles.map((r) => (
@@ -267,7 +303,7 @@ function NewsCard({ item, duplicates, canonical }: { item: NewsItem; duplicates:
         )}
       </div>
 
-      {(item.status === "pending" || item.status === "approved") && <EditForm item={item} />}
+      {(item.status === "pending" || item.status === "approved") && <EditForm item={item} tools={tools} />}
     </article>
   );
 }
@@ -279,9 +315,10 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
   const { status: raw } = await searchParams;
   const status: NewsStatus = NEWS_STATUSES.includes(raw as NewsStatus) ? (raw as NewsStatus) : "pending";
   const [counts, items, run] = await Promise.all([countByStatus(), listByStatus(status), latestRun()]);
-  const [dups, canonicals] = await Promise.all([
+  const [dups, canonicals, tools] = await Promise.all([
     duplicatesOf(items.map((i) => i.id)),
     getItemsByIds(items.flatMap((i) => (i.duplicateOf ? [i.duplicateOf] : []))),
+    loadToolIndex(),
   ]);
 
   return (
@@ -321,6 +358,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
               item={item}
               duplicates={dups.get(item.id) ?? []}
               canonical={item.duplicateOf ? canonicals.get(item.duplicateOf) : undefined}
+              tools={tools}
             />
           ))
         )}

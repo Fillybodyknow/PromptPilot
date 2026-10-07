@@ -8,7 +8,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { CATEGORIES } from "../src/lib/categories";
-import { listEnabledSources } from "../src/lib/catalog/repo";
+import { listEnabledSources, loadToolIndex, type ToolRef } from "../src/lib/catalog/repo";
 import { fetchSource, type Candidate } from "../src/lib/news/feeds";
 import { enrichmentSchema, isCategoryKey, type Enrichment } from "../src/lib/news/schema";
 import { closeDb } from "../src/db/client";
@@ -37,6 +37,10 @@ const MAX_NEW_PER_RUN = 60;
 const MAX_PER_SOURCE = 15;
 const BATCH_SIZE = 20;
 
+// รายชื่อเครื่องมือในเว็บ — โหลดครั้งเดียวต่อรอบ ส่งให้ AI เลือก toolIds
+let toolIndex: ToolRef[] = [];
+let toolIdSet = new Set<number>();
+
 const SYSTEM_PROMPT = `คุณเป็นบรรณาธิการของเว็บไซต์ที่แนะนำการเลือกและใช้เครื่องมือ AI ให้องค์กรไทย
 ผู้อ่านคือฝ่าย IT และผู้บริหารที่ต้องตัดสินใจว่าจะใช้เครื่องมือ AI ตัวไหน อย่างไร
 
@@ -49,6 +53,7 @@ const SYSTEM_PROMPT = `คุณเป็นบรรณาธิการขอ
 - reason: 1 ประโยคภาษาไทย อธิบายผู้อ่านว่าทำไมองค์กรควรสนใจข่าวนี้ (แสดงบนเว็บในหัวข้อ "ทำไมองค์กรควรสนใจ" หลังผู้ตรวจอนุมัติ) ถ้า relevant เป็น false ให้อธิบายสั้นๆ ว่าทำไมไม่เกี่ยวกับองค์กร เพื่อให้ผู้ตรวจใช้ประกอบ ห้ามพูดถึงคะแนนหรือการจัดหมวดของตัวเอง
 - roleEmployee, roleIt, roleExec: คำแนะนำภาษาไทย 1 ประโยคต่อบทบาท ว่าพนักงานทั่วไป / ฝ่าย IT / ผู้บริหาร ควรทำหรือควรรู้อะไรจากข่าวนี้ อิงจากข้อมูลในข่าวเท่านั้น ห้ามเติมราคา วันที่ หรือขั้นตอนที่ข่าวไม่ได้บอก ถ้าข่าวไม่มีผลกับบทบาทนั้น หรือ relevant เป็น false ให้ใส่ ""
 - duplicateOf: ถ้าข่าวนี้รายงานเหตุการณ์หรือประกาศเดียวกับข่าวใน "ข่าวที่มีอยู่แล้ว" หรือข่าวอื่นในชุดนี้ ให้ใส่ id ของข่าวนั้น (ถ้ามีในข่าวที่มีอยู่แล้ว ให้เลือกข่าวนั้นก่อน) เรื่องเดียวกันหมายถึงเหตุการณ์เดียวกัน ไม่ใช่แค่บริษัทหรือหัวข้อเดียวกัน ถ้าไม่ซ้ำหรือไม่แน่ใจให้ใส่ ""
+- toolIds: id ของเครื่องมือจาก "เครื่องมือในเว็บ" ที่ข่าวพูดถึงโดยตรง (ไม่เกิน 5) เลือกเฉพาะเมื่อข่าวเกี่ยวกับเครื่องมือหรือโมเดลนั้นจริง ไม่ใช่แค่บริษัทเดียวกัน ถ้าไม่มีให้ใส่ []
 
 หมวดที่ใช้ได้:
 ${CATEGORIES.map((c) => `- ${c.key}: ${c.titleTh} — ${c.descriptionTh}`).join("\n")}
@@ -134,7 +139,8 @@ interface KnownStory {
 async function enrichBatch(enricher: Enricher, batch: Candidate[], known: KnownStory[]): Promise<Map<string, Enrichment>> {
   const payload = batch.map(({ id, title, source, snippet, publishedAt }) => ({ id, title, source, snippet, publishedAt }));
   const { items, usage } = await enricher.run(
-    `ข่าวที่มีอยู่แล้ว (ใช้สำหรับ duplicateOf เท่านั้น ไม่ต้องส่งผลกลับ):\n${JSON.stringify(known)}\n\n` +
+    `เครื่องมือในเว็บ (ใช้สำหรับ toolIds):\n${JSON.stringify(toolIndex.map(({ id, name, vendor }) => ({ id, name, vendor })))}\n\n` +
+      `ข่าวที่มีอยู่แล้ว (ใช้สำหรับ duplicateOf เท่านั้น ไม่ต้องส่งผลกลับ):\n${JSON.stringify(known)}\n\n` +
       `ข่าวใหม่ ${batch.length} ชิ้น:\n${JSON.stringify(payload)}`,
   );
   const wanted = new Set(batch.map((c) => c.id));
@@ -144,6 +150,8 @@ async function enrichBatch(enricher: Enricher, batch: Candidate[], known: KnownS
     result.set(e.id, {
       ...e,
       categories: e.categories.filter(isCategoryKey).slice(0, 3),
+      // id ที่ไม่มีจริงจะชน foreign key แล้วข่าวทั้งชุดบันทึกไม่ได้ — กรองทิ้ง
+      toolIds: [...new Set(e.toolIds)].filter((id) => toolIdSet.has(id)).slice(0, 5),
       importance: Math.min(3, Math.max(1, e.importance)),
     });
   }
@@ -224,6 +232,8 @@ async function main(): Promise<{ ok: boolean; message: string }> {
   if (fresh.length === 0) return { ok: true, message: `ไม่มีข่าวใหม่${sourceNote}` };
 
   const known = await listRecentForDedupe(DEDUPE_DAYS);
+  toolIndex = await loadToolIndex();
+  toolIdSet = new Set(toolIndex.map((t) => t.id));
   const outcome = await enrichAll(fresh, known);
   const enriched = outcome?.results;
   const toSave = enriched ? fresh.filter((c) => enriched.has(c.id)) : fresh;
@@ -245,6 +255,7 @@ async function main(): Promise<{ ok: boolean; message: string }> {
       titleTh: e?.titleTh ? e.titleTh.slice(0, 500) : null,
       summaryTh: e?.summaryTh ?? null,
       categories: e?.categories ?? [],
+      toolIds: e?.toolIds ?? [],
       importance: e?.importance ?? null,
       aiReason: e?.reason ?? null,
       roleEmployee: orNull(e?.roleEmployee),

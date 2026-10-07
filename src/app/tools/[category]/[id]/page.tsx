@@ -7,7 +7,7 @@ import { ExternalIcon } from "@/components/site/icons";
 import { Breadcrumb, ToolStatusBadge, card } from "@/components/site/ui";
 import { VendorLogo } from "@/components/VendorLogo";
 import { getCategory } from "@/lib/categories";
-import { getCategoryEntries } from "@/lib/data";
+import { getCategoryEntries, getToolIndex } from "@/lib/data";
 import { formatIsoDate, formatNewsTime } from "@/lib/format";
 import { ACCESS_LABEL_LONG } from "@/lib/labels";
 import { listApprovedNews } from "@/lib/news/public";
@@ -46,7 +46,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
   const { category, entries, tool } = data;
   const view = VIEWS.some((v) => v.key === rawView) ? rawView! : "all";
   const show = (v: string) => view === "all" || view === v;
-  const news = await listApprovedNews({ categories: [key], pageSize: 4 });
+  const toolRef = (await getToolIndex()).find((t) => t.categoryKey === key && t.slug === tool.id);
+  const [toolNews, categoryNews] = await Promise.all([
+    toolRef ? listApprovedNews({ toolId: toolRef.id, pageSize: 5 }) : Promise.resolve({ items: [], total: 0 }),
+    listApprovedNews({ categories: [key], pageSize: 6 }),
+  ]);
+  const toolNewsIds = new Set(toolNews.items.map((n) => n.id));
+  const news = { items: categoryNews.items.filter((n) => !toolNewsIds.has(n.id)).slice(0, 4) };
   const extras = category.columns.filter((c) => typeof tool[c.key] === "string" && tool[c.key]);
   const tokenPrice =
     tool.priceUsdIn !== null || tool.priceUsdOut !== null
@@ -206,11 +212,28 @@ export default async function ToolPage({ params, searchParams }: Props) {
           )}
         </div>
 
-        <aside aria-label="ข่าวล่าสุดของหมวดนี้" className="min-w-0 flex-[1_1_280px]">
+        <aside aria-label="ข่าวที่เกี่ยวข้อง" className="flex min-w-0 flex-[1_1_280px] flex-col gap-5">
+          {toolNews.items.length > 0 && (
+            <section className={`${card} p-5`}>
+              <h2 className="font-bold">ข่าวของ{tool.name}</h2>
+              <ul className="mt-3 flex flex-col gap-3.5">
+                {toolNews.items.map((n) => (
+                  <li key={n.id}>
+                    <Link href={`/news/${n.id}`} className="font-semibold leading-snug hover:text-brand">
+                      {n.titleTh ?? n.title}
+                    </Link>
+                    <span className="mt-0.5 block text-[13px] text-muted">
+                      {publisherOf(n)} · {formatNewsTime(n.publishedAt)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <section className={`${card} p-5`}>
-            <h2 className="font-bold">ข่าวล่าสุดในหมวด{category.titleTh}</h2>
+            <h2 className="font-bold">{toolNews.items.length > 0 ? "ข่าวอื่นในหมวด" : "ข่าวล่าสุดในหมวด"}{category.titleTh}</h2>
             {news.items.length === 0 ? (
-              <p className="mt-3 text-sm text-muted">ยังไม่มีข่าวในหมวดนี้</p>
+              <p className="mt-3 text-sm text-muted">ยังไม่มีข่าวอื่นในหมวดนี้</p>
             ) : (
               <ul className="mt-3 flex flex-col gap-3.5">
                 {news.items.map((n) => (

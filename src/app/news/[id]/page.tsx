@@ -6,7 +6,7 @@ import { ShareButtons } from "@/components/news/ShareButtons";
 import { ExternalIcon } from "@/components/site/icons";
 import { Breadcrumb, CategoryChip, ImportanceBadge, card } from "@/components/site/ui";
 import { getCategory } from "@/lib/categories";
-import { getCategoryEntries } from "@/lib/data";
+import { getToolIndex } from "@/lib/data";
 import { formatNewsTime } from "@/lib/format";
 import { ROLE_LABEL } from "@/lib/labels";
 import { getApprovedNews, getRelatedNews } from "@/lib/news/public";
@@ -34,10 +34,10 @@ export default async function NewsDetailPage({ params }: Props) {
 
   const title = item.titleTh ?? item.title;
   const mainCategory = item.categories.map(getCategory).find(Boolean);
-  const [related, tools] = await Promise.all([
-    getRelatedNews(item.categories, item.id, 3),
-    mainCategory ? getCategoryEntries<{ id: string; name: string }>(mainCategory.key) : Promise.resolve([]),
-  ]);
+  const [related, toolIndex] = await Promise.all([getRelatedNews(item.categories, item.id, 3), getToolIndex()]);
+  // เครื่องมือที่ข่าวพูดถึงจริงก่อน ถ้ายังไม่ได้ผูกไว้ ใช้ 2 ตัวแรกของหมวดหลักแทน
+  const linked = toolIndex.filter((t) => item.toolIds.includes(t.id));
+  const tools = (linked.length > 0 ? linked : toolIndex.filter((t) => t.categoryKey === mainCategory?.key).slice(0, 2)).slice(0, 4);
   const roles = (Object.keys(ROLE_LABEL) as (keyof typeof ROLE_LABEL)[]).filter((r) => item[r]);
   const publisher = publisherOf(item);
 
@@ -111,20 +111,18 @@ export default async function NewsDetailPage({ params }: Props) {
       </article>
 
       <aside aria-label="ทำอะไรต่อ" className="flex min-w-0 flex-[1_1_300px] flex-col gap-5">
-        {mainCategory && (
+        {(mainCategory || tools.length > 0) && (
           <section className={`${card} p-5`}>
             <h2 className="font-bold">ทำอะไรต่อ</h2>
-            <Link href={`/guides/${mainCategory.key}`} className="mt-3.5 block rounded-xl bg-background p-3.5 hover:text-brand">
-              <span className="block text-[13px] text-muted">คู่มือ</span>
-              <span className="block font-semibold">{mainCategory.titleTh}</span>
-            </Link>
-            {tools.slice(0, 2).map((t) => (
-              <Link
-                key={t.id}
-                href={`/tools/${mainCategory.key}/${t.id}`}
-                className="mt-2.5 block rounded-xl bg-background p-3.5 hover:text-brand"
-              >
-                <span className="block text-[13px] text-muted">เครื่องมือ</span>
+            {mainCategory && (
+              <Link href={`/guides/${mainCategory.key}`} className="mt-3.5 block rounded-xl bg-background p-3.5 hover:text-brand">
+                <span className="block text-[13px] text-muted">คู่มือ</span>
+                <span className="block font-semibold">{mainCategory.titleTh}</span>
+              </Link>
+            )}
+            {tools.map((t) => (
+              <Link key={t.id} href={`/tools/${t.categoryKey}/${t.slug}`} className="mt-2.5 block rounded-xl bg-background p-3.5 hover:text-brand">
+                <span className="block text-[13px] text-muted">{linked.length > 0 ? "เครื่องมือที่ข่าวนี้พูดถึง" : "เครื่องมือ"}</span>
                 <span className="block font-semibold">{t.name}</span>
               </Link>
             ))}
