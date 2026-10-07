@@ -1,20 +1,12 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
-import { checkBasicAuth } from "@/lib/adminAuth";
+import { requireAdmin } from "@/lib/adminSession";
 import { NEWS_TAG } from "@/lib/news/public";
 import { isCategoryKey } from "@/lib/news/schema";
 import { confirmDuplicate, latestRun, separateDuplicate, setStatus, updateContent } from "@/lib/news/repo";
 import { startFetchProcess } from "@/lib/news/runFetch";
-
-// proxy.ts กันหน้า /admin ไว้แล้ว แต่ server action เป็น POST ที่ยิงตรงได้ จึงต้องตรวจซ้ำทุกครั้ง
-async function requireAdmin(): Promise<string> {
-  const user = checkBasicAuth((await headers()).get("authorization"));
-  if (!user) throw new Error("Unauthorized");
-  return user;
-}
 
 const idSchema = z.string().regex(/^[0-9a-f]{16}$/);
 

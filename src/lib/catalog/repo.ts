@@ -51,7 +51,7 @@ function toPrompt(r: PromptRow): Record<string, unknown> {
 
 /** entries ทุกหมวด (ยังไม่ validate) เรียงตาม sort_order — category key → entries */
 export async function loadAllEntries(): Promise<Record<string, Record<string, unknown>[]>> {
-  const rows = await getDb().select().from(tools).orderBy(asc(tools.categoryKey), asc(tools.sortOrder));
+  const rows = await getDb().select().from(tools).orderBy(asc(tools.categoryKey), asc(tools.sortOrder), asc(tools.id));
   const out: Record<string, Record<string, unknown>[]> = {};
   for (const r of rows) (out[r.categoryKey] ??= []).push(toEntry(r));
   return out;
@@ -62,7 +62,7 @@ export async function loadAllGuides(): Promise<Record<string, Record<string, unk
   const db = getDb();
   const [guideRows, promptRows] = await Promise.all([
     db.select().from(guides),
-    db.select().from(promptTemplates).orderBy(asc(promptTemplates.categoryKey), asc(promptTemplates.sortOrder)),
+    db.select().from(promptTemplates).orderBy(asc(promptTemplates.categoryKey), asc(promptTemplates.sortOrder), asc(promptTemplates.id)),
   ]);
   const prompts: Record<string, Record<string, unknown>[]> = {};
   for (const r of promptRows) (prompts[r.categoryKey] ??= []).push(toPrompt(r));
@@ -104,7 +104,7 @@ export async function loadFeaturedTools(): Promise<FeaturedTool[]> {
     })
     .from(tools)
     .where(eq(tools.featured, true))
-    .orderBy(asc(tools.categoryKey), asc(tools.sortOrder));
+    .orderBy(asc(tools.categoryKey), asc(tools.sortOrder), asc(tools.id));
   return rows;
 }
 

@@ -1,17 +1,16 @@
 /**
- * ดึงข่าว AI จาก RSS → ให้ AI (Claude หรือ OpenAI) คัด/สรุปไทย/จัดหมวด → เก็บลง SQLite เป็นสถานะ pending รอคนอนุมัติ
+ * ดึงข่าว AI จาก RSS → ให้ AI (Claude หรือ OpenAI) คัด/สรุปไทย/จัดหมวด → เก็บลง MySQL เป็นสถานะ pending รอคนอนุมัติ
  * รัน: npm run news:fetch
  * env (.env.local): ANTHROPIC_API_KEY หรือ OPENAI_API_KEY, NEWS_PROVIDER=anthropic|openai (ไม่บังคับ), NEWS_MODEL (ไม่บังคับ)
  */
-import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
-import Parser from "rss-parser";
 import { CATEGORIES } from "../src/lib/categories";
 import { listEnabledSources } from "../src/lib/catalog/repo";
-import { enrichmentSchema, isCategoryKey, type Enrichment, type NewsSource } from "../src/lib/news/schema";
+import { fetchSource, type Candidate } from "../src/lib/news/feeds";
+import { enrichmentSchema, isCategoryKey, type Enrichment } from "../src/lib/news/schema";
 import { closeDb } from "../src/db/client";
 import { resolveDuplicates } from "../src/lib/news/dedupe";
 import {
@@ -37,61 +36,6 @@ const MAX_NEW_PER_RUN = 60;
 // กัน Google News (ข่าวเยอะมาก) เบียดข่าวจากแหล่งทางการของผู้ผลิตจนหลุดโควตา
 const MAX_PER_SOURCE = 15;
 const BATCH_SIZE = 20;
-const FETCH_TIMEOUT_MS = 15_000;
-
-interface Candidate {
-  id: string;
-  url: string;
-  source: string;
-  title: string;
-  snippet: string;
-  publishedAt: string;
-}
-
-function normalizeUrl(raw: string): string {
-  const u = new URL(raw.trim());
-  u.hash = "";
-  for (const key of [...u.searchParams.keys()]) {
-    if (key.startsWith("utm_")) u.searchParams.delete(key);
-  }
-  u.hostname = u.hostname.toLowerCase();
-  return u.toString().replace(/\/$/, "");
-}
-
-const idOf = (url: string) => createHash("sha1").update(url).digest("hex").slice(0, 16);
-
-// ใช้ fetch เองแทน parser.parseURL: ตัวนั้นไม่ abort request ที่ timeout และไม่อ่าน body ตอน redirect
-// ทำให้ socket ค้างและ process ไม่ยอมจบ
-async function fetchSource(parser: Parser, src: NewsSource): Promise<Candidate[]> {
-  const res = await fetch(src.url, {
-    headers: { "User-Agent": "PromptPilot-NewsBot/1.0" },
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const feed = await parser.parseString(await res.text());
-  const out: Candidate[] = [];
-  for (const it of feed.items) {
-    const link = it.link ?? it.guid;
-    const title = it.title?.trim();
-    if (!link || !title) continue;
-    let url: string;
-    try {
-      url = normalizeUrl(link);
-    } catch {
-      continue;
-    }
-    const date = new Date(it.isoDate ?? it.pubDate ?? "");
-    out.push({
-      id: idOf(url),
-      url,
-      source: src.name,
-      title,
-      snippet: (it.contentSnippet ?? "").replace(/\s+/g, " ").trim().slice(0, 600),
-      publishedAt: Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString(),
-    });
-  }
-  return out;
-}
 
 const SYSTEM_PROMPT = `คุณเป็นบรรณาธิการของเว็บไซต์ที่แนะนำการเลือกและใช้เครื่องมือ AI ให้องค์กรไทย
 ผู้อ่านคือฝ่าย IT และผู้บริหารที่ต้องตัดสินใจว่าจะใช้เครื่องมือ AI ตัวไหน อย่างไร
@@ -240,9 +184,7 @@ async function enrichAll(
 async function main(): Promise<{ ok: boolean; message: string }> {
   const sources = await listEnabledSources();
   if (sources.length === 0) throw new Error("ยังไม่มีแหล่งข่าวที่เปิดใช้ในตาราง news_sources (ตั้งฐานข้อมูลใหม่ให้รัน npm run db:seed)");
-  const parser = new Parser();
-
-  const results = await Promise.allSettled(sources.map((s) => fetchSource(parser, s)));
+  const results = await Promise.allSettled(sources.map((s) => fetchSource(s)));
   const failedSources: string[] = [];
   const fetched: Candidate[] = [];
   results.forEach((r, i) => {
@@ -299,7 +241,8 @@ async function main(): Promise<{ ok: boolean; message: string }> {
     return {
       ...c,
       fetchedAt,
-      titleTh: e?.titleTh ?? null,
+      // คอลัมน์ title_th เป็น varchar(500) และ DB อยู่ใน strict mode — ตัดไว้ก่อน ไม่ให้ข่าวทั้งชุดบันทึกไม่ได้
+      titleTh: e?.titleTh ? e.titleTh.slice(0, 500) : null,
       summaryTh: e?.summaryTh ?? null,
       categories: e?.categories ?? [],
       importance: e?.importance ?? null,

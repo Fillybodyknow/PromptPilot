@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
+import { requireAdminPage } from "@/lib/adminSession";
 import Link from "next/link";
-import { headers } from "next/headers";
-import { notFound } from "next/navigation";
-import { checkBasicAuth } from "@/lib/adminAuth";
 import { CATEGORIES, getCategory } from "@/lib/categories";
 import { getGroupAccent } from "@/lib/groupAccent";
 import { countByStatus, duplicatesOf, getItemsByIds, latestRun, listByStatus, type FetchRun } from "@/lib/news/repo";
@@ -276,7 +274,7 @@ function NewsCard({ item, duplicates, canonical }: { item: NewsItem; duplicates:
 
 export default async function AdminNewsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   // proxy.ts กันไว้แล้ว — ตรวจซ้ำที่นี่เผื่อ matcher ถูกแก้จนหลุด
-  if (!checkBasicAuth((await headers()).get("authorization"))) notFound();
+  await requireAdminPage();
 
   const { status: raw } = await searchParams;
   const status: NewsStatus = NEWS_STATUSES.includes(raw as NewsStatus) ? (raw as NewsStatus) : "pending";

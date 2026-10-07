@@ -36,7 +36,8 @@ export async function getCategoryEntries<T = unknown>(key: string): Promise<T[]>
 /** คืน null ถ้าหมวดนั้นยังไม่มี guide */
 export async function getCategoryGuide(key: string): Promise<CategoryGuide | null> {
   const raw = (await cachedGuides())[key];
-  if (!raw) return null;
+  // คู่มือที่ยังไม่มี prompt เลย (เช่น เพิ่งสร้างใน admin) ถือว่ายังไม่มีคู่มือ แทนที่จะทำให้หน้าพังเพราะ schema ต้องการ prompt อย่างน้อย 1 ตัว
+  if (!raw || !(raw.promptTemplates as unknown[]).length) return null;
 
   const result = categoryGuideSchema.safeParse(raw);
   if (!result.success) {

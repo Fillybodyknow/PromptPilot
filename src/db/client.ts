@@ -14,6 +14,12 @@ export function getPool(): mysql.Pool {
     if (!uri) throw new Error("ยังไม่ได้ตั้ง DATABASE_URL (เช่น mysql://user:pass@localhost:3306/promptpilot)");
     // timezone "Z": เก็บและอ่าน DATETIME เป็น UTC เสมอ ไม่ขึ้นกับ timezone ของเครื่อง
     g.__ppPool = mysql.createPool({ uri, timezone: "Z", charset: "utf8mb4", connectionLimit: 5 });
+    // บังคับ strict mode ทุก connection — ถ้า server ไม่ได้ตั้งไว้ MySQL จะตัดข้อความที่ยาวเกินคอลัมน์ทิ้งเงียบๆ แทนที่จะแจ้ง error
+    g.__ppPool.pool.on("connection", (conn) => {
+      conn.query(
+        "SET SESSION sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
+      );
+    });
   }
   return g.__ppPool;
 }
