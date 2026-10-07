@@ -1,0 +1,16 @@
+[
+  { "name": "OpenAI", "url": "https://openai.com/news/rss.xml" },
+  { "name": "Anthropic (ผ่าน Google News)", "url": "https://news.google.com/rss/search?q=site:anthropic.com+when:7d&hl=en-US&gl=US&ceid=US:en" },
+  { "name": "Google AI", "url": "https://blog.google/technology/ai/rss/" },
+  { "name": "Google DeepMind", "url": "https://deepmind.google/blog/rss.xml" },
+  { "name": "Google Cloud AI/ML", "url": "https://cloudblog.withgoogle.com/products/ai-machine-learning/rss/" },
+  { "name": "Microsoft 365", "url": "https://www.microsoft.com/en-us/microsoft-365/blog/feed/" },
+  { "name": "Microsoft Azure", "url": "https://azure.microsoft.com/en-us/blog/feed/" },
+  { "name": "AWS Machine Learning", "url": "https://aws.amazon.com/blogs/machine-learning/feed/" },
+  { "name": "Hugging Face", "url": "https://huggingface.co/blog/feed.xml" },
+  { "name": "GitHub Blog (AI)", "url": "https://github.blog/ai-and-ml/feed/" },
+  { "name": "Ollama releases", "url": "https://github.com/ollama/ollama/releases.atom" },
+  { "name": "Blognone", "url": "https://www.blognone.com/atom.xml" },
+  { "name": "Google News: Anthropic Claude", "url": "https://news.google.com/rss/search?q=Anthropic+Claude+when:2d&hl=en-US&gl=US&ceid=US:en" },
+  { "name": "Google News: AI องค์กร (TH)", "url": "https://news.google.com/rss/search?q=AI+%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B9%8C%E0%B8%81%E0%B8%A3+when:2d&hl=th&gl=TH&ceid=TH:th" }
+]

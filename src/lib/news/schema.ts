@@ -1,0 +1,47 @@
+import { z } from "zod";
+import { CATEGORIES } from "../categories";
+
+const CATEGORY_KEYS = new Set(CATEGORIES.map((c) => c.key));
+export const isCategoryKey = (key: string) => CATEGORY_KEYS.has(key);
+
+export const NEWS_STATUSES = ["pending", "approved", "rejected", "auto_rejected"] as const;
+export type NewsStatus = (typeof NEWS_STATUSES)[number];
+
+export const newsSourceSchema = z.array(z.object({ name: z.string(), url: z.url() }));
+export type NewsSource = z.infer<typeof newsSourceSchema>[number];
+
+/** ผลที่ Claude ส่งกลับต่อ 1 batch — ใช้เป็น structured output schema โดยตรง */
+export const enrichmentSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      relevant: z.boolean(),
+      titleTh: z.string(),
+      summaryTh: z.string(),
+      // ไม่ใช้ z.enum: SDK ย้าย enum ไปไว้ใน description (API ไม่บังคับ) ถ้า Claude ตอบหมวดนอกรายการ
+      // ทั้ง batch จะ parse ไม่ผ่าน — กรองด้วย isCategoryKey หลังได้ผลแทน
+      categories: z.array(z.string()),
+      importance: z.number().int(),
+      reason: z.string(),
+    }),
+  ),
+});
+export type Enrichment = z.infer<typeof enrichmentSchema>["items"][number];
+
+export interface NewsItem {
+  id: string;
+  url: string;
+  source: string;
+  title: string;
+  snippet: string;
+  publishedAt: string;
+  fetchedAt: string;
+  titleTh: string | null;
+  summaryTh: string | null;
+  categories: string[];
+  importance: number | null;
+  aiReason: string | null;
+  status: NewsStatus;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+}

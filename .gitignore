@@ -33,6 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# news pipeline (SQLite DB + Task Scheduler logs)
+/data/
+/logs/
+
 # vercel
 .vercel
 
