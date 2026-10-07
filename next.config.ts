@@ -12,6 +12,13 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const nextConfig: NextConfig = {
   basePath,
   assetPrefix: basePath ? `${basePath}/` : undefined,
+  // /explore ถูกแทนด้วย /guides — redirect ถาวร กันลิงก์เก่าที่แชร์ไว้เสีย
+  async redirects() {
+    return [
+      { source: "/explore", destination: "/guides", permanent: true },
+      { source: "/explore/:category", destination: "/guides/:category", permanent: true },
+    ];
+  },
   images: {
     // Every <Image> already passes `unoptimized`; kept global so behavior
     // matches what was deployed on GitHub Pages.

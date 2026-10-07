@@ -1,4 +1,4 @@
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { guides, newsSources, promptTemplates, tools } from "@/db/schema";
 
@@ -81,6 +81,31 @@ export async function loadAllGuides(): Promise<Record<string, Record<string, unk
     out[g.categoryKey] = guide;
   }
   return out;
+}
+
+export interface FeaturedTool {
+  categoryKey: string;
+  id: string;
+  name: string;
+  vendor: string;
+  bestFor: string;
+  priceNote: string;
+}
+
+export async function loadFeaturedTools(): Promise<FeaturedTool[]> {
+  const rows = await getDb()
+    .select({
+      categoryKey: tools.categoryKey,
+      id: tools.slug,
+      name: tools.name,
+      vendor: tools.vendor,
+      bestFor: tools.bestFor,
+      priceNote: tools.priceNote,
+    })
+    .from(tools)
+    .where(eq(tools.featured, true))
+    .orderBy(asc(tools.categoryKey), asc(tools.sortOrder));
+  return rows;
 }
 
 export async function listEnabledSources(): Promise<{ name: string; url: string }[]> {

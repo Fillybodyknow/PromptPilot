@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { withBasePath } from "@/lib/basePath";
 
 const notoSansThai = Noto_Sans_Thai({
@@ -12,8 +12,8 @@ const notoSansThai = Noto_Sans_Thai({
 });
 
 export const metadata: Metadata = {
-  title: "PromptPilot",
-  description: "ฐานข้อมูลเปรียบเทียบเครื่องมือ AI รายหมวด สำหรับผู้ใช้ในประเทศไทย",
+  title: { default: "PromptPilot — ข่าว AI และคู่มือใช้ AI ในองค์กร", template: "%s | PromptPilot" },
+  description: "สรุปข่าว AI ที่มีผลต่อองค์กรไทยทุกวัน พร้อมคู่มือและเครื่องมือ AI ที่ทีมตรวจสอบแล้ว แยกตามลักษณะงาน",
   icons: {
     icon: withBasePath("/images/app/app_logo.png"),
     apple: withBasePath("/images/app/app_logo.png"),
@@ -32,20 +32,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        {/* Applies the saved theme class before hydration so there's no dark->light
-            flash. Default (no localStorage entry) stays dark — matches the site's
-            dark-first design. Raw <script> JSX tags never execute in React; this
-            must go through next/script with beforeInteractive to run pre-paint. */}
+        {/* Applies the theme class before hydration so there's no flash. Follows the
+            OS preference until the user picks one with ThemeToggle. Raw <script> JSX
+            tags never execute in React; this must go through next/script with
+            beforeInteractive to run pre-paint. */}
         <Script
           id="no-flash-theme"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('theme')==='light'){document.documentElement.classList.add('light')}}catch(e){}`,
+            __html: `try{var t=localStorage.getItem('theme');if(t==='light'||(t!=='dark'&&window.matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.classList.add('light')}}catch(e){}`,
           }}
         />
-        <Header />
+        <SiteHeader />
         <div className="flex-1">{children}</div>
-        <Footer />
+        <SiteFooter />
       </body>
     </html>
   );

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MoonIcon, SunIcon } from "./site/icons";
 
 /**
- * Toggles a `.light` class on <html>, persisted to localStorage. Default (no
- * stored preference) stays dark — see the no-flash script in layout.tsx that
- * applies the same class before hydration so there's no flash on load.
+ * Toggles a `.light` class on <html>, persisted to localStorage. Until the
+ * user picks, the no-flash script in layout.tsx follows the OS preference.
  */
 export function ThemeToggle() {
   const [isLight, setIsLight] = useState<boolean | null>(null);
@@ -35,10 +35,10 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={isLight ? "สลับเป็นโหมดมืด" : "สลับเป็นโหมดสว่าง"}
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-neutral-300 transition-colors hover:bg-white/10 hover:text-white light:text-neutral-500 light:hover:bg-black/5 light:hover:text-neutral-900"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-surface text-ink hover:bg-chip"
     >
       {/* Rendered blank until mounted (isLight === null) — see note above. */}
-      {isLight === null ? null : isLight ? "🌙" : "☀️"}
+      {isLight === null ? null : isLight ? <MoonIcon /> : <SunIcon />}
     </button>
   );
 }

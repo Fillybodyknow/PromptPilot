@@ -5,9 +5,18 @@ import { notFound } from "next/navigation";
 import { checkBasicAuth } from "@/lib/adminAuth";
 import { CATEGORIES, getCategory } from "@/lib/categories";
 import { getGroupAccent } from "@/lib/groupAccent";
-import { countByStatus, latestRun, listByStatus, type FetchRun } from "@/lib/news/repo";
+import { countByStatus, duplicatesOf, getItemsByIds, latestRun, listByStatus, type FetchRun } from "@/lib/news/repo";
 import { NEWS_STATUSES, type NewsItem, type NewsStatus } from "@/lib/news/schema";
-import { approveNews, moveToPending, rejectNews, saveAndApprove, triggerFetch } from "./actions";
+import { publisherOf } from "@/lib/news/publisher";
+import {
+  approveNews,
+  confirmDuplicateStory,
+  moveToPending,
+  rejectNews,
+  saveAndApprove,
+  separateFromStory,
+  triggerFetch,
+} from "./actions";
 
 export const metadata: Metadata = {
   title: "อนุมัติข่าว AI | PromptPilot Admin",
@@ -19,6 +28,7 @@ const STATUS_LABEL: Record<NewsStatus, string> = {
   approved: "อนุมัติแล้ว",
   rejected: "ปฏิเสธ",
   auto_rejected: "AI คัดออก",
+  duplicate: "ข่าวซ้ำ",
 };
 
 const IMPORTANCE: Record<number, { label: string; className: string }> = {
@@ -128,6 +138,19 @@ function EditForm({ item }: { item: NewsItem }) {
             <option value="1">1 — ทั่วไป</option>
           </select>
         </label>
+        <label className="block space-y-1">
+          <span className="text-xs text-neutral-400">ทำไมองค์กรควรสนใจ (แสดงบนหน้าเว็บ — เว้นว่างได้)</span>
+          <textarea name="aiReason" maxLength={500} rows={2} defaultValue={item.aiReason ?? ""} className={field} />
+        </label>
+        <fieldset className="space-y-3">
+          <legend className="text-xs text-neutral-400">สิ่งที่แต่ละบทบาทควรทำ (AI ร่างไว้ ตรวจและแก้ก่อนอนุมัติ — เว้นว่างได้ถ้าไม่เกี่ยว)</legend>
+          {ROLE_FIELDS.map((r) => (
+            <label key={r.name} className="block space-y-1">
+              <span className="text-xs text-neutral-400">{r.label}</span>
+              <textarea name={r.name} maxLength={500} rows={2} defaultValue={item[r.name] ?? ""} className={field} />
+            </label>
+          ))}
+        </fieldset>
         <button type="submit" className={btnPrimary}>
           บันทึกและอนุมัติ
         </button>
@@ -136,9 +159,16 @@ function EditForm({ item }: { item: NewsItem }) {
   );
 }
 
-function NewsCard({ item }: { item: NewsItem }) {
+const ROLE_FIELDS = [
+  { name: "roleEmployee", label: "พนักงานทั่วไป" },
+  { name: "roleIt", label: "ฝ่าย IT" },
+  { name: "roleExec", label: "ผู้บริหาร" },
+] as const;
+
+function NewsCard({ item, duplicates, canonical }: { item: NewsItem; duplicates: NewsItem[]; canonical?: NewsItem }) {
   const imp = item.importance ? IMPORTANCE[item.importance] : null;
   const hasText = Boolean(item.titleTh && item.summaryTh);
+  const roles = ROLE_FIELDS.filter((r) => item[r.name]);
   return (
     <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 light:border-black/10 light:bg-black/[0.02]">
       <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
@@ -169,6 +199,41 @@ function NewsCard({ item }: { item: NewsItem }) {
         </div>
       )}
 
+      {roles.length > 0 && (
+        <dl className="mt-3 space-y-1 text-sm">
+          {roles.map((r) => (
+            <div key={r.name} className="flex gap-2">
+              <dt className="shrink-0 font-medium text-neutral-300 light:text-neutral-700">{r.label}:</dt>
+              <dd className="text-neutral-400 light:text-neutral-600">{item[r.name]}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {canonical && (
+        <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200 light:text-amber-800">
+          AI ผูกไว้ว่าเป็นเรื่องเดียวกับ: <strong>{canonical.titleTh ?? canonical.title}</strong> ({STATUS_LABEL[canonical.status]})
+          {item.reviewedBy
+            ? " — ยืนยันแล้ว แสดงเป็น “แหล่งอื่นที่รายงานเรื่องนี้” ใต้ข่าวนั้น"
+            : " — ยังไม่ขึ้นหน้าเว็บจนกว่าจะยืนยัน ถ้าไม่ใช่เรื่องเดียวกันให้กดแยกเป็นข่าวใหม่"}
+        </p>
+      )}
+      {duplicates.length > 0 && (
+        <div className="mt-3 text-sm text-neutral-400 light:text-neutral-600">
+          แหล่งอื่นที่รายงานเรื่องนี้ ({duplicates.length}
+          {item.status !== "approved" && " — จะถือว่ายืนยันเมื่อกดอนุมัติข่าวนี้"}):{" "}
+          {duplicates.map((d, i) => (
+            <span key={d.id}>
+              {i > 0 && ", "}
+              <a href={d.url} target="_blank" rel="noopener noreferrer" className="underline">
+                {publisherOf(d)}
+              </a>
+              {!d.reviewedBy && " (ยังไม่ยืนยัน)"}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className="mt-4 space-y-1 rounded-xl bg-black/20 p-3 text-xs text-neutral-400 light:bg-black/[0.04] light:text-neutral-600">
         <div>
           ต้นฉบับ:{" "}
@@ -196,6 +261,12 @@ function NewsCard({ item }: { item: NewsItem }) {
         {(item.status === "rejected" || item.status === "auto_rejected") && (
           <IdForm action={moveToPending} label="ดึงกลับไปรออนุมัติ" className={btnNeutral} id={item.id} />
         )}
+        {item.status === "duplicate" && !item.reviewedBy && (
+          <IdForm action={confirmDuplicateStory} label="ยืนยันว่าเป็นเรื่องเดียวกัน" className={btnPrimary} id={item.id} />
+        )}
+        {item.status === "duplicate" && (
+          <IdForm action={separateFromStory} label="แยกเป็นข่าวใหม่" className={btnNeutral} id={item.id} />
+        )}
       </div>
 
       {(item.status === "pending" || item.status === "approved") && <EditForm item={item} />}
@@ -210,6 +281,10 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
   const { status: raw } = await searchParams;
   const status: NewsStatus = NEWS_STATUSES.includes(raw as NewsStatus) ? (raw as NewsStatus) : "pending";
   const [counts, items, run] = await Promise.all([countByStatus(), listByStatus(status), latestRun()]);
+  const [dups, canonicals] = await Promise.all([
+    duplicatesOf(items.map((i) => i.id)),
+    getItemsByIds(items.flatMap((i) => (i.duplicateOf ? [i.duplicateOf] : []))),
+  ]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
@@ -242,7 +317,14 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
             ไม่มีข่าวในสถานะ “{STATUS_LABEL[status]}”
           </p>
         ) : (
-          items.map((item) => <NewsCard key={item.id} item={item} />)
+          items.map((item) => (
+            <NewsCard
+              key={item.id}
+              item={item}
+              duplicates={dups.get(item.id) ?? []}
+              canonical={item.duplicateOf ? canonicals.get(item.duplicateOf) : undefined}
+            />
+          ))
         )}
       </div>
     </main>

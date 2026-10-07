@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { z } from "zod";
-import { loadAllEntries, loadAllGuides } from "./catalog/repo";
+import { loadAllEntries, loadAllGuides, loadFeaturedTools } from "./catalog/repo";
 import { CATEGORIES, getCategory, getCategoriesGrouped, type CategoryMeta } from "./categories";
 import { categoryGuideSchema, type CategoryGuide } from "./schema";
 
@@ -11,6 +11,7 @@ export const GUIDES_TAG = "guides";
 // cache ข้อมูลจาก DB ไว้ข้าม request; revalidate เป็นตาข่ายกันข้อมูลค้าง ถ้ามีคนแก้ DB ตรงโดยไม่ผ่าน admin
 const cachedEntries = unstable_cache(loadAllEntries, ["catalog-entries"], { tags: [TOOLS_TAG], revalidate: 600 });
 const cachedGuides = unstable_cache(loadAllGuides, ["catalog-guides"], { tags: [GUIDES_TAG], revalidate: 600 });
+export const getFeaturedTools = unstable_cache(loadFeaturedTools, ["catalog-featured"], { tags: [TOOLS_TAG], revalidate: 600 });
 
 function formatIssues(error: z.ZodError): string {
   return error.issues.map((issue) => `  - [${issue.path.join(".")}] ${issue.message}`).join("\n");

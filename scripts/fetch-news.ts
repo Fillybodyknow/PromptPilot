@@ -13,7 +13,16 @@ import { CATEGORIES } from "../src/lib/categories";
 import { listEnabledSources } from "../src/lib/catalog/repo";
 import { enrichmentSchema, isCategoryKey, type Enrichment, type NewsSource } from "../src/lib/news/schema";
 import { closeDb } from "../src/db/client";
-import { beginRun, countByStatus, findExistingIds, finishRun, insertItems, type NewItem } from "../src/lib/news/repo";
+import { resolveDuplicates } from "../src/lib/news/dedupe";
+import {
+  beginRun,
+  countByStatus,
+  findExistingIds,
+  finishRun,
+  insertItems,
+  listRecentForDedupe,
+  type NewItem,
+} from "../src/lib/news/repo";
 
 try {
   process.loadEnvFile(".env.local");
@@ -22,6 +31,8 @@ try {
 }
 
 const MAX_AGE_DAYS = 3;
+// เทียบข่าวซ้ำกับข่าวที่มีอยู่ย้อนหลังกี่วัน (ยาวกว่า MAX_AGE_DAYS เล็กน้อย เผื่อแหล่งลงข่าวช้า)
+const DEDUPE_DAYS = 5;
 const MAX_NEW_PER_RUN = 60;
 // กัน Google News (ข่าวเยอะมาก) เบียดข่าวจากแหล่งทางการของผู้ผลิตจนหลุดโควตา
 const MAX_PER_SOURCE = 15;
@@ -91,7 +102,9 @@ const SYSTEM_PROMPT = `คุณเป็นบรรณาธิการขอ
 - summaryTh: สรุปภาษาไทย 1–2 ประโยค ว่าเกิดอะไรขึ้นและองค์กรควรสนใจเพราะอะไร ใช้เฉพาะข้อมูลที่อยู่ในหัวข้อและเนื้อหาย่อที่ให้มา ห้ามเติมตัวเลข วันที่ หรือข้อเท็จจริงที่ไม่มีในข้อมูล ถ้าข้อมูลน้อยให้สรุปสั้นลง
 - categories: หมวดที่เกี่ยวข้อง 0–3 หมวด จากรายการด้านล่าง
 - importance: 3 = องค์กรควรรู้ทันที (เช่น ราคาเปลี่ยน บริการถูกยกเลิก ช่องโหว่), 2 = ควรรู้, 1 = ข่าวทั่วไป
-- reason: เหตุผลสั้นๆ ภาษาไทยที่ตัดสินแบบนี้ เพื่อให้ผู้ตรวจข่าวใช้ประกอบการอนุมัติ
+- reason: 1 ประโยคภาษาไทย อธิบายผู้อ่านว่าทำไมองค์กรควรสนใจข่าวนี้ (แสดงบนเว็บในหัวข้อ "ทำไมองค์กรควรสนใจ" หลังผู้ตรวจอนุมัติ) ถ้า relevant เป็น false ให้อธิบายสั้นๆ ว่าทำไมไม่เกี่ยวกับองค์กร เพื่อให้ผู้ตรวจใช้ประกอบ ห้ามพูดถึงคะแนนหรือการจัดหมวดของตัวเอง
+- roleEmployee, roleIt, roleExec: คำแนะนำภาษาไทย 1 ประโยคต่อบทบาท ว่าพนักงานทั่วไป / ฝ่าย IT / ผู้บริหาร ควรทำหรือควรรู้อะไรจากข่าวนี้ อิงจากข้อมูลในข่าวเท่านั้น ห้ามเติมราคา วันที่ หรือขั้นตอนที่ข่าวไม่ได้บอก ถ้าข่าวไม่มีผลกับบทบาทนั้น หรือ relevant เป็น false ให้ใส่ ""
+- duplicateOf: ถ้าข่าวนี้รายงานเหตุการณ์หรือประกาศเดียวกับข่าวใน "ข่าวที่มีอยู่แล้ว" หรือข่าวอื่นในชุดนี้ ให้ใส่ id ของข่าวนั้น (ถ้ามีในข่าวที่มีอยู่แล้ว ให้เลือกข่าวนั้นก่อน) เรื่องเดียวกันหมายถึงเหตุการณ์เดียวกัน ไม่ใช่แค่บริษัทหรือหัวข้อเดียวกัน ถ้าไม่ซ้ำหรือไม่แน่ใจให้ใส่ ""
 
 หมวดที่ใช้ได้:
 ${CATEGORIES.map((c) => `- ${c.key}: ${c.titleTh} — ${c.descriptionTh}`).join("\n")}
@@ -168,9 +181,18 @@ function pickEnricher(): Enricher | null {
   throw new Error(`NEWS_PROVIDER="${provider}" ใช้ไม่ได้: ต้องเป็น anthropic หรือ openai และต้องมี API key ของตัวนั้นใน env`);
 }
 
-async function enrichBatch(enricher: Enricher, batch: Candidate[]): Promise<Map<string, Enrichment>> {
+interface KnownStory {
+  id: string;
+  title: string;
+  source: string;
+}
+
+async function enrichBatch(enricher: Enricher, batch: Candidate[], known: KnownStory[]): Promise<Map<string, Enrichment>> {
   const payload = batch.map(({ id, title, source, snippet, publishedAt }) => ({ id, title, source, snippet, publishedAt }));
-  const { items, usage } = await enricher.run(`ข่าว ${batch.length} ชิ้น:\n${JSON.stringify(payload)}`);
+  const { items, usage } = await enricher.run(
+    `ข่าวที่มีอยู่แล้ว (ใช้สำหรับ duplicateOf เท่านั้น ไม่ต้องส่งผลกลับ):\n${JSON.stringify(known)}\n\n` +
+      `ข่าวใหม่ ${batch.length} ชิ้น:\n${JSON.stringify(payload)}`,
+  );
   const wanted = new Set(batch.map((c) => c.id));
   const result = new Map<string, Enrichment>();
   for (const e of items) {
@@ -188,6 +210,7 @@ async function enrichBatch(enricher: Enricher, batch: Candidate[]): Promise<Map<
 /** null = ไม่ได้ตั้ง key; ข่าวที่ไม่อยู่ใน results = AI ล้มเหลว (ไม่บันทึก เพื่อให้รอบหน้าลองใหม่) */
 async function enrichAll(
   candidates: Candidate[],
+  known: KnownStory[],
 ): Promise<{ results: Map<string, Enrichment>; lastError: string | null } | null> {
   const enricher = pickEnricher();
   if (!enricher) return null;
@@ -196,8 +219,12 @@ async function enrichAll(
   let lastError: string | null = null;
   for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
     const batch = candidates.slice(i, i + BATCH_SIZE);
+    // ข่าวที่ผ่านใน batch ก่อนหน้าของรอบนี้ ก็นับเป็น "ข่าวที่มีอยู่แล้ว" ให้ batch ถัดไปใช้เทียบด้วย
+    const earlier = candidates
+      .filter((c) => results.get(c.id)?.relevant)
+      .map((c) => ({ id: c.id, title: results.get(c.id)!.titleTh, source: c.source }));
     try {
-      for (const [id, e] of await enrichBatch(enricher, batch)) results.set(id, e);
+      for (const [id, e] of await enrichBatch(enricher, batch, [...known, ...earlier])) results.set(id, e);
     } catch (err) {
       lastError = `${enricher.label}: ${err instanceof Error ? err.message : err}`.slice(0, 300);
       if (enricher.isAuthError(err)) {
@@ -254,14 +281,21 @@ async function main(): Promise<{ ok: boolean; message: string }> {
   console.log(`ข่าวใหม่ใน ${MAX_AGE_DAYS} วัน: ${unique.size} ชิ้น, ยังไม่เคยเก็บ: ${fresh.length} ชิ้น`);
   if (fresh.length === 0) return { ok: true, message: `ไม่มีข่าวใหม่${sourceNote}` };
 
-  const outcome = await enrichAll(fresh);
+  const known = await listRecentForDedupe(DEDUPE_DAYS);
+  const outcome = await enrichAll(fresh, known);
   const enriched = outcome?.results;
   const toSave = enriched ? fresh.filter((c) => enriched.has(c.id)) : fresh;
   const skipped = fresh.length - toSave.length;
 
+  const canonical = resolveDuplicates(
+    toSave.map((c) => ({ id: c.id, relevant: enriched?.get(c.id)?.relevant ?? false, duplicateOf: enriched?.get(c.id)?.duplicateOf ?? "" })),
+    new Set(known.map((k) => k.id)),
+  );
+  const orNull = (s: string | undefined) => (s?.trim() ? s.trim() : null);
   const fetchedAt = new Date().toISOString();
   const rows: NewItem[] = toSave.map((c) => {
     const e = enriched?.get(c.id);
+    const duplicateOf = canonical.get(c.id) ?? null;
     return {
       ...c,
       fetchedAt,
@@ -270,14 +304,18 @@ async function main(): Promise<{ ok: boolean; message: string }> {
       categories: e?.categories ?? [],
       importance: e?.importance ?? null,
       aiReason: e?.reason ?? null,
-      status: e && !e.relevant ? "auto_rejected" : "pending",
+      roleEmployee: orNull(e?.roleEmployee),
+      roleIt: orNull(e?.roleIt),
+      roleExec: orNull(e?.roleExec),
+      duplicateOf,
+      status: e && !e.relevant ? "auto_rejected" : duplicateOf ? "duplicate" : "pending",
     };
   });
   const inserted = await insertItems(rows);
   console.log(`สถานะทั้งหมดใน DB:`, await countByStatus());
 
-  const pending = rows.filter((r) => r.status === "pending").length;
-  let message = `ได้ข่าวใหม่ ${inserted} ชิ้น (รออนุมัติ ${pending}, AI คัดออก ${rows.length - pending})`;
+  const n = (s: NewItem["status"]) => rows.filter((r) => r.status === s).length;
+  let message = `ได้ข่าวใหม่ ${inserted} ชิ้น (รออนุมัติ ${n("pending")}, ข่าวซ้ำ ${n("duplicate")}, AI คัดออก ${n("auto_rejected")})`;
   if (!outcome) message += " · ไม่มี API key จึงยังไม่มีคำสรุป";
   if (skipped > 0) message += ` · ข้าม ${skipped} ชิ้นที่ AI สรุปไม่สำเร็จ (รอบหน้าจะลองใหม่): ${outcome?.lastError}`;
   return { ok: skipped === 0, message: message + sourceNote };

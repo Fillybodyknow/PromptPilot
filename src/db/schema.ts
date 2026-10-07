@@ -121,11 +121,20 @@ export const newsItems = mysqlTable(
     summaryTh: text("summary_th"),
     importance: tinyint("importance"),
     aiReason: text("ai_reason"),
+    // คำแนะนำต่อบทบาท — AI ร่าง ทีมแก้ในหน้า admin ก่อนอนุมัติ
+    roleEmployee: text("role_employee"),
+    roleIt: text("role_it"),
+    roleExec: text("role_exec"),
+    // ข่าวหลักของเรื่องนี้ (มีค่าเมื่อ status = duplicate)
+    duplicateOf: char("duplicate_of", { length: 16 }),
     status: mysqlEnum("status", NEWS_STATUSES).notNull(),
     reviewedBy: varchar("reviewed_by", { length: 100 }),
     reviewedAt: datetime("reviewed_at", { mode: "date", fsp: 3 }),
   },
-  (t) => [index("idx_news_status_published").on(t.status, t.publishedAt)],
+  (t) => [
+    index("idx_news_status_published").on(t.status, t.publishedAt),
+    index("idx_news_duplicate_of").on(t.duplicateOf),
+  ],
 );
 
 // แยกเป็นตาราง (ไม่เก็บเป็น JSON) เพื่อกรองข่าวตามหมวดผ่าน index ได้

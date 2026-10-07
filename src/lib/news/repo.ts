@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, isNotNull, sql } from "drizzle-orm";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getDb, getPool } from "@/db/client";
 import { fetchRuns, newsCategories, newsItems } from "@/db/schema";
@@ -22,10 +22,19 @@ function toItem(r: ItemRow, categories: string[]): NewsItem {
     categories,
     importance: r.importance,
     aiReason: r.aiReason,
+    roleEmployee: r.roleEmployee,
+    roleIt: r.roleIt,
+    roleExec: r.roleExec,
+    duplicateOf: r.duplicateOf,
     status: r.status,
     reviewedBy: r.reviewedBy,
     reviewedAt: iso(r.reviewedAt),
   };
+}
+
+export async function toItems(rows: ItemRow[]): Promise<NewsItem[]> {
+  const cats = await categoriesFor(rows.map((r) => r.id));
+  return rows.map((r) => toItem(r, cats.get(r.id) ?? []));
 }
 
 const affected = (res: [ResultSetHeader, unknown]) => res[0].affectedRows;
@@ -58,6 +67,10 @@ export async function insertItems(items: NewItem[]): Promise<number> {
           summaryTh: it.summaryTh,
           importance: it.importance,
           aiReason: it.aiReason,
+          roleEmployee: it.roleEmployee,
+          roleIt: it.roleIt,
+          roleExec: it.roleExec,
+          duplicateOf: it.duplicateOf,
           status: it.status,
         })),
       );
@@ -82,18 +95,89 @@ export async function listByStatus(status: NewsStatus, limit = 100): Promise<New
     .where(eq(newsItems.status, status))
     .orderBy(desc(sql`coalesce(${newsItems.importance}, 0)`), desc(newsItems.publishedAt))
     .limit(limit);
-  const cats = await categoriesFor(rows.map((r) => r.id));
-  return rows.map((r) => toItem(r, cats.get(r.id) ?? []));
+  return toItems(rows);
 }
 
-/** คืน false ถ้าไม่พบข่าว หรือจะอนุมัติข่าวที่ยังไม่มีหัวข้อ/คำสรุปภาษาไทย */
+/** ข่าวที่ยังมีผลอยู่ (รออนุมัติ/อนุมัติแล้ว) ในช่วงไม่กี่วันล่าสุด — ส่งให้ AI ใช้ตัดสินว่าข่าวใหม่ซ้ำกับเรื่องไหน */
+export async function listRecentForDedupe(days: number): Promise<{ id: string; title: string; source: string }[]> {
+  const since = new Date(Date.now() - days * 86_400_000);
+  const rows = await getDb()
+    .select({ id: newsItems.id, title: newsItems.title, titleTh: newsItems.titleTh, source: newsItems.source })
+    .from(newsItems)
+    .where(and(inArray(newsItems.status, ["pending", "approved"]), gte(newsItems.publishedAt, since)))
+    .orderBy(desc(newsItems.publishedAt))
+    .limit(200);
+  return rows.map((r) => ({ id: r.id, title: r.titleTh ?? r.title, source: r.source }));
+}
+
+export async function getItemsByIds(ids: string[]): Promise<Map<string, NewsItem>> {
+  if (ids.length === 0) return new Map();
+  const rows = await getDb().select().from(newsItems).where(inArray(newsItems.id, [...new Set(ids)]));
+  return new Map((await toItems(rows)).map((i) => [i.id, i]));
+}
+
+/**
+ * ข่าวที่ถูกผูกเป็นข่าวซ้ำของข่าวหลักแต่ละข่าว — news id → รายการข่าวซ้ำ
+ * confirmedOnly: เฉพาะที่ทีมยืนยันแล้ว (reviewed_by มีค่า) — หน้าสาธารณะต้องใช้แบบนี้เสมอ
+ */
+export async function duplicatesOf(ids: string[], { confirmedOnly = false } = {}): Promise<Map<string, NewsItem[]>> {
+  const map = new Map<string, NewsItem[]>();
+  if (ids.length === 0) return map;
+  const rows = await getDb()
+    .select()
+    .from(newsItems)
+    .where(
+      and(
+        eq(newsItems.status, "duplicate"),
+        inArray(newsItems.duplicateOf, ids),
+        confirmedOnly ? isNotNull(newsItems.reviewedBy) : undefined,
+      ),
+    )
+    .orderBy(desc(newsItems.publishedAt));
+  for (const it of await toItems(rows)) map.set(it.duplicateOf!, [...(map.get(it.duplicateOf!) ?? []), it]);
+  return map;
+}
+
+/** ยืนยันว่าข่าวซ้ำที่ AI ผูกไว้เป็นเรื่องเดียวกันจริง — หลังจากนี้จึงแสดงบนหน้าสาธารณะ */
+export async function confirmDuplicate(id: string, reviewedBy: string): Promise<boolean> {
+  const res = await getDb()
+    .update(newsItems)
+    .set({ reviewedBy, reviewedAt: new Date() })
+    .where(and(eq(newsItems.id, id), eq(newsItems.status, "duplicate")));
+  return affected(res) > 0;
+}
+
+/** แยกข่าวที่ AI ผูกเป็นข่าวซ้ำผิด ออกมาเป็นข่าวใหม่ที่รออนุมัติ */
+export async function separateDuplicate(id: string, reviewedBy: string): Promise<boolean> {
+  const res = await getDb()
+    .update(newsItems)
+    .set({ status: "pending", duplicateOf: null, reviewedBy, reviewedAt: new Date() })
+    .where(and(eq(newsItems.id, id), eq(newsItems.status, "duplicate")));
+  return affected(res) > 0;
+}
+
+/**
+ * คืน false ถ้าไม่พบข่าว หรือจะอนุมัติข่าวที่ยังไม่มีหัวข้อ/คำสรุปภาษาไทย
+ * - อนุมัติ: ข่าวซ้ำที่ผูกอยู่และแสดงในการ์ดตอนกดอนุมัติ ถือว่าผู้ตรวจยืนยันแล้ว
+ * - ปฏิเสธ: ข่าวซ้ำที่ผูกอยู่ถูกย้ายกลับไปรออนุมัติ ไม่หายไปเงียบๆ พร้อมข่าวหลัก
+ */
 export async function setStatus(id: string, status: NewsStatus, reviewedBy: string): Promise<boolean> {
   const where =
     status === "approved"
       ? and(eq(newsItems.id, id), isNotNull(newsItems.titleTh), isNotNull(newsItems.summaryTh))
       : eq(newsItems.id, id);
-  const res = await getDb().update(newsItems).set({ status, reviewedBy, reviewedAt: new Date() }).where(where);
-  return affected(res) > 0;
+  const now = new Date();
+  return getDb().transaction(async (tx) => {
+    const res = await tx.update(newsItems).set({ status, reviewedBy, reviewedAt: now }).where(where);
+    if (affected(res) === 0) return false;
+    const dupsOfThis = and(eq(newsItems.status, "duplicate"), eq(newsItems.duplicateOf, id));
+    if (status === "approved") {
+      await tx.update(newsItems).set({ reviewedBy, reviewedAt: now }).where(and(dupsOfThis, sql`${newsItems.reviewedBy} is null`));
+    } else if (status === "rejected") {
+      await tx.update(newsItems).set({ status: "pending", duplicateOf: null, reviewedBy: null, reviewedAt: null }).where(dupsOfThis);
+    }
+    return true;
+  });
 }
 
 export interface NewsEdit {
@@ -101,13 +185,25 @@ export interface NewsEdit {
   summaryTh: string;
   categories: string[];
   importance: number;
+  aiReason: string | null;
+  roleEmployee: string | null;
+  roleIt: string | null;
+  roleExec: string | null;
 }
 
 export async function updateContent(id: string, edit: NewsEdit): Promise<boolean> {
   return getDb().transaction(async (tx) => {
     const res = await tx
       .update(newsItems)
-      .set({ titleTh: edit.titleTh, summaryTh: edit.summaryTh, importance: edit.importance })
+      .set({
+        titleTh: edit.titleTh,
+        summaryTh: edit.summaryTh,
+        importance: edit.importance,
+        aiReason: edit.aiReason,
+        roleEmployee: edit.roleEmployee,
+        roleIt: edit.roleIt,
+        roleExec: edit.roleExec,
+      })
       .where(eq(newsItems.id, id));
     if (affected(res) === 0) return false;
     await tx.delete(newsCategories).where(eq(newsCategories.newsId, id));
@@ -159,6 +255,17 @@ export async function finishRun(id: number, status: "ok" | "failed", message: st
     lockConn.release();
     lockConn = null;
   }
+}
+
+/** เวลาที่ดึงข่าวสำเร็จครั้งล่าสุด (แสดง "อัปเดตล่าสุด" บนหน้าแรก) */
+export async function lastSuccessfulFetchAt(): Promise<string | null> {
+  const [r] = await getDb()
+    .select({ finishedAt: fetchRuns.finishedAt })
+    .from(fetchRuns)
+    .where(eq(fetchRuns.status, "ok"))
+    .orderBy(desc(fetchRuns.id))
+    .limit(1);
+  return iso(r?.finishedAt ?? null);
 }
 
 export async function latestRun(): Promise<FetchRun | null> {

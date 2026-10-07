@@ -11,6 +11,8 @@
  */
 export interface GroupAccent {
   icon: string;
+  /** จุดสีประจำกลุ่มบนหน้าสาธารณะ (ใช้คู่ข้อความชื่อกลุ่มเสมอ ไม่ใช้สีอย่างเดียวสื่อความหมาย) */
+  dot: string;
   /** Eyebrow/pill badge, e.g. on the category detail header. */
   badge: string;
   /** Solid pill for the mobile sidebar's active chip. */
@@ -28,6 +30,7 @@ export interface GroupAccent {
 export const GROUP_ACCENTS: Record<string, GroupAccent> = {
   ผู้ช่วยทั่วไป: {
     icon: "💬",
+    dot: "bg-indigo-500",
     badge:
       "border-indigo-400/30 bg-indigo-500/10 text-indigo-300 light:border-indigo-500/30 light:text-indigo-700",
     solid: "bg-indigo-500 text-white",
@@ -40,6 +43,7 @@ export const GROUP_ACCENTS: Record<string, GroupAccent> = {
   },
   งานเอกสาร: {
     icon: "📄",
+    dot: "bg-sky-600",
     badge:
       "border-sky-400/30 bg-sky-500/10 text-sky-300 light:border-sky-500/30 light:text-sky-700",
     solid: "bg-sky-500 text-white",
@@ -52,6 +56,7 @@ export const GROUP_ACCENTS: Record<string, GroupAccent> = {
   },
   งานพัฒนาระบบ: {
     icon: "💻",
+    dot: "bg-emerald-600",
     badge:
       "border-emerald-400/30 bg-emerald-500/10 text-emerald-300 light:border-emerald-500/30 light:text-emerald-700",
     solid: "bg-emerald-500 text-white",
@@ -64,6 +69,7 @@ export const GROUP_ACCENTS: Record<string, GroupAccent> = {
   },
   งานข้อมูล: {
     icon: "📊",
+    dot: "bg-cyan-600",
     badge:
       "border-cyan-400/30 bg-cyan-500/10 text-cyan-300 light:border-cyan-500/30 light:text-cyan-700",
     solid: "bg-cyan-500 text-white",
@@ -76,6 +82,7 @@ export const GROUP_ACCENTS: Record<string, GroupAccent> = {
   },
   งานออกแบบ: {
     icon: "🎨",
+    dot: "bg-fuchsia-600",
     badge:
       "border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 light:border-fuchsia-500/30 light:text-fuchsia-700",
     solid: "bg-fuchsia-500 text-white",
@@ -88,6 +95,7 @@ export const GROUP_ACCENTS: Record<string, GroupAccent> = {
   },
   งานสื่อสาร: {
     icon: "🎙️",
+    dot: "bg-rose-600",
     badge:
       "border-rose-400/30 bg-rose-500/10 text-rose-300 light:border-rose-500/30 light:text-rose-700",
     solid: "bg-rose-500 text-white",
@@ -100,6 +108,7 @@ export const GROUP_ACCENTS: Record<string, GroupAccent> = {
   },
   งานระบบ: {
     icon: "⚙️",
+    dot: "bg-amber-600",
     badge:
       "border-amber-400/30 bg-amber-500/10 text-amber-300 light:border-amber-500/30 light:text-amber-700",
     solid: "bg-amber-500 text-white",

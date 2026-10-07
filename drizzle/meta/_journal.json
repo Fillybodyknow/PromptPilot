@@ -15,6 +15,13 @@
       "when": 1791352710734,
       "tag": "0001_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1791353585573,
+      "tag": "0002_news_roles_dedupe",
+      "breakpoints": true
     }
   ]
 }

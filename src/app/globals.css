@@ -1,24 +1,64 @@
 @import "tailwindcss";
 
-/* Dark-first theme with an opt-in light mode — toggled via a `.light` class on
-   <html> (see ThemeToggle.tsx), not `prefers-color-scheme`. Default (no class)
-   stays the existing dark "AI-era" look; `light:` is a custom variant so every
-   dark utility already in the codebase keeps working unchanged as the base. */
+/* Theme toggled via a `.light` class on <html> (see ThemeToggle.tsx and the
+   no-flash script in layout.tsx, which follows the OS preference until the
+   user picks one). `light:` is a custom variant so the admin page's existing
+   dark utilities keep working; public pages use the semantic tokens below. */
 @custom-variant light (&:where(.light, .light *));
 
 :root {
-  --background: #08070c;
-  --foreground: #f4f4f5;
+  --background: #0c0d11;
+  --foreground: #eef0f3;
+  --surface: #15171d;
+  --muted: #a6adb9;
+  --line: #2a2e37;
+  --chip: #1f222a;
+  --brand: #a9b4ff;
+  --brand-soft: #1e2142;
+  --on-brand: #0c0d11;
+  --urgent: #ffa3b1;
+  --urgent-bg: #3b1720;
+  --warn: #ffd27a;
+  --warn-bg: #33260a;
+  --good: #7be0ae;
+  --good-bg: #102a1e;
 }
 
 :root.light {
-  --background: #fafafa;
-  --foreground: #18181b;
+  --background: #f6f7f9;
+  --foreground: #101418;
+  --surface: #ffffff;
+  --muted: #4f5967;
+  --line: #e1e5ea;
+  --chip: #edf0f3;
+  --brand: #3f3ac4;
+  --brand-soft: #ecedff;
+  --on-brand: #ffffff;
+  --urgent: #a81e36;
+  --urgent-bg: #fce8eb;
+  --warn: #7f4c00;
+  --warn-bg: #fff2d6;
+  --good: #0f6b45;
+  --good-bg: #e4f5ec;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--foreground);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-chip: var(--chip);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-urgent: var(--urgent);
+  --color-urgent-bg: var(--urgent-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-good: var(--good);
+  --color-good-bg: var(--good-bg);
   --font-sans: var(--font-sans);
 }
 
@@ -29,67 +69,4 @@ body {
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
-}
-
-/* Gradient text — headline accent, used across hero sections */
-.text-gradient {
-  background: linear-gradient(90deg, #818cf8, #a78bfa, #e879f9);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-/* Slow-drifting aurora blobs behind hero sections */
-@keyframes aurora-drift-1 {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(6%, -10%) scale(1.15);
-  }
-}
-
-@keyframes aurora-drift-2 {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-8%, 8%) scale(1.1);
-  }
-}
-
-.animate-aurora-1 {
-  animation: aurora-drift-1 22s ease-in-out infinite;
-}
-
-.animate-aurora-2 {
-  animation: aurora-drift-2 26s ease-in-out infinite;
-}
-
-/* Entrance animation for hero content — staggered via inline animation-delay */
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-up {
-  animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-aurora-1,
-  .animate-aurora-2 {
-    animation: none;
-  }
-  .animate-fade-up {
-    animation-duration: 0.01ms !important;
-  }
 }

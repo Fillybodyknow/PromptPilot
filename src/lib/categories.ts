@@ -130,6 +130,24 @@ export const CATEGORIES: CategoryMeta[] = [
   },
 ];
 
+/** slug ของกลุ่มงานสำหรับใช้ใน URL (เช่น ตัวกรอง ?group=docs) */
+export const GROUP_SLUGS: Record<string, string> = {
+  ผู้ช่วยทั่วไป: "general",
+  งานเอกสาร: "docs",
+  งานพัฒนาระบบ: "dev",
+  งานข้อมูล: "data",
+  งานออกแบบ: "design",
+  งานสื่อสาร: "comm",
+  งานระบบ: "systems",
+};
+
+/** category keys ของกลุ่มจาก slug — undefined ถ้า slug ไม่รู้จัก */
+export function categoryKeysOfGroup(slug: string | undefined): string[] | undefined {
+  if (!slug) return undefined;
+  const group = Object.keys(GROUP_SLUGS).find((g) => GROUP_SLUGS[g] === slug);
+  return group ? CATEGORIES.filter((c) => c.group === group).map((c) => c.key) : undefined;
+}
+
 export function getCategory(key: string): CategoryMeta | undefined {
   return CATEGORIES.find((c) => c.key === key);
 }
