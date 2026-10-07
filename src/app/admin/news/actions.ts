@@ -27,7 +27,7 @@ function done() {
 
 export async function approveNews(formData: FormData) {
   const user = await requireAdmin();
-  if (!setStatus(readId(formData), "approved", user)) {
+  if (!(await setStatus(readId(formData), "approved", user))) {
     throw new Error("อนุมัติไม่ได้: ไม่พบข่าว หรือข่าวยังไม่มีหัวข้อ/คำสรุปภาษาไทย");
   }
   done();
@@ -35,14 +35,14 @@ export async function approveNews(formData: FormData) {
 
 export async function rejectNews(formData: FormData) {
   const user = await requireAdmin();
-  setStatus(readId(formData), "rejected", user);
+  await setStatus(readId(formData), "rejected", user);
   done();
 }
 
 /** ย้ายกลับไปรออนุมัติ: ถอนการอนุมัติ หรือดึงข่าวที่ถูกปฏิเสธ/AI คัดออกกลับมา */
 export async function moveToPending(formData: FormData) {
   const user = await requireAdmin();
-  setStatus(readId(formData), "pending", user);
+  await setStatus(readId(formData), "pending", user);
   done();
 }
 
@@ -55,13 +55,13 @@ const editSchema = z.object({
 
 export async function triggerFetch() {
   const user = await requireAdmin();
-  const before = latestRun();
+  const before = await latestRun();
   if (before?.status === "running") return done();
   startFetchProcess(user);
   // รอให้สคริปต์บันทึกแถว running ก่อน re-render เพื่อให้หน้าแสดงสถานะ "กำลังดึง" ทันที
   for (let i = 0; i < 20; i++) {
     await new Promise((r) => setTimeout(r, 250));
-    if ((latestRun()?.id ?? 0) !== (before?.id ?? 0)) break;
+    if (((await latestRun())?.id ?? 0) !== (before?.id ?? 0)) break;
   }
   done();
 }
@@ -75,7 +75,7 @@ export async function saveAndApprove(formData: FormData) {
     categories: formData.getAll("categories"),
     importance: formData.get("importance"),
   });
-  if (!updateContent(id, edit)) throw new Error("ไม่พบข่าวนี้");
-  setStatus(id, "approved", user);
+  if (!(await updateContent(id, edit))) throw new Error("ไม่พบข่าวนี้");
+  await setStatus(id, "approved", user);
   done();
 }

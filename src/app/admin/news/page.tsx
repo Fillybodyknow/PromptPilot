@@ -209,8 +209,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
 
   const { status: raw } = await searchParams;
   const status: NewsStatus = NEWS_STATUSES.includes(raw as NewsStatus) ? (raw as NewsStatus) : "pending";
-  const counts = countByStatus();
-  const items = listByStatus(status);
+  const [counts, items, run] = await Promise.all([countByStatus(), listByStatus(status), latestRun()]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
@@ -219,7 +218,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
         ข่าวที่ AI คัดและสรุปไว้ จะขึ้นหน้าเว็บก็ต่อเมื่ออนุมัติแล้วเท่านั้น ตรวจคำสรุปเทียบกับต้นฉบับก่อนกดอนุมัติ
       </p>
 
-      <FetchPanel run={latestRun()} />
+      <FetchPanel run={run} />
 
       <nav className="mt-6 flex flex-wrap gap-2">
         {NEWS_STATUSES.map((s) => (

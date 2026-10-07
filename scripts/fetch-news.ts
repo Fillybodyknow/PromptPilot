@@ -12,6 +12,7 @@ import { zodTextFormat } from "openai/helpers/zod";
 import Parser from "rss-parser";
 import { CATEGORIES } from "../src/lib/categories";
 import { enrichmentSchema, isCategoryKey, newsSourceSchema, type Enrichment, type NewsSource } from "../src/lib/news/schema";
+import { closeDb } from "../src/db/client";
 import { beginRun, countByStatus, findExistingIds, finishRun, insertItems, type NewItem } from "../src/lib/news/repo";
 
 try {
@@ -233,7 +234,7 @@ async function main(): Promise<{ ok: boolean; message: string }> {
   for (const c of fetched) {
     if (Date.parse(c.publishedAt) >= cutoff && !unique.has(c.id)) unique.set(c.id, c);
   }
-  const existing = findExistingIds([...unique.keys()]);
+  const existing = await findExistingIds([...unique.keys()]);
   // เวียนหยิบทีละข่าวจากทุกแหล่ง (ใหม่สุดก่อน) จนครบโควตา — ทุกแหล่งได้ที่แน่นอนแม้รวมแล้วเกิน MAX_NEW_PER_RUN
   const bySource = new Map<string, Candidate[]>();
   for (const c of unique.values()) {
@@ -271,8 +272,8 @@ async function main(): Promise<{ ok: boolean; message: string }> {
       status: e && !e.relevant ? "auto_rejected" : "pending",
     };
   });
-  const inserted = insertItems(rows);
-  console.log(`สถานะทั้งหมดใน DB:`, countByStatus());
+  const inserted = await insertItems(rows);
+  console.log(`สถานะทั้งหมดใน DB:`, await countByStatus());
 
   const pending = rows.filter((r) => r.status === "pending").length;
   let message = `ได้ข่าวใหม่ ${inserted} ชิ้น (รออนุมัติ ${pending}, AI คัดออก ${rows.length - pending})`;
@@ -282,21 +283,26 @@ async function main(): Promise<{ ok: boolean; message: string }> {
 }
 
 async function run() {
-  const runId = beginRun(process.env.NEWS_FETCH_TRIGGER ?? "scheduled");
+  const runId = await beginRun(process.env.NEWS_FETCH_TRIGGER ?? "scheduled");
   if (runId === null) {
     console.log("มีรอบอื่นกำลังดึงข่าวอยู่ — ข้ามรอบนี้");
     return;
   }
   try {
     const { ok, message } = await main();
-    finishRun(runId, ok ? "ok" : "failed", message);
+    await finishRun(runId, ok ? "ok" : "failed", message);
     console.log(ok ? "✅" : "⚠️ ", message);
     if (!ok) process.exitCode = 1;
   } catch (err) {
-    finishRun(runId, "failed", err instanceof Error ? err.message : String(err));
+    await finishRun(runId, "failed", err instanceof Error ? err.message : String(err));
     console.error("❌", err);
     process.exitCode = 1;
   }
 }
 
-run();
+run()
+  .catch((err) => {
+    console.error("❌", err);
+    process.exitCode = 1;
+  })
+  .finally(closeDb);

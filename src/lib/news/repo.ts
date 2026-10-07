@@ -1,130 +1,99 @@
-import { DatabaseSync } from "node:sqlite";
-import { mkdirSync } from "node:fs";
-import path from "node:path";
+import { and, count, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import { getDb, getPool } from "@/db/client";
+import { fetchRuns, newsCategories, newsItems } from "@/db/schema";
 import type { NewsItem, NewsStatus } from "./schema";
 
-const DB_PATH = process.env.NEWS_DB_PATH ?? path.join(process.cwd(), "data", "news.db");
+type ItemRow = typeof newsItems.$inferSelect;
 
-let db: DatabaseSync | undefined;
+const iso = (d: Date | null) => (d ? d.toISOString() : null);
 
-function getDb(): DatabaseSync {
-  if (db) return db;
-  mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  db = new DatabaseSync(DB_PATH);
-  // WAL: เว็บ (Next.js) อ่านได้ระหว่างที่สคริปต์ fetch กำลังเขียน
-  db.exec(`
-    PRAGMA journal_mode = WAL;
-    PRAGMA busy_timeout = 5000;
-    CREATE TABLE IF NOT EXISTS news_items (
-      id           TEXT PRIMARY KEY,
-      url          TEXT NOT NULL UNIQUE,
-      source       TEXT NOT NULL,
-      title        TEXT NOT NULL,
-      snippet      TEXT NOT NULL DEFAULT '',
-      published_at TEXT NOT NULL,
-      fetched_at   TEXT NOT NULL,
-      title_th     TEXT,
-      summary_th   TEXT,
-      categories   TEXT NOT NULL DEFAULT '[]',
-      importance   INTEGER,
-      ai_reason    TEXT,
-      status       TEXT NOT NULL CHECK (status IN ('pending','approved','rejected','auto_rejected')),
-      reviewed_by  TEXT,
-      reviewed_at  TEXT
-    );
-    CREATE INDEX IF NOT EXISTS idx_news_status_published ON news_items (status, published_at DESC);
-    CREATE TABLE IF NOT EXISTS fetch_runs (
-      id          INTEGER PRIMARY KEY AUTOINCREMENT,
-      trigger     TEXT NOT NULL,
-      started_at  TEXT NOT NULL,
-      finished_at TEXT,
-      status      TEXT NOT NULL CHECK (status IN ('running','ok','failed')),
-      message     TEXT
-    );
-  `);
-  return db;
-}
-
-type Row = Record<string, unknown>;
-
-function toItem(r: Row): NewsItem {
+function toItem(r: ItemRow, categories: string[]): NewsItem {
   return {
-    id: r.id as string,
-    url: r.url as string,
-    source: r.source as string,
-    title: r.title as string,
-    snippet: r.snippet as string,
-    publishedAt: r.published_at as string,
-    fetchedAt: r.fetched_at as string,
-    titleTh: (r.title_th as string | null) ?? null,
-    summaryTh: (r.summary_th as string | null) ?? null,
-    categories: JSON.parse(r.categories as string) as string[],
-    importance: (r.importance as number | null) ?? null,
-    aiReason: (r.ai_reason as string | null) ?? null,
-    status: r.status as NewsStatus,
-    reviewedBy: (r.reviewed_by as string | null) ?? null,
-    reviewedAt: (r.reviewed_at as string | null) ?? null,
+    id: r.id,
+    url: r.url,
+    source: r.source,
+    title: r.title,
+    snippet: r.snippet,
+    publishedAt: r.publishedAt.toISOString(),
+    fetchedAt: r.fetchedAt.toISOString(),
+    titleTh: r.titleTh,
+    summaryTh: r.summaryTh,
+    categories,
+    importance: r.importance,
+    aiReason: r.aiReason,
+    status: r.status,
+    reviewedBy: r.reviewedBy,
+    reviewedAt: iso(r.reviewedAt),
   };
 }
 
+const affected = (res: [ResultSetHeader, unknown]) => res[0].affectedRows;
+
 export type NewItem = Omit<NewsItem, "reviewedBy" | "reviewedAt">;
 
-/** คืน id ที่มีอยู่แล้วใน DB (ใช้ตัดข่าวซ้ำก่อนส่งให้ Claude) */
-export function findExistingIds(ids: string[]): Set<string> {
+/** คืน id ที่มีอยู่แล้วใน DB (ใช้ตัดข่าวซ้ำก่อนส่งให้ AI) */
+export async function findExistingIds(ids: string[]): Promise<Set<string>> {
   if (ids.length === 0) return new Set();
-  const placeholders = ids.map(() => "?").join(",");
-  const rows = getDb()
-    .prepare(`SELECT id FROM news_items WHERE id IN (${placeholders})`)
-    .all(...ids) as Row[];
-  return new Set(rows.map((r) => r.id as string));
+  const rows = await getDb().select({ id: newsItems.id }).from(newsItems).where(inArray(newsItems.id, ids));
+  return new Set(rows.map((r) => r.id));
 }
 
-export function insertItems(items: NewItem[]): number {
-  const d = getDb();
-  const stmt = d.prepare(`
-    INSERT OR IGNORE INTO news_items
-      (id, url, source, title, snippet, published_at, fetched_at,
-       title_th, summary_th, categories, importance, ai_reason, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  let inserted = 0;
-  d.exec("BEGIN");
-  try {
-    for (const it of items) {
-      const res = stmt.run(
-        it.id, it.url, it.source, it.title, it.snippet, it.publishedAt, it.fetchedAt,
-        it.titleTh, it.summaryTh, JSON.stringify(it.categories), it.importance, it.aiReason, it.status,
+export async function insertItems(items: NewItem[]): Promise<number> {
+  if (items.length === 0) return 0;
+  return getDb().transaction(async (tx) => {
+    const res = await tx
+      .insert(newsItems)
+      .ignore()
+      .values(
+        items.map((it) => ({
+          id: it.id,
+          url: it.url,
+          source: it.source,
+          title: it.title,
+          snippet: it.snippet,
+          publishedAt: new Date(it.publishedAt),
+          fetchedAt: new Date(it.fetchedAt),
+          titleTh: it.titleTh,
+          summaryTh: it.summaryTh,
+          importance: it.importance,
+          aiReason: it.aiReason,
+          status: it.status,
+        })),
       );
-      inserted += Number(res.changes);
-    }
-    d.exec("COMMIT");
-  } catch (e) {
-    d.exec("ROLLBACK");
-    throw e;
-  }
-  return inserted;
+    const cats = items.flatMap((it) => it.categories.map((categoryKey) => ({ newsId: it.id, categoryKey })));
+    if (cats.length > 0) await tx.insert(newsCategories).ignore().values(cats);
+    return affected(res);
+  });
 }
 
-export function listByStatus(status: NewsStatus, limit = 100): NewsItem[] {
-  const rows = getDb()
-    .prepare(
-      `SELECT * FROM news_items WHERE status = ?
-       ORDER BY COALESCE(importance, 0) DESC, published_at DESC LIMIT ?`,
-    )
-    .all(status, limit) as Row[];
-  return rows.map(toItem);
+async function categoriesFor(ids: string[]): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>();
+  if (ids.length === 0) return map;
+  const rows = await getDb().select().from(newsCategories).where(inArray(newsCategories.newsId, ids));
+  for (const r of rows) map.set(r.newsId, [...(map.get(r.newsId) ?? []), r.categoryKey]);
+  return map;
+}
+
+export async function listByStatus(status: NewsStatus, limit = 100): Promise<NewsItem[]> {
+  const rows = await getDb()
+    .select()
+    .from(newsItems)
+    .where(eq(newsItems.status, status))
+    .orderBy(desc(sql`coalesce(${newsItems.importance}, 0)`), desc(newsItems.publishedAt))
+    .limit(limit);
+  const cats = await categoriesFor(rows.map((r) => r.id));
+  return rows.map((r) => toItem(r, cats.get(r.id) ?? []));
 }
 
 /** คืน false ถ้าไม่พบข่าว หรือจะอนุมัติข่าวที่ยังไม่มีหัวข้อ/คำสรุปภาษาไทย */
-export function setStatus(id: string, status: NewsStatus, reviewedBy: string): boolean {
-  const needsText = status === "approved" ? "AND title_th IS NOT NULL AND summary_th IS NOT NULL" : "";
-  const res = getDb()
-    .prepare(
-      `UPDATE news_items SET status = ?, reviewed_by = ?, reviewed_at = ?
-       WHERE id = ? ${needsText}`,
-    )
-    .run(status, reviewedBy, new Date().toISOString(), id);
-  return Number(res.changes) > 0;
+export async function setStatus(id: string, status: NewsStatus, reviewedBy: string): Promise<boolean> {
+  const where =
+    status === "approved"
+      ? and(eq(newsItems.id, id), isNotNull(newsItems.titleTh), isNotNull(newsItems.summaryTh))
+      : eq(newsItems.id, id);
+  const res = await getDb().update(newsItems).set({ status, reviewedBy, reviewedAt: new Date() }).where(where);
+  return affected(res) > 0;
 }
 
 export interface NewsEdit {
@@ -134,14 +103,24 @@ export interface NewsEdit {
   importance: number;
 }
 
-export function updateContent(id: string, edit: NewsEdit): boolean {
-  const res = getDb()
-    .prepare(
-      `UPDATE news_items SET title_th = ?, summary_th = ?, categories = ?, importance = ?
-       WHERE id = ?`,
-    )
-    .run(edit.titleTh, edit.summaryTh, JSON.stringify(edit.categories), edit.importance, id);
-  return Number(res.changes) > 0;
+export async function updateContent(id: string, edit: NewsEdit): Promise<boolean> {
+  return getDb().transaction(async (tx) => {
+    const res = await tx
+      .update(newsItems)
+      .set({ titleTh: edit.titleTh, summaryTh: edit.summaryTh, importance: edit.importance })
+      .where(eq(newsItems.id, id));
+    if (affected(res) === 0) return false;
+    await tx.delete(newsCategories).where(eq(newsCategories.newsId, id));
+    if (edit.categories.length > 0) {
+      await tx.insert(newsCategories).values(edit.categories.map((categoryKey) => ({ newsId: id, categoryKey })));
+    }
+    return true;
+  });
+}
+
+export async function countByStatus(): Promise<Record<string, number>> {
+  const rows = await getDb().select({ status: newsItems.status, n: count() }).from(newsItems).groupBy(newsItems.status);
+  return Object.fromEntries(rows.map((r) => [r.status, r.n]));
 }
 
 export interface FetchRun {
@@ -153,46 +132,45 @@ export interface FetchRun {
   message: string | null;
 }
 
-// รอบที่ค้างสถานะ running นานกว่านี้ถือว่าตายไปแล้ว (เช่น process ถูก kill) ไม่บล็อกรอบใหม่
+// รอบที่ค้างสถานะ running นานกว่านี้ถือว่าตายไปแล้ว (เช่น process ถูก kill) ให้แสดงเป็นล้มเหลว
 const STALE_RUN_MS = 15 * 60_000;
+const LOCK_NAME = "promptpilot_news_fetch";
 
-/** เริ่มรอบใหม่แบบ atomic — คืน null ถ้ามีรอบอื่นกำลังทำงานอยู่ */
-export function beginRun(trigger: string): number | null {
-  const now = Date.now();
-  const res = getDb()
-    .prepare(
-      `INSERT INTO fetch_runs (trigger, started_at, status)
-       SELECT ?, ?, 'running'
-       WHERE NOT EXISTS (SELECT 1 FROM fetch_runs WHERE status = 'running' AND started_at > ?)`,
-    )
-    .run(trigger, new Date(now).toISOString(), new Date(now - STALE_RUN_MS).toISOString());
-  return Number(res.changes) > 0 ? Number(res.lastInsertRowid) : null;
+// GET_LOCK ผูกกับ connection: ถือ connection นี้ไว้ตลอดรอบ ถ้า process ตาย MySQL ปล่อย lock ให้เอง
+let lockConn: PoolConnection | null = null;
+
+/** เริ่มรอบใหม่ — คืน null ถ้ามีรอบอื่นกำลังทำงานอยู่ (ไม่ว่าจากปุ่มใน admin หรือ Task Scheduler) */
+export async function beginRun(trigger: string): Promise<number | null> {
+  const conn = await getPool().getConnection();
+  const [rows] = await conn.query<RowDataPacket[]>("SELECT GET_LOCK(?, 0) AS got", [LOCK_NAME]);
+  if (rows[0]?.got !== 1) {
+    conn.release();
+    return null;
+  }
+  lockConn = conn;
+  const res = await getDb().insert(fetchRuns).values({ triggeredBy: trigger, startedAt: new Date(), status: "running" });
+  return res[0].insertId;
 }
 
-export function finishRun(id: number, status: "ok" | "failed", message: string): void {
-  getDb()
-    .prepare(`UPDATE fetch_runs SET status = ?, message = ?, finished_at = ? WHERE id = ?`)
-    .run(status, message, new Date().toISOString(), id);
+export async function finishRun(id: number, status: "ok" | "failed", message: string): Promise<void> {
+  await getDb().update(fetchRuns).set({ status, message, finishedAt: new Date() }).where(eq(fetchRuns.id, id));
+  if (lockConn) {
+    await lockConn.query("SELECT RELEASE_LOCK(?)", [LOCK_NAME]);
+    lockConn.release();
+    lockConn = null;
+  }
 }
 
-export function latestRun(): FetchRun | null {
-  const r = getDb().prepare(`SELECT * FROM fetch_runs ORDER BY id DESC LIMIT 1`).get() as Row | undefined;
+export async function latestRun(): Promise<FetchRun | null> {
+  const [r] = await getDb().select().from(fetchRuns).orderBy(desc(fetchRuns.id)).limit(1);
   if (!r) return null;
-  const startedAt = r.started_at as string;
-  const stale = r.status === "running" && Date.parse(startedAt) < Date.now() - STALE_RUN_MS;
+  const stale = r.status === "running" && r.startedAt.getTime() < Date.now() - STALE_RUN_MS;
   return {
-    id: Number(r.id),
-    trigger: r.trigger as string,
-    startedAt,
-    finishedAt: (r.finished_at as string | null) ?? null,
-    status: stale ? "failed" : (r.status as FetchRun["status"]),
-    message: stale ? "รอบนี้หยุดทำงานกลางคันโดยไม่มีผลลัพธ์" : ((r.message as string | null) ?? null),
+    id: r.id,
+    trigger: r.triggeredBy,
+    startedAt: r.startedAt.toISOString(),
+    finishedAt: iso(r.finishedAt),
+    status: stale ? "failed" : r.status,
+    message: stale ? "รอบนี้หยุดทำงานกลางคันโดยไม่มีผลลัพธ์" : r.message,
   };
-}
-
-export function countByStatus(): Record<string, number> {
-  const rows = getDb()
-    .prepare(`SELECT status, COUNT(*) AS n FROM news_items GROUP BY status`)
-    .all() as Row[];
-  return Object.fromEntries(rows.map((r) => [r.status as string, Number(r.n)]));
 }
