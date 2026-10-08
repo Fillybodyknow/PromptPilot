@@ -79,7 +79,7 @@ const MAX_TEXT = 15_000;
 const URL_KEYS = new Set(["url", "sourceUrl"]);
 
 /** ตรวจก่อนส่งให้ schema: ความยาวไม่เกินคอลัมน์ และลิงก์ต้องเป็น http(s) เท่านั้น (กัน javascript: และอื่นๆ) */
-function precheck(values: Record<string, unknown>, labels: Record<string, string> = {}): string[] {
+export function precheck(values: Record<string, unknown>, labels: Record<string, string> = {}): string[] {
   const errors: string[] = [];
   const label = (k: string) => labels[k] ?? LABELS[k] ?? k;
   const check = (k: string, v: unknown) => {

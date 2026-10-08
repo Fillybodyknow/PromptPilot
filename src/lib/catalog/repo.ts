@@ -6,7 +6,7 @@ type ToolRow = typeof tools.$inferSelect;
 type PromptRow = typeof promptTemplates.$inferSelect;
 
 /** แปลงแถวกลับเป็นรูปเดียวกับ entry ใน JSON เดิม — ฟิลด์ optional ที่เป็น null ต้องหายไป ไม่ใช่เป็น null เพราะ Zod schema ไม่รับ */
-function toEntry(r: ToolRow): Record<string, unknown> {
+export function toolRowToEntry(r: ToolRow): Record<string, unknown> {
   const entry: Record<string, unknown> = {
     id: r.slug,
     name: r.name,
@@ -53,7 +53,7 @@ function toPrompt(r: PromptRow): Record<string, unknown> {
 export async function loadAllEntries(): Promise<Record<string, Record<string, unknown>[]>> {
   const rows = await getDb().select().from(tools).orderBy(asc(tools.categoryKey), asc(tools.sortOrder), asc(tools.id));
   const out: Record<string, Record<string, unknown>[]> = {};
-  for (const r of rows) (out[r.categoryKey] ??= []).push(toEntry(r));
+  for (const r of rows) (out[r.categoryKey] ??= []).push(toolRowToEntry(r));
   return out;
 }
 

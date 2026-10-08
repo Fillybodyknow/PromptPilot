@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getSessionUser } from "@/lib/auth/session";
 import { countPending, ROLE_LABEL } from "@/lib/auth/users";
+import { countSuggestionsByStatus } from "@/lib/content/repo";
 import { logout } from "@/app/(auth)/login/actions";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -19,6 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // แค่แสดงชื่อผู้ใช้ — การกันสิทธิ์จริงอยู่ที่ requireAdminPage ในแต่ละหน้า (layout ไม่ render ใหม่ทุกครั้งที่เปลี่ยนหน้า)
   const user = await getSessionUser();
   const pending = user?.role === "admin" ? await countPending() : 0;
+  const suggestions = user && user.role !== "viewer" ? ((await countSuggestionsByStatus()).pending ?? 0) : 0;
   return (
     <>
       <nav aria-label="เมนูผู้ดูแล" className="border-b border-line bg-chip">
@@ -29,6 +31,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               {l.label}
             </Link>
           ))}
+          <Link href="/admin/suggestions" className="flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm hover:bg-surface">
+            ข้อเสนอแก้ไข
+            {suggestions > 0 && (
+              <span className="rounded-full bg-warn px-2 py-0.5 text-xs font-bold text-background" aria-label={`${suggestions} ข้อเสนอรอตรวจ`}>
+                {suggestions}
+              </span>
+            )}
+          </Link>
           {/* การจัดการผู้ใช้เห็นเฉพาะผู้ดูแลระบบ (หน้าเองก็กันสิทธิ์อีกชั้น) */}
           {user?.role === "admin" && (
             <Link href="/admin/users" className="flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm hover:bg-surface">

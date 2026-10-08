@@ -6,17 +6,19 @@ import { countPending } from "@/lib/auth/users";
 import { getAutoApproveNews } from "@/lib/settings";
 import { catalogCounts } from "@/lib/catalog/admin";
 import { countByStatus, latestRun } from "@/lib/news/repo";
+import { countSuggestionsByStatus } from "@/lib/content/repo";
 
 export const metadata: Metadata = { title: "ภาพรวมผู้ดูแล" };
 
 export default async function AdminHomePage() {
   const me = await requireAdminPage();
-  const [news, catalog, run, pendingUsers, autoApprove] = await Promise.all([
+  const [news, catalog, run, pendingUsers, autoApprove, suggestions] = await Promise.all([
     countByStatus(),
     catalogCounts(),
     latestRun(),
     me.role === "admin" ? countPending() : 0,
     getAutoApproveNews(),
+    countSuggestionsByStatus(),
   ]);
   const cards = [
     // เฉพาะผู้ดูแลระบบ: แจ้งคำขอเข้าใช้งานที่ยังไม่ได้ตัดสิน
@@ -24,6 +26,13 @@ export default async function AdminHomePage() {
       ? [{ href: "/admin/users", title: "ผู้ใช้", value: `${pendingUsers} คำขอรออนุมัติ`, note: "อนุมัติคำขอ กำหนดสิทธิ์ ปิดใช้บัญชี", highlight: pendingUsers > 0 }]
       : []),
     { href: "/admin/news", title: "อนุมัติข่าว", value: `${news.pending ?? 0} รออนุมัติ`, note: `อนุมัติแล้ว ${news.approved ?? 0} · ข่าวซ้ำ ${news.duplicate ?? 0} · อนุมัติอัตโนมัติ${autoApprove.enabled ? "เปิด" : "ปิด"}`, highlight: (news.pending ?? 0) > 0 },
+    {
+      href: "/admin/suggestions",
+      title: "ข้อเสนอแก้ไขจาก AI",
+      value: `${suggestions.pending ?? 0} รอตรวจ`,
+      note: `ใช้แล้ว ${(suggestions.accepted ?? 0) + (suggestions.partial ?? 0)} · ปฏิเสธ ${suggestions.rejected ?? 0}`,
+      highlight: (suggestions.pending ?? 0) > 0,
+    },
     { href: "/admin/tools", title: "เครื่องมือ", value: `${catalog.tools} รายการ`, note: "เพิ่ม แก้ไข เรียงลำดับ ติดธงแนะนำ" },
     { href: "/admin/guides", title: "คู่มือและ prompt", value: `${catalog.guides} หมวด`, note: `prompt ${catalog.prompts} ตัว` },
     { href: "/admin/sources", title: "แหล่งข่าว", value: `${catalog.enabledSources} แหล่งที่เปิดใช้`, note: "เพิ่ม ปิด ทดสอบ feed" },

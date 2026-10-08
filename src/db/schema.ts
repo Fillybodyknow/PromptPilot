@@ -228,3 +228,72 @@ export const appSettings = mysqlTable("app_settings", {
   updatedAt: datetime("updated_at", { mode: "date", fsp: 3 }).notNull(),
   updatedBy: varchar("updated_by", { length: 320 }),
 });
+
+// ---------------------------------------------------------------------------
+// ให้ AI ช่วยตรวจ/อัปเดตเครื่องมือและคู่มือ — AI เสนอเป็น "ข้อเสนอแก้ไข" แล้วคนอนุมัติ ไม่แก้ข้อมูลเอง
+// ---------------------------------------------------------------------------
+
+export const SUGGESTION_STATUSES = ["pending", "accepted", "partial", "rejected", "expired", "superseded"] as const;
+
+/** ข้อเสนอแก้ไขหนึ่งรายการ: changes = [{ field, before, after, evidenceUrl, quote, reason }] */
+export const contentSuggestions = mysqlTable(
+  "content_suggestions",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    targetType: mysqlEnum("target_type", ["tool", "guide"]).notNull(),
+    // tools.id (เป็นข้อความ) หรือ guides.category_key
+    targetKey: varchar("target_key", { length: 100 }).notNull(),
+    changes: json("changes").$type<SuggestedChange[]>().notNull(),
+    summary: text("summary"),
+    confidence: mysqlEnum("confidence", ["low", "medium", "high"]).notNull(),
+    // manual = ผู้ดูแลกดเอง, news = มีข่าวพูดถึง, stale = ข้อมูลเก่า, monthly = รอบคู่มือรายเดือน
+    trigger: mysqlEnum("trigger", ["manual", "news", "stale", "monthly"]).notNull(),
+    triggerRef: varchar("trigger_ref", { length: 320 }),
+    status: mysqlEnum("status", SUGGESTION_STATUSES).notNull().default("pending"),
+    createdAt: datetime("created_at", { mode: "date", fsp: 3 }).notNull(),
+    decidedBy: varchar("decided_by", { length: 320 }),
+    decidedAt: datetime("decided_at", { mode: "date", fsp: 3 }),
+    decisionNote: text("decision_note"),
+  },
+  (t) => [index("idx_suggestions_status").on(t.status, t.createdAt), index("idx_suggestions_target").on(t.targetType, t.targetKey)],
+);
+
+export interface SuggestedChange {
+  field: string;
+  before: unknown;
+  after: unknown;
+  /** หน้าที่ AI อ่านแล้วเจอหลักฐาน (null = ไม่ต้องมีหลักฐาน เช่นยืนยันว่าข้อมูลยังถูกต้อง) */
+  evidenceUrl: string | null;
+  /** ข้อความที่ยกมาตรงตัวจากหน้านั้น — ระบบตรวจแล้วว่ามีอยู่จริง */
+  quote: string | null;
+  reason: string;
+}
+
+/** หน้าทางการของผู้ให้บริการที่ใช้ตรวจเครื่องมือแต่ละตัว (หน้าผลิตภัณฑ์ หน้าราคา หน้าประกาศอัปเดต) */
+export const watchPages = mysqlTable(
+  "watch_pages",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    toolId: int("tool_id")
+      .notNull()
+      .references(() => tools.id, { onDelete: "cascade" }),
+    url: varchar("url", { length: 500 }).notNull(),
+    // sha256 ของเนื้อหาครั้งล่าสุด — ใช้ข้ามการเรียก AI เมื่อหน้าไม่เปลี่ยน (รอบตรวจอัตโนมัติ)
+    lastHash: char("last_hash", { length: 64 }),
+    lastCheckedAt: datetime("last_checked_at", { mode: "date", fsp: 3 }),
+    // ok / unchanged / ข้อความ error เช่น "HTTP 403"
+    lastStatus: varchar("last_status", { length: 200 }),
+  },
+  (t) => [uniqueIndex("uq_watch_pages_tool_url").on(t.toolId, t.url)],
+);
+
+export const checkRuns = mysqlTable("check_runs", {
+  id: int("id").autoincrement().primaryKey(),
+  triggeredBy: varchar("triggered_by", { length: 320 }).notNull(),
+  // เช่น "tool:12"
+  scope: varchar("scope", { length: 200 }).notNull(),
+  startedAt: datetime("started_at", { mode: "date", fsp: 3 }).notNull(),
+  finishedAt: datetime("finished_at", { mode: "date", fsp: 3 }),
+  status: mysqlEnum("status", ["running", "ok", "failed"]).notNull(),
+  message: text("message"),
+});

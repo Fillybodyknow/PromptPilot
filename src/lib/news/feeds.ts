@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import Parser from "rss-parser";
+import { fetchText } from "../http";
 
 const FETCH_TIMEOUT_MS = 15_000;
 const MAX_FEED_BYTES = 5 * 1024 * 1024;
-const MAX_REDIRECTS = 5;
 
 export interface Candidate {
   id: string;
@@ -28,43 +28,8 @@ const idOf = (url: string) => createHash("sha1").update(url).digest("hex").slice
 
 const parser = new Parser();
 
-function assertHttp(url: string): URL {
-  const u = new URL(url);
-  if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error(`ไม่รองรับ ${u.protocol} (ใช้ได้เฉพาะ http/https)`);
-  return u;
-}
-
-/** ตาม redirect เอง เพื่อตรวจ scheme ทุกครั้ง และอ่าน body ไม่เกิน MAX_FEED_BYTES */
 async function fetchFeedText(url: string, signal: AbortSignal): Promise<string> {
-  let current = assertHttp(url);
-  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const res = await fetch(current, { headers: { "User-Agent": "PromptPilot-NewsBot/1.0" }, signal, redirect: "manual" });
-    if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
-      await res.body?.cancel();
-      current = assertHttp(new URL(res.headers.get("location")!, current).toString());
-      continue;
-    }
-    if (!res.ok) {
-      await res.body?.cancel();
-      throw new Error(`HTTP ${res.status}`);
-    }
-    if (!res.body) return "";
-    const reader = res.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let size = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > MAX_FEED_BYTES) {
-        await reader.cancel();
-        throw new Error("feed ใหญ่เกิน 5 MB");
-      }
-      chunks.push(value);
-    }
-    return new TextDecoder().decode(Buffer.concat(chunks));
-  }
-  throw new Error("redirect หลายต่อเกินไป");
+  return (await fetchText(url, { signal, maxBytes: MAX_FEED_BYTES, userAgent: "PromptPilot-NewsBot/1.0" })).text;
 }
 
 // ใช้ fetch เองแทน parser.parseURL: ตัวนั้นไม่ abort request ที่ timeout และไม่อ่าน body ตอน redirect
