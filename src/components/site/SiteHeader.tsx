@@ -12,7 +12,8 @@ export function SiteHeader() {
     <header className="header-scroll sticky top-0 z-40 isolate border-b border-line">
       {/* blur อยู่บนชั้นพื้นหลังแยก ไม่ใส่ที่ header ตรงๆ เพราะ backdrop-filter ทำให้เมนูมือถือ (position: fixed) ถูกขังอยู่ในกรอบ header */}
       <div aria-hidden className="absolute inset-0 -z-10 bg-surface/85 backdrop-blur-lg" />
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:px-6 md:gap-6">
+      {/* เต็มความกว้างจอ (ไม่จำกัด max-w เหมือนเนื้อหา) เหลือแค่ระยะขอบเล็กน้อยไม่ให้ชิดขอบจอ */}
+      <div className="flex w-full items-center gap-3 px-4 py-2 sm:px-6 md:gap-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <PartnersSection />
           <span aria-hidden className="h-7 w-px shrink-0 bg-line" />
