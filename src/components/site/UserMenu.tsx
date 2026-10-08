@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { logout } from "@/app/login/actions";
+import { logout } from "@/app/(auth)/login/actions";
 
 export interface HeaderUser {
   name: string;

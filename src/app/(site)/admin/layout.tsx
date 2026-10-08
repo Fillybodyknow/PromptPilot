@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getSessionUser } from "@/lib/auth/session";
 import { countPending, ROLE_LABEL } from "@/lib/auth/users";
-import { logout } from "../login/actions";
+import { logout } from "@/app/(auth)/login/actions";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 

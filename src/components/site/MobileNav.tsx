@@ -5,7 +5,7 @@ import { withBasePath } from "@/lib/basePath";
 import { CloseIcon, MenuIcon, SearchIcon } from "./icons";
 import { MainNav } from "./MainNav";
 import Link from "next/link";
-import { logout } from "@/app/login/actions";
+import { logout } from "@/app/(auth)/login/actions";
 import { Avatar, type HeaderUser } from "./UserMenu";
 
 export function MobileNav({ user }: { user: HeaderUser | null }) {

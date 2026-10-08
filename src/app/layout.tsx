@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
 import Script from "next/script";
-import { ViewTransition } from "react";
 import "./globals.css";
-import { SiteHeader } from "@/components/site/SiteHeader";
-import { SiteFooter } from "@/components/site/SiteFooter";
-import { PointerTilt } from "@/components/site/PointerTilt";
 import { withBasePath } from "@/lib/basePath";
 
 const notoSansThai = Noto_Sans_Thai({
@@ -47,20 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: `try{var t=localStorage.getItem('theme');if(t==='light'||(t!=='dark'&&window.matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.classList.add('light')}}catch(e){}`,
           }}
         />
-        <SiteHeader />
-        {/* เปลี่ยนหน้าแบบจางออก-เลื่อนขึ้น (ดู .page ใน globals.css) — header/footer อยู่นอกจึงนิ่ง */}
-        <ViewTransition default="page">
-          <div className="flex-1">{children}</div>
-        </ViewTransition>
-        <SiteFooter />
-        <a
-          href="#top"
-          aria-label="กลับขึ้นด้านบน"
-          className="to-top fixed bottom-5 right-5 z-30 h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-xl text-white shadow-lg shadow-fuchsia-500/30 transition hover:brightness-110"
-        >
-          ↑
-        </a>
-        <PointerTilt />
+        {children}
       </body>
     </html>
   );
