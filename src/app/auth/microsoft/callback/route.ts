@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
   }
 
   const user = await upsertMicrosoftUser(identity);
+  if (user.status === "full") redirect(withBasePath("/login?status=full"));
   if (user.status === "pending") redirect(withBasePath("/login?status=pending"));
   if (user.status !== "active") redirect(withBasePath("/login?status=denied"));
 

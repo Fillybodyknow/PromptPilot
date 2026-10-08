@@ -6,6 +6,9 @@ import { BASE_PATH } from "../basePath";
  * APP_URL — ที่อยู่เว็บที่ผู้ใช้เปิดจริง เช่น https://promptpilot.company.local (ใช้สร้าง redirect URI ให้ตรงกับที่ลงทะเบียน
  *           เพราะหลัง IIS/Apache ตัวแอปเห็นแค่ http://127.0.0.1)
  * ADMIN_EMAILS — อีเมลผู้ดูแลระบบที่เข้าได้ทันทีโดยไม่ต้องรออนุมัติ คั่นด้วย ,
+ * MS_ALLOW_EXTERNAL — true = บัญชี Microsoft ใดก็ได้ (องค์กรอื่น/บัญชีส่วนตัว) login มาขอเข้าใช้ได้ แต่ต้องรอผู้ดูแลระบบอนุมัติ
+ *                     ต้องเปลี่ยน App registration เป็น "Accounts in any organizational directory and personal Microsoft accounts" ด้วย
+ *                     และ MS_TENANT_ID ต้องเป็น GUID (ใช้แยกพนักงานออกจากบัญชีภายนอก)
  * MS_AUTHORITY — ไม่ต้องตั้ง (ค่าเริ่มต้น https://login.microsoftonline.com) ใช้กับ cloud พิเศษหรือตอนทดสอบ
  */
 export function msSettings() {
@@ -14,6 +17,7 @@ export function msSettings() {
     clientId: process.env.MS_CLIENT_ID?.trim() ?? "",
     clientSecret: process.env.MS_CLIENT_SECRET?.trim() ?? "",
     authority: (process.env.MS_AUTHORITY?.trim() || "https://login.microsoftonline.com").replace(/\/+$/, ""),
+    allowExternal: process.env.MS_ALLOW_EXTERNAL?.trim().toLowerCase() === "true",
   };
 }
 

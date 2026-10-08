@@ -8,7 +8,8 @@ import { isStaff } from "./auth/users";
 // ยกเว้นการจัดการผู้ใช้ ซึ่งต้องเป็น admin (ผู้ดูแลระบบ)
 
 /** ชื่อที่บันทึกเป็นผู้แก้ไข (คอลัมน์ updated_by/reviewed_by ยาว 100) */
-const auditName = (u: SessionUser) => u.email.slice(0, 90);
+// บัญชีที่ไม่ใช่พนักงานต่อท้ายว่า "(ภายนอก)" — อีเมลของบัญชีภายนอกเจ้าของตั้งเองได้ จึงไม่ควรดูเหมือนอีเมลพนักงานในบันทึก
+const auditName = (u: SessionUser) => (u.accountType === "member" ? u.email : `${u.email} (ภายนอก)`).slice(0, 90);
 
 /** ใช้ใน server action ของงานเนื้อหา — โยน error ถ้าไม่ได้ login หรือเป็นแค่ผู้อ่าน คืนชื่อที่ใช้บันทึกเป็นผู้แก้ไข */
 export async function requireAdmin(): Promise<string> {

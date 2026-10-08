@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { PageBanner } from "@/components/site/PageBanner";
 import { card } from "@/components/site/ui";
 import { withBasePath } from "@/lib/basePath";
-import { msConfigured } from "@/lib/auth/config";
+import { msConfigured, msSettings } from "@/lib/auth/config";
 import { safeNext } from "@/lib/auth/safeNext";
 import { getSessionUser } from "@/lib/auth/session";
 import { one, type SearchParams } from "@/lib/params";
@@ -15,8 +15,9 @@ const NOTICES: Record<string, { tone: "info" | "error"; title: string; body: str
   "status:pending": {
     tone: "info",
     title: "ส่งคำขอเข้าใช้งานแล้ว",
-    body: "บัญชีนี้เป็นบัญชี guest จากองค์กรอื่น ต้องรอผู้ดูแลระบบอนุมัติก่อน เมื่ออนุมัติแล้วกลับมากด “เข้าสู่ระบบด้วย Microsoft” อีกครั้ง",
+    body: "บัญชีนี้ไม่ใช่บัญชีพนักงานของบริษัท ต้องรอผู้ดูแลระบบอนุมัติก่อน (อาจมีการติดต่อเพื่อยืนยันตัวตน) เมื่ออนุมัติแล้วกลับมากด “เข้าสู่ระบบด้วย Microsoft” อีกครั้ง",
   },
+  "status:full": { tone: "error", title: "ยังรับคำขอเข้าใช้งานเพิ่มไม่ได้", body: "มีคำขอรออนุมัติอยู่มาก ลองใหม่ภายหลัง หรือติดต่อผู้ดูแลระบบ" },
   "status:denied": { tone: "error", title: "บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน", body: "ถ้าคิดว่าควรได้สิทธิ์ ติดต่อผู้ดูแลระบบ" },
   "error:config": { tone: "error", title: "ยังไม่ได้ตั้งค่า Microsoft login", body: "ผู้ดูแล server ต้องใส่ MS_TENANT_ID, MS_CLIENT_ID และ MS_CLIENT_SECRET ตาม DEPLOY.md" },
   "error:unreachable": { tone: "error", title: "เชื่อมต่อ Microsoft ไม่ได้", body: "ลองใหม่อีกครั้ง ถ้ายังไม่ได้ให้แจ้ง IT (server ต้องออกไปที่ login.microsoftonline.com ได้)" },
@@ -69,7 +70,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             เข้าสู่ระบบด้วย Microsoft
           </a>
           <p className="text-center text-sm leading-relaxed text-muted">
-            ใช้บัญชี Microsoft 365 ของบริษัท พนักงานเข้าใช้ได้ทันที บัญชีจากภายนอกบริษัทเข้าไม่ได้
+            {msSettings().allowExternal
+              ? "พนักงานใช้บัญชี Microsoft 365 ของบริษัท เข้าใช้ได้ทันที บัญชีภายนอก (องค์กรอื่นหรือบัญชีส่วนตัว) ต้องรอผู้ดูแลระบบอนุมัติ"
+              : "ใช้บัญชี Microsoft 365 ของบริษัท พนักงานเข้าใช้ได้ทันที บัญชีจากภายนอกบริษัทเข้าไม่ได้"}
           </p>
         </div>
       </main>

@@ -178,17 +178,20 @@ export const fetchRuns = mysqlTable("fetch_runs", {
 
 export const USER_ROLES = ["admin", "editor", "viewer"] as const;
 export const USER_STATUSES = ["pending", "active", "rejected", "disabled"] as const;
+/** member = พนักงาน (tenant บริษัท), guest = ถูกเชิญเข้า tenant บริษัท, external = บัญชีองค์กรอื่น, personal = บัญชี Microsoft ส่วนตัว */
+export const ACCOUNT_TYPES = ["member", "guest", "external", "personal"] as const;
 
 export const users = mysqlTable(
   "users",
   {
     id: int("id").autoincrement().primaryKey(),
-    // object ID ของผู้ใช้ใน Entra ID — ไม่เปลี่ยนตลอดอายุบัญชี ใช้ระบุตัวตนแทนอีเมล (อีเมลเปลี่ยน/ถูกนำไปใช้ซ้ำได้)
-    msOid: varchar("ms_oid", { length: 64 }).notNull().unique("uq_users_ms_oid"),
+    // tenant + object ID ของผู้ใช้ใน Entra ID — ไม่เปลี่ยนตลอดอายุบัญชี ใช้ระบุตัวตนแทนอีเมล (อีเมลเปลี่ยน/ถูกนำไปใช้ซ้ำได้)
+    // oid ไม่รับประกันว่าไม่ซ้ำข้าม tenant จึงต้องใช้คู่กับ tid ("" = แถวจากก่อนรองรับหลาย tenant ซึ่งเป็น tenant บริษัททั้งหมด)
+    msTid: varchar("ms_tid", { length: 64 }).notNull().default(""),
+    msOid: varchar("ms_oid", { length: 64 }).notNull(),
+    accountType: mysqlEnum("account_type", ACCOUNT_TYPES).notNull().default("member"),
     email: varchar("email", { length: 320 }).notNull(),
     displayName: varchar("display_name", { length: 200 }),
-    // บัญชี guest (B2B) ที่ถูกเชิญจากองค์กรอื่น — แสดงป้ายในหน้าอนุมัติ ให้ผู้ดูแลรู้ว่าไม่ใช่พนักงาน
-    isGuest: boolean("is_guest").notNull().default(false),
     // admin = ผู้ดูแลระบบ (จัดการผู้ใช้ได้), editor = ผู้ดูแลเนื้อหา (ใช้หน้า admin), viewer = ผู้อ่าน (พนักงานทั่วไป)
     role: mysqlEnum("role", USER_ROLES).notNull().default("viewer"),
     status: mysqlEnum("status", USER_STATUSES).notNull().default("pending"),
@@ -198,7 +201,7 @@ export const users = mysqlTable(
     lastLoginAt: datetime("last_login_at", { mode: "date", fsp: 3 }),
     updatedAt: datetime("updated_at", { mode: "date", fsp: 3 }).notNull(),
   },
-  (t) => [index("idx_users_status").on(t.status)],
+  (t) => [uniqueIndex("uq_users_ms_identity").on(t.msTid, t.msOid), index("idx_users_status").on(t.status)],
 );
 
 export const sessions = mysqlTable(

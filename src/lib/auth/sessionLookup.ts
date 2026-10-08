@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { and, eq, gt } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { sessions, users } from "@/db/schema";
+import type { AccountType } from "./microsoft";
 import type { UserRole } from "./users";
 
 export const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -12,6 +13,7 @@ export interface SessionUser {
   email: string;
   displayName: string | null;
   role: UserRole;
+  accountType: AccountType;
 }
 
 /**
@@ -22,7 +24,7 @@ export interface SessionUser {
 export async function findSessionByToken(token: string): Promise<SessionUser | null> {
   const id = hashToken(token);
   const [row] = await getDb()
-    .select({ userId: users.id, email: users.email, displayName: users.displayName, role: users.role })
+    .select({ userId: users.id, email: users.email, displayName: users.displayName, role: users.role, accountType: users.accountType })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
     .where(and(eq(sessions.id, id), gt(sessions.expiresAt, new Date()), eq(users.status, "active")));

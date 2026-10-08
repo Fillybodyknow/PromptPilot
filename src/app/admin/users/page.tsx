@@ -3,8 +3,8 @@ import { ActionForm } from "@/components/admin/ActionForm";
 import { IdButton } from "@/components/admin/fields";
 import { card } from "@/components/site/ui";
 import { requireSystemAdminPage } from "@/lib/adminSession";
-import { listUsers, ROLE_LABEL, STATUS_LABEL, type UserRole, type UserRow } from "@/lib/auth/users";
-import { approveUser, disableUser, enableUser, rejectUser, removeUser, setRole } from "./actions";
+import { ACCOUNT_LABEL, listUsers, MAX_PENDING, ROLE_LABEL, STATUS_LABEL, type UserRole, type UserRow } from "@/lib/auth/users";
+import { approveUser, disableUser, enableUser, rejectTenant, rejectUser, removeUser, setRole } from "./actions";
 
 export const metadata: Metadata = { title: "ผู้ใช้" };
 
@@ -36,7 +36,10 @@ function RoleSelect({ defaultValue = "viewer" }: { defaultValue?: UserRole }) {
   );
 }
 
-function Who({ u, isMe }: { u: UserRow; isMe: boolean }) {
+/** ตัวย่อ tenant สำหรับแสดง (เต็มอยู่ใน title) — ให้ผู้อนุมัติเห็นว่าคำขอมาจากองค์กรเดียวกันไหม */
+const shortTid = (tid: string) => (tid ? `${tid.slice(0, 8)}…` : "-");
+
+function Who({ u, isMe, lookalike = false }: { u: UserRow; isMe: boolean; lookalike?: boolean }) {
   return (
     <div className="min-w-0 flex-1">
       <div className="flex flex-wrap items-center gap-2">
@@ -44,9 +47,19 @@ function Who({ u, isMe }: { u: UserRow; isMe: boolean }) {
         {isMe && <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand">คุณ</span>}
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[u.status]}`}>{STATUS_LABEL[u.status]}</span>
         {u.status === "active" && <span className="rounded-full bg-chip px-2.5 py-0.5 text-xs">{ROLE_LABEL[u.role]}</span>}
-        {u.isGuest && (
-          <span className="rounded-full bg-urgent-bg px-2.5 py-0.5 text-xs font-semibold text-urgent" title="บัญชีที่ถูกเชิญจากองค์กรอื่น ไม่ใช่บัญชีพนักงาน">
-            guest จากองค์กรอื่น
+        {u.accountType !== "member" && (
+          <span className="rounded-full bg-urgent-bg px-2.5 py-0.5 text-xs font-semibold text-urgent" title="ไม่ใช่บัญชีพนักงาน — ชื่อและอีเมลเจ้าของบัญชีตั้งเองได้">
+            {ACCOUNT_LABEL[u.accountType]}
+          </span>
+        )}
+        {u.accountType === "external" && (
+          <span className="rounded-full bg-chip px-2.5 py-0.5 font-mono text-xs text-muted" title={`tenant ${u.msTid}`}>
+            tenant {shortTid(u.msTid)}
+          </span>
+        )}
+        {lookalike && (
+          <span className="rounded-full bg-urgent px-2.5 py-0.5 text-xs font-bold text-background" title="มีผู้ใช้อื่นที่ชื่อหรืออีเมลเหมือนกันแต่มาจากบัญชีคนละที่ — อาจเป็นการแอบอ้าง">
+            ⚠ ชื่อ/อีเมลซ้ำกับผู้ใช้อื่น
           </span>
         )}
       </div>
@@ -85,12 +98,23 @@ export default async function AdminUsersPage() {
   const staff = all.filter((u) => u.status === "active" && u.role !== "viewer");
   const readers = all.filter((u) => u.status === "active" && u.role === "viewer");
   const inactive = all.filter((u) => u.status === "rejected" || u.status === "disabled");
+  // คำขอที่ชื่อหรืออีเมลเหมือนผู้ใช้คนอื่นซึ่งมาจากบัญชีคนละที่ (tenant/oid ต่างกัน) — สัญญาณของการแอบอ้าง
+  const norm = (s: string | null) => (s ?? "").trim().toLowerCase();
+  const lookalike = (u: UserRow) =>
+    all.some(
+      (o) =>
+        o.id !== u.id &&
+        o.msTid !== u.msTid &&
+        ((norm(o.email) !== "" && norm(o.email) === norm(u.email)) || (norm(o.displayName) !== "" && norm(o.displayName) === norm(u.displayName))),
+    );
+  const pendingPerTenant = new Map<string, number>();
+  for (const u of pending) pendingPerTenant.set(u.msTid, (pendingPerTenant.get(u.msTid) ?? 0) + 1);
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-16 pt-8 sm:px-6">
       <h1 className="text-2xl font-bold">ผู้ใช้</h1>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        ทั้งเว็บต้อง login ด้วย Microsoft 365 ของบริษัท พนักงานที่ login ครั้งแรกเป็น <strong>{ROLE_LABEL.viewer}</strong> ทันที บัญชี guest จากองค์กรอื่นต้องรออนุมัติ ·{" "}
+        ทั้งเว็บต้อง login ด้วย Microsoft พนักงานที่ login ครั้งแรกเป็น <strong>{ROLE_LABEL.viewer}</strong> ทันที บัญชีอื่น (guest, องค์กรอื่น, บัญชีส่วนตัว) ต้องรออนุมัติ ·{" "}
         {ROLE_LABEL.editor}: {ROLE_HINT.editor} · {ROLE_LABEL.admin}: {ROLE_HINT.admin}
       </p>
 
@@ -98,19 +122,33 @@ export default async function AdminUsersPage() {
         <h2 id="pending" className="text-lg font-bold">
           คำขอรออนุมัติ ({pending.length})
         </h2>
+        {pending.length > 0 && (
+          <p className="mt-2 rounded-xl bg-warn-bg px-4 py-3 text-sm leading-relaxed text-warn">
+            คำขอเหล่านี้มาจากบัญชีที่ไม่ใช่พนักงาน <strong>ชื่อและอีเมลเจ้าของบัญชีตั้งเองได้</strong> — ยืนยันตัวตนกับเจ้าของจริงนอกระบบ (เช่นโทรหรือถามผู้ประสานงาน) ก่อนกดอนุมัติ ·
+            คำขอที่ค้างเกิน 30 วันถูกลบเอง · รับคำขอค้างได้สูงสุด {MAX_PENDING} รายการ
+          </p>
+        )}
         {pending.length === 0 ? (
           <p className="mt-2 text-sm text-muted">ไม่มีคำขอใหม่</p>
         ) : (
           <div className="mt-3 flex flex-col gap-3">
             {pending.map((u) => (
               <div key={u.id} className={`${card} border-warn p-4`}>
-                <Who u={u} isMe={false} />
+                <Who u={u} isMe={false} lookalike={lookalike(u)} />
                 <div className="mt-3 flex flex-wrap items-start gap-3">
                   <ActionForm action={approveUser} submitLabel="อนุมัติ" pendingLabel="กำลังอนุมัติ…" className="flex flex-wrap items-start gap-3 [&>div]:mt-0">
                     <input type="hidden" name="id" value={u.id} />
                     <RoleSelect />
                   </ActionForm>
                   <IdButton action={rejectUser} id={u.id} label="ปฏิเสธ" className="h-11 border-urgent px-4 text-urgent" />
+                  {u.accountType !== "guest" && (pendingPerTenant.get(u.msTid) ?? 0) > 1 && (
+                    <form action={rejectTenant}>
+                      <input type="hidden" name="tid" value={u.msTid} />
+                      <button type="submit" className="flex h-11 items-center rounded-lg border border-urgent px-4 text-sm text-urgent hover:bg-urgent-bg">
+                        ปฏิเสธทั้งหมดจาก{u.accountType === "personal" ? "บัญชีส่วนตัว" : "องค์กรนี้"} ({pendingPerTenant.get(u.msTid)})
+                      </button>
+                    </form>
+                  )}
                 </div>
               </div>
             ))}

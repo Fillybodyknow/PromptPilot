@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { FormState } from "@/components/admin/ActionForm";
 import { requireSystemAdmin } from "@/lib/adminSession";
-import { changeUser, getUser, ROLE_LABEL, type UserRole } from "@/lib/auth/users";
+import { msSettings } from "@/lib/auth/config";
+import { changeUser, getUser, rejectPendingFromTenant, ROLE_LABEL, type UserRole } from "@/lib/auth/users";
 
 // ทุก action ในไฟล์นี้เฉพาะผู้ดูแลระบบ และห้ามเปลี่ยนสิทธิ์/สถานะของตัวเอง (กันเผลอตัดสิทธิ์ตัวเองออก)
 
@@ -64,5 +65,14 @@ export async function enableUser(fd: FormData): Promise<void> {
 export async function removeUser(fd: FormData): Promise<void> {
   const { me, user } = await target(fd);
   if (user) await changeUser(user.id, "delete", me.email);
+  done();
+}
+
+/** ปฏิเสธคำขอที่รออยู่ทั้งหมดจากองค์กรภายนอกเดียวกัน — ใช้เมื่อถูกส่งคำขอขยะจำนวนมาก (ไม่ใช้กับ tenant บริษัท) */
+export async function rejectTenant(fd: FormData): Promise<void> {
+  const me = await requireSystemAdmin();
+  const tid = z.string().regex(/^[0-9a-f-]{36}$/i).parse(fd.get("tid")).toLowerCase();
+  if (tid === msSettings().tenantId.toLowerCase()) return;
+  await rejectPendingFromTenant(tid, me.email);
   done();
 }
