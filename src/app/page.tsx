@@ -218,7 +218,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 key={`${t.categoryKey}/${t.id}`}
                 href={`/tools/${t.categoryKey}/${t.id}`}
                 style={{ "--dir": i % 2 ? 1 : -1 } as CSSProperties}
-                className={`${card} spotlight tilt reveal-side flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
+                className={`${card} tilt reveal-side flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
               >
                 <span className="flex items-center gap-3">
                   <VendorLogo vendor={t.vendor} size={40} />
@@ -243,7 +243,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               key={r.role}
               href={r.href}
               style={{ "--i": i } as CSSProperties}
-              className={`${card} spotlight reveal-pop relative flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
+              className={`${card} reveal-pop relative flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
             >
               <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
               <span className="text-[13px] font-semibold text-brand">{r.role}</span>

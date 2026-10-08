@@ -82,7 +82,7 @@ export default async function NewsDetailPage({ params }: Props) {
             </h2>
             <div className="mt-3.5 flex flex-wrap gap-3.5">
               {roles.map((r) => (
-                <div key={r} className={`${card} spotlight min-w-0 flex-[1_1_220px] p-[18px]`}>
+                <div key={r} className={`${card} min-w-0 flex-[1_1_220px] p-[18px]`}>
                   <h3 className="text-sm font-bold text-brand">{ROLE_LABEL[r]}</h3>
                   <p className="mt-2 text-[15px] leading-relaxed">{item[r]}</p>
                 </div>

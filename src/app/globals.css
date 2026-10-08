@@ -184,23 +184,6 @@ body {
   }
 }
 
-/* แสงตามเมาส์บนการ์ด (ตำแหน่งมาจาก Spotlight.tsx) */
-.spotlight {
-  position: relative;
-}
-.spotlight::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--brand) 16%, transparent), transparent 65%);
-}
-.spotlight:hover::before {
-  opacity: 1;
-}
 
 /* ---------- ลูกเล่นชุดที่ 2 ---------- */
 
@@ -339,7 +322,7 @@ body {
   .fade-in {
     animation: fade-in 0.2s ease-out;
   }
-  /* การ์ดเอียงตามเมาส์ (มุมมาจาก Spotlight.tsx) */
+  /* การ์ดเอียงตามเมาส์ (มุมมาจาก PointerTilt.tsx) */
   .tilt {
     transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
     transition: transform 0.25s ease-out;

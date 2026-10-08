@@ -5,7 +5,7 @@ import { ViewTransition } from "react";
 import "./globals.css";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
-import { Spotlight } from "@/components/site/Spotlight";
+import { PointerTilt } from "@/components/site/PointerTilt";
 import { withBasePath } from "@/lib/basePath";
 
 const notoSansThai = Noto_Sans_Thai({
@@ -58,7 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           ↑
         </a>
-        <Spotlight />
+        <PointerTilt />
       </body>
     </html>
   );

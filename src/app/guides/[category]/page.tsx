@@ -125,7 +125,7 @@ export default async function GuidePage({ params, searchParams }: Props) {
                   ))}
                 <div className="flex flex-wrap gap-3.5">
                   {(["prompts", "tools", "news"] as const).map((t) => (
-                    <Link key={t} href={`/guides/${key}?tab=${t}`} scroll={false} className={`${card} spotlight flex-[1_1_200px] p-[18px] hover:border-ink`}>
+                    <Link key={t} href={`/guides/${key}?tab=${t}`} scroll={false} className={`${card} flex-[1_1_200px] p-[18px] hover:border-ink`}>
                       <span className="block text-sm text-muted">ไปที่</span>
                       <span className="block font-semibold">{tabLabel[t]}</span>
                     </Link>
@@ -144,7 +144,7 @@ export default async function GuidePage({ params, searchParams }: Props) {
               </p>
               {prompts.length === 0 && <EmptyState>ยังไม่มี prompt ตัวอย่างในหมวดนี้</EmptyState>}
               {prompts.map((p) => (
-                <article key={p.task} className={`${card} spotlight reveal flex flex-col gap-3.5 p-6 transition-shadow hover:shadow-lg hover:shadow-indigo-500/10`}>
+                <article key={p.task} className={`${card} reveal flex flex-col gap-3.5 p-6 transition-shadow hover:shadow-lg hover:shadow-indigo-500/10`}>
                   <div className="flex flex-wrap items-center justify-between gap-2.5">
                     <h2 className="text-lg font-bold">{p.task}</h2>
                     {p.tested ? (

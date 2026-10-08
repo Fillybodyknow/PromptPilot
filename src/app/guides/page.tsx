@@ -45,7 +45,7 @@ export default async function GuidesPage() {
                 </div>
                 <div className="flex min-w-0 flex-[2_1_360px] flex-col divide-y divide-line">
                   {g.categories.map((c) => (
-                    <Link key={c.key} href={`/guides/${c.key}`} className="spotlight group flex flex-1 items-center gap-4 p-5 hover:bg-chip">
+                    <Link key={c.key} href={`/guides/${c.key}`} className="group flex flex-1 items-center gap-4 p-5 hover:bg-chip">
                       <span className="min-w-0 flex-1">
                         <span className="block text-[17px] font-bold group-hover:text-brand">{c.titleTh}</span>
                         <span className="mt-1 block text-sm leading-relaxed text-muted">{c.descriptionTh}</span>
