@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getSessionUser } from "@/lib/auth/session";
-import { countPending, ROLE_LABEL } from "@/lib/auth/users";
+import { countPending } from "@/lib/auth/users";
 import { countSuggestionsByStatus } from "@/lib/content/repo";
-import { logout } from "@/app/(auth)/login/actions";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
@@ -17,7 +16,7 @@ const LINKS = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  // แค่แสดงชื่อผู้ใช้ — การกันสิทธิ์จริงอยู่ที่ requireAdminPage ในแต่ละหน้า (layout ไม่ render ใหม่ทุกครั้งที่เปลี่ยนหน้า)
+  // ใช้เลือกเมนูที่แสดง (ชื่อผู้ใช้/ออกจากระบบอยู่ในเมนูผู้ใช้บน top bar แล้ว) — การกันสิทธิ์จริงอยู่ที่ requireAdminPage ในแต่ละหน้า (layout ไม่ render ใหม่ทุกครั้งที่เปลี่ยนหน้า)
   const user = await getSessionUser();
   const pending = user?.role === "admin" ? await countPending() : 0;
   const suggestions = user && user.role !== "viewer" ? ((await countSuggestionsByStatus()).pending ?? 0) : 0;
@@ -49,16 +48,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 </span>
               )}
             </Link>
-          )}
-          {user && (
-            <form action={logout} className="ml-auto flex items-center gap-2 text-sm">
-              <span className="text-muted">
-                {user.displayName ?? user.email} · {ROLE_LABEL[user.role]}
-              </span>
-              <button type="submit" className="flex min-h-10 items-center rounded-lg border border-line bg-surface px-3 hover:border-ink">
-                ออกจากระบบ
-              </button>
-            </form>
           )}
         </div>
       </nav>
