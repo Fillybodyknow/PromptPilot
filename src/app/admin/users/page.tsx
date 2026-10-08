@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "ผู้ใช้" };
 const when = (d: Date | null) =>
   d ? d.toLocaleString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "ยังไม่เคย";
 
-const pwHint = `อย่างน้อย ${PASSWORD_MIN} ตัวอักษร และไม่มีชื่อผู้ใช้อยู่ในนั้น`;
+const pwHint = `อย่างน้อย ${PASSWORD_MIN} ตัวอักษร`;
 
 export default async function AdminUsersPage() {
   const me = await requireAdminPage();

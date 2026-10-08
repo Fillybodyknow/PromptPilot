@@ -8,7 +8,7 @@ const KEYLEN = 64;
 // N=2^15, r=8 ใช้หน่วยความจำ ~32 MB เกินค่าเริ่มต้นของ Node (32 MB พอดี) จึงต้องเผื่อ
 const MAXMEM = 64 * 1024 * 1024;
 
-export const PASSWORD_MIN = 10;
+export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 200;
 
 function scrypt(password: string, salt: Buffer, keylen: number, opts: ScryptOptions): Promise<Buffer> {
@@ -46,7 +46,8 @@ export function getDummyHash(): Promise<string> {
 export function checkPasswordPolicy(password: string, username?: string): string | null {
   if (password.length < PASSWORD_MIN) return `รหัสผ่านต้องยาวอย่างน้อย ${PASSWORD_MIN} ตัวอักษร`;
   if (password.length > PASSWORD_MAX) return `รหัสผ่านยาวเกิน ${PASSWORD_MAX} ตัวอักษร`;
-  if (username && password.toLowerCase().includes(username.toLowerCase())) return "รหัสผ่านต้องไม่มีชื่อผู้ใช้อยู่ในนั้น";
-  if (/^(.)\1+$/.test(password) || /^(0123456789|1234567890|abcdefghij|qwertyuiop)/i.test(password)) return "รหัสผ่านเดาง่ายเกินไป";
+  if (username && password.toLowerCase() === username.toLowerCase()) return "รหัสผ่านต้องไม่เหมือนชื่อผู้ใช้";
+  // กันเฉพาะแบบที่ถูกเดาได้ทันที เช่น 11111111, 12345678, abcdefgh, qwertyui, password
+  if (/^(.)\1+$/.test(password) || /^(0?12345678|abcdefgh|qwertyui|password)/i.test(password)) return "รหัสผ่านเดาง่ายเกินไป";
   return null;
 }

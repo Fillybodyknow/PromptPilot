@@ -105,7 +105,7 @@ try {
     if ($LASTEXITCODE -ne 0 -or "$userCount".Trim() -notmatch '^\d+$') { Stop-WithError "Could not read the users table (exit code $LASTEXITCODE)." }
     if ("$userCount".Trim() -eq "0") {
         Write-Step "Creating the first admin account"
-        Write-Host "    Username: a-z 0-9 . _ -  (3-64 chars). Password: at least 10 characters, must not contain the username."
+        Write-Host "    Username: a-z 0-9 . _ -  (3-64 chars). Password: at least 8 characters."
         while ($true) {
             $newUser = (Read-Host "    Admin username").Trim().ToLower()
             $pw1 = Read-Host "    Password" -AsSecureString
