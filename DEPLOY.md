@@ -119,6 +119,7 @@ EXIT;
 3. หน้า **Overview** ของแอป: จด **Directory (tenant) ID** และ **Application (client) ID**
 4. **Certificates & secrets > Client secrets > New client secret**: ตั้งอายุ (สูงสุด 24 เดือน) แล้วจด **Value** ทันที (แสดงครั้งเดียว — ไม่ใช่ Secret ID)
 5. **API permissions:** ใช้ค่าเริ่มต้น `Microsoft Graph > User.Read` ได้เลย (ระบบขอแค่ `openid`, `profile`, `email`) ไม่ต้องขอสิทธิ์อื่น
+   - จากนั้นกด **Grant admin consent for (ชื่อบริษัท)** แล้วกด Yes ให้ช่อง Status ขึ้น "Granted for …" สีเขียว — ถ้าบริษัทไม่อนุญาตให้พนักงานยินยอมแอปเอง (ค่าที่พบบ่อย) พนักงานจะติดหน้า "ต้องการการอนุมัติของผู้ดูแลระบบ" ตอน login จนกว่าจะกดปุ่มนี้ กดครั้งเดียวมีผลกับทุกคน ไม่ต้องอนุมัติรายคน
 6. (ไม่บังคับ) **Enterprise applications > PromptPilot > Properties > Assignment required = Yes** แล้วเพิ่มเฉพาะคนหรือกลุ่มที่อนุญาต — คนอื่นจะส่งคำขอเข้าใช้งานไม่ได้ตั้งแต่แรก
 
 > **ลงปฏิทินต่ออายุ Client secret** ก่อนวันหมดอายุ ถ้าหมดอายุ จะไม่มีใครเข้าหน้า admin ได้ (หน้าเว็บสาธารณะไม่กระทบ) วิธีต่อ: สร้าง secret ใหม่ในข้อ 4 → แก้ `MS_CLIENT_SECRET` ใน `.env.local` → `Restart-Service PromptPilot` → ลบ secret เก่า
@@ -364,6 +365,7 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\update.ps1
 | เข้า `/admin` แล้วขึ้นหน้า login ของ Windows หรือหน้า error ของ IIS | เปิด Windows Authentication ไว้ที่ Site | เปิด Anonymous Authentication อย่างเดียว (ขั้นที่ 6A ข้อ 4) |
 | กด "เข้าสู่ระบบ" หรือกดบันทึกในหน้า admin แล้วไม่เกิดอะไร / log มี `Invalid Server Actions request` | proxy ไม่ได้ส่ง Host header เดิม | IIS: `preserveHostHeader` (ขั้นที่ 6A ข้อ 2) / Apache: `ProxyPreserveHost On` |
 | login ผ่านแต่ถูกส่งกลับหน้า login ทุกครั้ง | เปิดเว็บผ่าน HTTP ธรรมดา browser จึงไม่เก็บ cookie | เปิดผ่าน `https://` และตั้ง `APP_URL` เป็น `https://...` |
+| หน้า Microsoft ขึ้น "ต้องการการอนุมัติของผู้ดูแลระบบ" / "Need admin approval" (`AADSTS90094` / `AADSTS65001`) | บริษัทไม่ให้พนักงานยินยอมแอปเอง และยังไม่ได้กด admin consent | ผู้ดูแล Microsoft 365 กด **Grant admin consent** (ขั้นที่ 3.5 ข้อ 5) ครั้งเดียวสำหรับทั้งบริษัท |
 | หน้า Microsoft ขึ้น `AADSTS50011` (redirect URI mismatch) | Redirect URI ในขั้นที่ 3.5 ไม่ตรงกับ `APP_URL` | แก้ให้ตรงทุกตัวอักษร: `<APP_URL>/auth/microsoft/callback` |
 | หน้า Microsoft ขึ้น `AADSTS7000215` / `AADSTS7000222` | Client secret ผิดหรือหมดอายุ | สร้าง secret ใหม่ (ขั้นที่ 3.5 ข้อ 4) แก้ `MS_CLIENT_SECRET` แล้ว `Restart-Service PromptPilot` |
 | ขึ้น "ยังไม่ได้ตั้งค่า Microsoft login" | `.env.local` ไม่มี `MS_TENANT_ID` / `MS_CLIENT_ID` / `MS_CLIENT_SECRET` | กรอกแล้ว `Restart-Service PromptPilot` |
