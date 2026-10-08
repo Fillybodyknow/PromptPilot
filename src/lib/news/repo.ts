@@ -49,7 +49,8 @@ async function toolsFor(ids: string[]): Promise<Map<string, number[]>> {
 
 const affected = (res: [ResultSetHeader, unknown]) => res[0].affectedRows;
 
-export type NewItem = Omit<NewsItem, "reviewedBy" | "reviewedAt">;
+// reviewedBy/At ใส่ได้เมื่อข่าวถูกอนุมัติอัตโนมัติตั้งแต่ตอนบันทึก
+export type NewItem = Omit<NewsItem, "reviewedBy" | "reviewedAt"> & Partial<Pick<NewsItem, "reviewedBy" | "reviewedAt">>;
 
 /** คืน id ที่มีอยู่แล้วใน DB (ใช้ตัดข่าวซ้ำก่อนส่งให้ AI) */
 export async function findExistingIds(ids: string[]): Promise<Set<string>> {
@@ -82,6 +83,8 @@ export async function insertItems(items: NewItem[]): Promise<number> {
           roleExec: it.roleExec,
           duplicateOf: it.duplicateOf,
           status: it.status,
+          reviewedBy: it.reviewedBy ?? null,
+          reviewedAt: it.reviewedAt ? new Date(it.reviewedAt) : null,
         })),
       );
     const cats = items.flatMap((it) => it.categories.map((categoryKey) => ({ newsId: it.id, categoryKey })));

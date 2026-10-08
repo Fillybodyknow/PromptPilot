@@ -57,6 +57,13 @@
       "when": 1791425644202,
       "tag": "0007_users_guest",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1791431189169,
+      "tag": "0008_app_settings",
+      "breakpoints": true
     }
   ]
 }

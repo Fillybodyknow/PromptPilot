@@ -2,12 +2,13 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
-import { requireAdmin } from "@/lib/adminSession";
+import { requireAdmin, requireSystemAdmin } from "@/lib/adminSession";
 import { loadToolIndex } from "@/lib/catalog/repo";
 import { NEWS_TAG } from "@/lib/news/public";
 import { isCategoryKey } from "@/lib/news/schema";
 import { confirmDuplicate, latestRun, separateDuplicate, setStatus, updateContent } from "@/lib/news/repo";
 import { startFetchProcess } from "@/lib/news/runFetch";
+import { setAutoApproveNews } from "@/lib/settings";
 
 const idSchema = z.string().regex(/^[0-9a-f]{16}$/);
 
@@ -105,4 +106,12 @@ export async function saveAndApprove(formData: FormData) {
   if (!(await updateContent(id, { ...edit, toolIds }))) throw new Error("ไม่พบข่าวนี้");
   await setStatus(id, "approved", user);
   done();
+}
+
+/** เปิด/ปิดอนุมัติข่าวอัตโนมัติ — เป็นนโยบายการเผยแพร่ จึงให้เฉพาะผู้ดูแลระบบเปลี่ยน มีผลกับรอบดึงข่าวถัดไป */
+export async function setAutoApprove(formData: FormData) {
+  const me = await requireSystemAdmin();
+  await setAutoApproveNews(formData.get("enabled") === "1", me.email);
+  revalidatePath("/admin/news");
+  revalidatePath("/admin");
 }

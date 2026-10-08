@@ -13,6 +13,8 @@ import { listEnabledSources, loadToolIndex, type ToolRef } from "../src/lib/cata
 import { fetchSource, type Candidate } from "../src/lib/news/feeds";
 import { enrichmentSchema, isCategoryKey, type Enrichment } from "../src/lib/news/schema";
 import { closeDb } from "../src/db/client";
+import { getAutoApproveNews } from "../src/lib/settings";
+import { applyAutoApprove } from "../src/lib/news/autoApprove";
 import { resolveDuplicates } from "../src/lib/news/dedupe";
 import {
   beginRun,
@@ -264,6 +266,8 @@ async function main(): Promise<{ ok: boolean; message: string }> {
   );
   const orNull = (s: string | undefined) => (s?.trim() ? s.trim() : null);
   const fetchedAt = new Date().toISOString();
+  // อ่านตอนบันทึก (ไม่ใช่ตอนเริ่มรอบ) ให้ผลตรงกับปุ่มในหน้า admin ล่าสุด
+  const autoApprove = (await getAutoApproveNews()).enabled;
   const rows: NewItem[] = toSave.map((c) => {
     const e = enriched?.get(c.id);
     const duplicateOf = canonical.get(c.id) ?? null;
@@ -284,11 +288,12 @@ async function main(): Promise<{ ok: boolean; message: string }> {
       status: e && !e.relevant ? "auto_rejected" : duplicateOf ? "duplicate" : "pending",
     };
   });
+  applyAutoApprove(rows, autoApprove, fetchedAt);
   const inserted = await insertItems(rows);
   console.log(`สถานะทั้งหมดใน DB:`, await countByStatus());
 
   const n = (s: NewItem["status"]) => rows.filter((r) => r.status === s).length;
-  let message = `ได้ข่าวใหม่ ${inserted} ชิ้น (รออนุมัติ ${n("pending")}, ข่าวซ้ำ ${n("duplicate")}, AI คัดออก ${n("auto_rejected")})`;
+  let message = `ได้ข่าวใหม่ ${inserted} ชิ้น (${autoApprove ? `อนุมัติอัตโนมัติ ${n("approved")}, ` : ""}รออนุมัติ ${n("pending")}, ข่าวซ้ำ ${n("duplicate")}, AI คัดออก ${n("auto_rejected")})`;
   if (!outcome) message += " · ไม่มี API key จึงยังไม่มีคำสรุป";
   if (skipped > 0) message += ` · ข้าม ${skipped} ชิ้นที่ AI สรุปไม่สำเร็จ (รอบหน้าจะลองใหม่): ${outcome?.lastError}`;
   if (outcome?.notes.length) message += ` · ${outcome.notes.join(" · ")}`;

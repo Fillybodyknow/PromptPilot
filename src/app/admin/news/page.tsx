@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireAdminPage } from "@/lib/adminSession";
+import { getAutoApproveNews, type AutoApproveSetting } from "@/lib/settings";
 import Link from "next/link";
 import { CATEGORIES, getCategory } from "@/lib/categories";
 import { getGroupAccent } from "@/lib/groupAccent";
@@ -14,6 +15,7 @@ import {
   rejectNews,
   saveAndApprove,
   separateFromStory,
+  setAutoApprove,
   triggerFetch,
 } from "./actions";
 
@@ -98,6 +100,51 @@ function FetchPanel({ run }: { run: FetchRun | null }) {
           {running ? "กำลังดึงข่าว…" : "ดึงข่าวล่าสุดตอนนี้"}
         </button>
       </form>
+    </section>
+  );
+}
+
+/** สวิตช์อนุมัติข่าวอัตโนมัติ — ผู้ดูแลเนื้อหาเห็นสถานะ แต่เปลี่ยนได้เฉพาะผู้ดูแลระบบ */
+function AutoApprovePanel({ setting, canChange }: { setting: AutoApproveSetting; canChange: boolean }) {
+  const on = setting.enabled;
+  return (
+    <section
+      className={`mt-4 flex flex-wrap items-start justify-between gap-4 rounded-2xl border p-5 ${
+        on ? "border-amber-400/40 bg-amber-500/[0.06]" : "border-white/10 bg-white/[0.03] light:border-black/10 light:bg-black/[0.02]"
+      }`}
+    >
+      <div className="min-w-0 flex-1 text-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-medium text-neutral-100 light:text-neutral-900">อนุมัติข่าวอัตโนมัติ</span>
+          <span className={`${pill} ${on ? "border-amber-400/40 text-amber-300 light:text-amber-700" : "border-white/15 text-neutral-400 light:border-black/15 light:text-neutral-600"}`}>
+            {on ? "เปิดอยู่" : "ปิดอยู่"}
+          </span>
+        </div>
+        <p className="mt-1 text-neutral-400 light:text-neutral-600">
+          {on
+            ? "ข่าวที่ AI คัดว่าเกี่ยวข้อง ไม่ซ้ำ และมีคำสรุปภาษาไทยครบ จะขึ้นหน้าเว็บทันทีที่ดึงมา (ภายใน 10 นาที) โดยไม่ต้องรอคนตรวจ — ตรวจย้อนหลังได้ในแท็บ “อนุมัติแล้ว” และกดปฏิเสธเพื่อเอาลงได้"
+            : "ทุกข่าวต้องมีคนตรวจและกดอนุมัติก่อนขึ้นหน้าเว็บ"}
+        </p>
+        <p className="mt-1 text-xs text-neutral-500">
+          มีผลกับรอบดึงข่าวถัดไป ข่าวที่รออนุมัติอยู่แล้วไม่เปลี่ยน
+          {setting.updatedAt && ` · เปลี่ยนล่าสุดโดย ${setting.updatedBy ?? "-"} เมื่อ ${formatDate(setting.updatedAt.toISOString())}`}
+          {!canChange && " · เปลี่ยนได้เฉพาะผู้ดูแลระบบ"}
+        </p>
+      </div>
+      {canChange && (
+        <form action={setAutoApprove}>
+          <input type="hidden" name="enabled" value={on ? "0" : "1"} />
+          <button
+            type="submit"
+            role="switch"
+            aria-checked={on}
+            aria-label="อนุมัติข่าวอัตโนมัติ"
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${on ? "bg-amber-500" : "bg-neutral-600 light:bg-neutral-300"}`}
+          >
+            <span className={`inline-block h-6 w-6 rounded-full bg-white shadow transition-transform ${on ? "translate-x-7" : "translate-x-1"}`} />
+          </button>
+        </form>
+      )}
     </section>
   );
 }
@@ -310,11 +357,11 @@ function NewsCard({ item, duplicates, canonical, tools }: { item: NewsItem; dupl
 
 export default async function AdminNewsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   // proxy.ts กันไว้แล้ว — ตรวจซ้ำที่นี่เผื่อ matcher ถูกแก้จนหลุด
-  await requireAdminPage();
+  const me = await requireAdminPage();
 
   const { status: raw } = await searchParams;
   const status: NewsStatus = NEWS_STATUSES.includes(raw as NewsStatus) ? (raw as NewsStatus) : "pending";
-  const [counts, items, run] = await Promise.all([countByStatus(), listByStatus(status), latestRun()]);
+  const [counts, items, run, autoApprove] = await Promise.all([countByStatus(), listByStatus(status), latestRun(), getAutoApproveNews()]);
   const [dups, canonicals, tools] = await Promise.all([
     duplicatesOf(items.map((i) => i.id)),
     getItemsByIds(items.flatMap((i) => (i.duplicateOf ? [i.duplicateOf] : []))),
@@ -329,6 +376,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
       </p>
 
       <FetchPanel run={run} />
+      <AutoApprovePanel setting={autoApprove} canChange={me.role === "admin"} />
 
       <nav className="mt-6 flex flex-wrap gap-2">
         {NEWS_STATUSES.map((s) => (

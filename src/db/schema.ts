@@ -214,3 +214,14 @@ export const sessions = mysqlTable(
   },
   (t) => [index("idx_sessions_user").on(t.userId), index("idx_sessions_expires").on(t.expiresAt)],
 );
+
+// ---------------------------------------------------------------------------
+// ค่าตั้งค่าระบบที่ปรับได้จากหน้า admin (ใช้ร่วมกันระหว่างเว็บและสคริปต์ดึงข่าว)
+// ---------------------------------------------------------------------------
+
+export const appSettings = mysqlTable("app_settings", {
+  key: varchar("key", { length: 64 }).primaryKey(),
+  value: varchar("value", { length: 1000 }).notNull(),
+  updatedAt: datetime("updated_at", { mode: "date", fsp: 3 }).notNull(),
+  updatedBy: varchar("updated_by", { length: 320 }),
+});
