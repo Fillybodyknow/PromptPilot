@@ -1,15 +1,15 @@
-import type { NextRequest } from "next/server";
-import { ADMIN_REALM, checkBasicAuth } from "@/lib/adminAuth";
+import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE } from "@/lib/auth/session-cookie";
 
 export const config = {
   matcher: ["/admin/:path*"],
 };
 
+/** ตรวจแบบเร็วว่ามี cookie หรือไม่ (ไม่แตะ DB ตามคำแนะนำของ Next) — ตรวจจริงใน requireAdminPage / requireAdmin */
 export function proxy(request: NextRequest) {
-  if (!checkBasicAuth(request.headers.get("authorization"))) {
-    return new Response("ต้องเข้าสู่ระบบก่อนใช้หน้า admin", {
-      status: 401,
-      headers: { "WWW-Authenticate": ADMIN_REALM, "Content-Type": "text/plain; charset=utf-8" },
-    });
-  }
+  if (request.cookies.has(SESSION_COOKIE)) return;
+  const url = request.nextUrl.clone();
+  url.pathname = "/login";
+  url.search = `?next=${encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search)}`;
+  return NextResponse.redirect(url);
 }

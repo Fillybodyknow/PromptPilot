@@ -171,3 +171,37 @@ export const fetchRuns = mysqlTable("fetch_runs", {
   status: mysqlEnum("status", ["running", "ok", "failed"]).notNull(),
   message: text("message"),
 });
+
+// ---------------------------------------------------------------------------
+// ผู้ใช้หน้า admin และ session ที่ login อยู่ — ทุกคนเป็นผู้ดูแลเท่ากัน (ยังไม่มีระดับสิทธิ์)
+// ---------------------------------------------------------------------------
+
+export const users = mysqlTable("users", {
+  id: int("id").autoincrement().primaryKey(),
+  username: varchar("username", { length: 64 }).notNull().unique("uq_users_username"),
+  displayName: varchar("display_name", { length: 100 }),
+  // scrypt$N$r$p$salt$hash (ดู src/lib/auth/password.ts) — ไม่เก็บรหัสผ่านจริง
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  // กันเดารหัส: นับครั้งที่ใส่ผิดติดกัน แล้วล็อกชั่วคราว
+  failedLogins: int("failed_logins").notNull().default(0),
+  lockedUntil: datetime("locked_until", { mode: "date", fsp: 3 }),
+  lastLoginAt: datetime("last_login_at", { mode: "date", fsp: 3 }),
+  createdAt: datetime("created_at", { mode: "date", fsp: 3 }).notNull(),
+  createdBy: varchar("created_by", { length: 64 }),
+  updatedAt: datetime("updated_at", { mode: "date", fsp: 3 }).notNull(),
+});
+
+export const sessions = mysqlTable(
+  "sessions",
+  {
+    // sha256 ของ token ใน cookie — ถ้าตารางนี้หลุด ก็เอาไปปลอมเป็น cookie ไม่ได้
+    id: char("id", { length: 64 }).primaryKey(),
+    userId: int("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: datetime("created_at", { mode: "date", fsp: 3 }).notNull(),
+    expiresAt: datetime("expires_at", { mode: "date", fsp: 3 }).notNull(),
+  },
+  (t) => [index("idx_sessions_user").on(t.userId), index("idx_sessions_expires").on(t.expiresAt)],
+);

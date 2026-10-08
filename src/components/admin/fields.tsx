@@ -21,6 +21,7 @@ export function TextField({
   required,
   wide,
   placeholder,
+  autoComplete,
 }: {
   name: string;
   label: string;
@@ -30,10 +31,11 @@ export function TextField({
   required?: boolean;
   wide?: boolean;
   placeholder?: string;
+  autoComplete?: string;
 }) {
   return (
     <Wrap label={required ? `${label} *` : label} hint={hint} wide={wide}>
-      <input name={name} type={type} defaultValue={defaultValue} required={required} placeholder={placeholder} step={type === "number" ? "any" : undefined} className={`${input} h-11`} />
+      <input name={name} type={type} defaultValue={defaultValue} required={required} placeholder={placeholder} autoComplete={autoComplete} step={type === "number" ? "any" : undefined} className={`${input} h-11`} />
     </Wrap>
   );
 }

@@ -46,7 +46,7 @@ Task Scheduler ──ทุกวัน 06:00──▶ ดึงข่าว AI 
 | สิทธิ์เข้าถึง repository `https://github.com/Fillybodyknow/PromptPilot` (ติดตั้งจาก branch `main`) | ดาวน์โหลดโค้ด |
 | ไฟล์ `promptpilot-....sql` (สำรองฐานข้อมูลจากเครื่องผู้พัฒนา) | ย้ายข้อมูลปัจจุบัน (ข่าวที่อนุมัติแล้ว, เครื่องมือที่แก้ไว้) ขึ้น server ถ้าไม่มี ระบบจะใส่ข้อมูลตั้งต้นให้แทน |
 | `ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` | ให้ AI สรุปข่าว ระบบใช้ Claude ก่อน ถ้าใช้ไม่ได้จะใช้ OpenAI แทน มีอย่างน้อย 1 ตัว |
-| ชื่อผู้ใช้/รหัสผ่านสำหรับหน้า admin | ตั้ง `ADMIN_USER` / `ADMIN_PASSWORD` |
+| ชื่อผู้ใช้ของผู้ดูแลคนแรก | สคริปต์ติดตั้งจะถามชื่อและรหัสผ่านเพื่อสร้างบัญชีแรก แล้วคนนั้นเพิ่มคนอื่นเองในหน้า `/admin/users` |
 
 > ส่ง API key และรหัสผ่านผ่านช่องทางที่ปลอดภัย (เช่น password manager ของบริษัท) ห้ามส่งทางแชตหรืออีเมลธรรมดา
 
@@ -117,7 +117,7 @@ notepad .env.local
 
 กรอกค่าในไฟล์ตามคำอธิบายในไฟล์ แล้วบันทึก
 
-> รหัสผ่านและชื่อผู้ใช้ **ห้ามมี** `$` `#` `"` `'` `` ` `` `\` และช่องว่าง และห้ามใส่เครื่องหมายคำพูดครอบค่า (สคริปต์ติดตั้งจะตรวจให้) ถ้ารหัสผ่าน MySQL ที่ตั้งในขั้นที่ 3 มีอักขระพวกนี้ ให้เปลี่ยนรหัสก่อน
+> รหัสผ่านฐานข้อมูล (`DB_PASS`) **ห้ามมี** `$` `#` `"` `'` `` ` `` `\` และช่องว่าง และห้ามใส่เครื่องหมายคำพูดครอบค่า (สคริปต์ติดตั้งจะตรวจให้) ถ้ารหัสผ่าน MySQL ที่ตั้งในขั้นที่ 3 มีอักขระพวกนี้ ให้เปลี่ยนรหัสก่อน
 
 
 | ค่า | ใส่อะไร |
@@ -126,7 +126,6 @@ notepad .env.local
 | `DB_NAME` | `promptpilot` |
 | `DB_PASS` | รหัสผ่าน MySQL จากขั้นที่ 3 |
 | `DB_USER` | เว้นว่าง ยกเว้นชื่อผู้ใช้ MySQL ไม่ใช่ชื่อเดียวกับ `DB_NAME` |
-| `ADMIN_USER`, `ADMIN_PASSWORD` | บัญชีเข้าหน้า admin (รหัสยาวอย่างน้อย 16 ตัวอักษร) |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | API key จากผู้พัฒนา (มีอย่างน้อย 1 ตัว) |
 
 > ห้าม commit หรือคัดลอกไฟล์ `.env.local` ไปที่อื่น สคริปต์ติดตั้งจะล็อกให้อ่านได้เฉพาะ Administrators และ SYSTEM
@@ -170,9 +169,11 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1
 4. นำเข้าไฟล์สำรอง (ถ้าใส่ `-SqlDump`) แล้วสร้าง/อัปเดตตาราง
    - ถ้าไม่ได้นำเข้าไฟล์สำรอง จะใส่ข้อมูลตั้งต้นให้
    - ฐานข้อมูลที่มีข้อมูลอยู่แล้วจะไม่ถูกเขียนทับ
-5. build เว็บ
-6. ติดตั้ง Windows Service ชื่อ `PromptPilot` (เปิดเองเมื่อเครื่องรีสตาร์ต และเปิดใหม่เองถ้าล่ม) แล้วตรวจว่าเว็บตอบ 200
-7. ตั้ง Task Scheduler 2 งาน:
+5. **ถ้ายังไม่มีบัญชีผู้ดูแลเลย จะถามชื่อผู้ใช้และรหัสผ่าน** เพื่อสร้างบัญชีแรก (รหัสอย่างน้อย 10 ตัวอักษร และห้ามมีชื่อผู้ใช้อยู่ในรหัส) ส่งบัญชีนี้ให้ผู้ดูแลเนื้อหาทางช่องทางที่ปลอดภัย
+   - ถ้านำเข้าไฟล์สำรองจากผู้พัฒนา บัญชีที่ผู้พัฒนาสร้างไว้จะติดมาด้วย และจะไม่ถามข้อนี้
+6. build เว็บ
+7. ติดตั้ง Windows Service ชื่อ `PromptPilot` (เปิดเองเมื่อเครื่องรีสตาร์ต และเปิดใหม่เองถ้าล่ม) แล้วตรวจว่าเว็บตอบ 200
+8. ตั้ง Task Scheduler 2 งาน:
    - `PromptPilot News Fetch`: ดึงข่าวทุกวัน 06:00
    - `PromptPilot DB Backup`: สำรองฐานข้อมูลทุกคืน 02:00 ไปที่ `C:\Apps\backup` เก็บย้อนหลัง 30 วัน
 
@@ -198,10 +199,7 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1
 
 เลือกตามที่ server ใช้ **IIS หรือ Apache อย่างใดอย่างหนึ่ง**
 
-มี 2 จุดที่ต้องตั้งให้ถูก ไม่อย่างนั้นหน้า admin จะใช้ไม่ได้:
-
-1. **ส่ง Host header เดิมต่อให้แอป** แอปตรวจว่าคำขอบันทึกข้อมูลมาจากโดเมนเดียวกัน (กัน CSRF) ถ้า proxy เปลี่ยน Host เป็น `127.0.0.1:3000` การกดบันทึกในหน้า admin จะล้มเหลว
-2. **ส่ง error 401 ของแอปผ่านไปตรงๆ** หน้า admin ใช้ Basic Authentication ของแอปเอง ถ้า proxy เอาหน้า error ของตัวเองมาแทน browser จะไม่ขึ้นช่องให้ใส่รหัสผ่าน
+จุดที่ต้องตั้งให้ถูก ไม่อย่างนั้น login และการบันทึกในหน้า admin จะใช้ไม่ได้: **ส่ง Host header เดิมต่อให้แอป** แอปตรวจว่าคำขอ login และบันทึกข้อมูลมาจากโดเมนเดียวกัน (กัน CSRF) ถ้า proxy เปลี่ยน Host เป็น `127.0.0.1:3000` จะถูกปฏิเสธ
 
 ### 6A. IIS
 
@@ -228,7 +226,7 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1
            </rule>
          </rules>
        </rewrite>
-       <!-- ส่ง 401/404/500 ของแอปผ่านไปตรงๆ (จำเป็นต่อหน้า login ของ /admin) -->
+       <!-- ส่งหน้า 404/500 ของแอปผ่านไปตรงๆ แทนหน้า error ของ IIS -->
        <httpErrors existingResponse="PassThrough" />
        <security>
          <requestFiltering allowDoubleEscaping="true" />
@@ -260,7 +258,7 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1
    ```
 3. ตรวจ config แล้วรีสตาร์ต: `httpd -t` ต้องได้ `Syntax OK` จากนั้นรีสตาร์ต service ของ Apache
 
-> ใช้ HTTPS เสมอ เพราะ Basic Authentication ของหน้า admin ส่งรหัสผ่านไปกับทุก request ถ้าเป็น HTTP ธรรมดาจะถูกดักอ่านได้
+> ใช้ HTTPS เสมอ เพราะหน้า login ส่งรหัสผ่าน และ cookie ของ session ใช้แทนการ login ได้ ถ้าเป็น HTTP ธรรมดาจะถูกดักอ่านได้
 
 ## 7. ทดสอบดึงข่าวและตรวจรับงาน
 
@@ -281,8 +279,8 @@ Start-ScheduledTask -TaskName "PromptPilot News Fetch"
 |---|---|---|
 | 1 | เปิด `https://promptpilot.company.local/` | หน้าแรกขึ้น มีข่าวและรูปภาพ |
 | 2 | เปิด `/news`, `/guides`, `/tools` | ขึ้นครบทุกหน้า |
-| 3 | เปิด `/admin` | browser ขึ้นช่องให้ใส่ชื่อผู้ใช้/รหัสผ่าน |
-| 4 | ใส่ `ADMIN_USER` / `ADMIN_PASSWORD` | เข้าหน้า admin ได้ |
+| 3 | เปิด `/admin` | ถูกส่งไปหน้า "เข้าสู่ระบบผู้ดูแล" |
+| 4 | login ด้วยบัญชีที่สร้างตอนติดตั้ง | เข้าหน้า admin ได้ มีชื่อผู้ใช้และปุ่ม "ออกจากระบบ" มุมขวา |
 | 5 | แก้ข้อมูลเล็กน้อยในหน้า admin แล้วกดบันทึก (แล้วแก้กลับ) | บันทึกสำเร็จ หน้าเว็บเปลี่ยนตาม |
 | 6 | หน้า admin > ประวัติการดึงข่าว | เห็นรอบที่เพิ่งทดสอบ สถานะสำเร็จ |
 | 7 | `Start-ScheduledTask -TaskName "PromptPilot DB Backup"` แล้วดู `C:\Apps\backup` | มีไฟล์ `promptpilot-....sql` ใหม่ |
@@ -341,9 +339,11 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\update.ps1
 | IIS ขึ้น 502.3 / Apache ขึ้น 503 | service PromptPilot ไม่ได้รัน | `Get-Service PromptPilot` แล้วดู `logs\web.log` |
 | `ER_ACCESS_DENIED_ERROR` | ชื่อผู้ใช้/รหัสผ่าน MySQL ไม่ตรง | ตรวจ `DB_NAME`, `DB_PASS` (และ `DB_USER`) แล้ว `Restart-Service PromptPilot` |
 | `ECONNREFUSED ...:3306` | MySQL ไม่ได้รัน หรือ host/port ผิด | ตรวจ service MySQL และ `DB_HOST`, `DB_PORT` |
-| เข้า `/admin` แล้วไม่ขึ้นช่องรหัสผ่าน หรือขึ้นหน้า error ของ IIS | IIS เอาหน้า error ของตัวเองมาแทน หรือเปิด Windows Authentication ไว้ | ตรวจ `<httpErrors existingResponse="PassThrough" />` และ Authentication ของ Site (ขั้นที่ 6A) |
-| ใส่รหัส admin ถูกแล้วยังเข้าไม่ได้ | แก้ `.env.local` แล้วยังไม่รีสตาร์ต | `Restart-Service PromptPilot` |
-| กดบันทึกในหน้า admin แล้วไม่เกิดอะไร / log มี `Invalid Server Actions request` | proxy ไม่ได้ส่ง Host header เดิม | IIS: `preserveHostHeader` (ขั้นที่ 6A ข้อ 2) / Apache: `ProxyPreserveHost On` |
+| เข้า `/admin` แล้วขึ้นหน้า login ของ Windows หรือหน้า error ของ IIS | เปิด Windows Authentication ไว้ที่ Site | เปิด Anonymous Authentication อย่างเดียว (ขั้นที่ 6A ข้อ 4) |
+| กด "เข้าสู่ระบบ" หรือกดบันทึกในหน้า admin แล้วไม่เกิดอะไร / log มี `Invalid Server Actions request` | proxy ไม่ได้ส่ง Host header เดิม | IIS: `preserveHostHeader` (ขั้นที่ 6A ข้อ 2) / Apache: `ProxyPreserveHost On` |
+| login ผ่านแต่ถูกส่งกลับหน้า login ทุกครั้ง | เปิดเว็บผ่าน HTTP ธรรมดา browser จึงไม่เก็บ cookie | เปิดผ่าน `https://` (ขั้นที่ 6) |
+| ขึ้น `บัญชีถูกล็อก 15 นาที` | ใส่รหัสผิด 5 ครั้งติดกัน | รอ 15 นาที หรือให้ผู้ดูแลคนอื่นกด "ตั้งรหัสผ่านใหม่" ในหน้า `/admin/users` |
+| ลืมรหัส / ไม่มีใครเข้า admin ได้เลย | — | บน server: `Set-Location C:\Apps\PromptPilot` แล้ว `npm run user:password -- <ชื่อผู้ใช้>` (ตั้งรหัสใหม่และปลดล็อก) หรือ `npm run user:create -- <ชื่อใหม่>` / ดูรายชื่อด้วย `npm run user:list` |
 | รูปไม่ขึ้น หรือ `/_next/image` ได้ 500 | `node_modules` ถูกคัดลอกมาจากเครื่องอื่น | ลบโฟลเดอร์ `node_modules` แล้วรัน `install.ps1` ใหม่ |
 | build ค้างหรือ error ตอนโหลดฟอนต์ | เครื่องออก `fonts.googleapis.com` ไม่ได้ | เปิด outbound หรือตั้ง proxy (ขั้นที่ 4) |
 | log ข่าวขึ้น `ดึงข่าวไม่ได้เลยสักแหล่ง` | ออกอินเทอร์เน็ตไม่ได้ | ตรวจ firewall / proxy (ขั้นที่ 1 และ 4) |
