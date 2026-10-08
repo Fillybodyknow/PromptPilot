@@ -9,7 +9,7 @@ import { changeUser, getUser, ROLE_LABEL, type UserRole } from "@/lib/auth/users
 // ทุก action ในไฟล์นี้เฉพาะผู้ดูแลระบบ และห้ามเปลี่ยนสิทธิ์/สถานะของตัวเอง (กันเผลอตัดสิทธิ์ตัวเองออก)
 
 const idOf = (fd: FormData) => z.coerce.number().int().positive().parse(fd.get("id"));
-const roleOf = (fd: FormData): UserRole => z.enum(["admin", "editor"]).parse(fd.get("role"));
+const roleOf = (fd: FormData): UserRole => z.enum(["admin", "editor", "viewer"]).parse(fd.get("role"));
 const done = () => {
   revalidatePath("/admin/users");
   revalidatePath("/admin", "layout");

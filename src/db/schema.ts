@@ -176,7 +176,7 @@ export const fetchRuns = mysqlTable("fetch_runs", {
 // ผู้ใช้หน้า admin (login ด้วย Microsoft Entra ID เท่านั้น) และ session ที่ login อยู่
 // ---------------------------------------------------------------------------
 
-export const USER_ROLES = ["admin", "editor"] as const;
+export const USER_ROLES = ["admin", "editor", "viewer"] as const;
 export const USER_STATUSES = ["pending", "active", "rejected", "disabled"] as const;
 
 export const users = mysqlTable(
@@ -189,8 +189,8 @@ export const users = mysqlTable(
     displayName: varchar("display_name", { length: 200 }),
     // บัญชี guest (B2B) ที่ถูกเชิญจากองค์กรอื่น — แสดงป้ายในหน้าอนุมัติ ให้ผู้ดูแลรู้ว่าไม่ใช่พนักงาน
     isGuest: boolean("is_guest").notNull().default(false),
-    // admin = ผู้ดูแลระบบ (จัดการผู้ใช้ได้), editor = ผู้ดูแลเนื้อหา
-    role: mysqlEnum("role", USER_ROLES).notNull().default("editor"),
+    // admin = ผู้ดูแลระบบ (จัดการผู้ใช้ได้), editor = ผู้ดูแลเนื้อหา (ใช้หน้า admin), viewer = ผู้อ่าน (พนักงานทั่วไป)
+    role: mysqlEnum("role", USER_ROLES).notNull().default("viewer"),
     status: mysqlEnum("status", USER_STATUSES).notNull().default("pending"),
     requestedAt: datetime("requested_at", { mode: "date", fsp: 3 }).notNull(),
     decidedBy: varchar("decided_by", { length: 320 }),

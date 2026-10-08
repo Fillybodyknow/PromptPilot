@@ -16,6 +16,8 @@ const notoSansThai = Noto_Sans_Thai({
 export const metadata: Metadata = {
   title: { default: "PromptPilot — ข่าว AI และคู่มือใช้ AI ในองค์กร", template: "%s | PromptPilot" },
   description: "สรุปข่าว AI ที่มีผลต่อองค์กรไทยทุกวัน พร้อมคู่มือและเครื่องมือ AI ที่ทีมตรวจสอบแล้ว แยกตามลักษณะงาน",
+  // เว็บภายในบริษัท (ต้อง login) — ไม่ให้ search engine เก็บหรือแสดงในผลค้นหา
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
   icons: {
     icon: withBasePath("/images/app/app_logo.png"),
     apple: withBasePath("/images/app/app_logo.png"),

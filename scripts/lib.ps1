@@ -66,7 +66,8 @@ function Import-MachineEnv {
 # รอให้เว็บตอบ 200 ภายในเวลาที่กำหนด (ถ้าตั้ง NEXT_PUBLIC_BASE_PATH หน้าแรกจะอยู่ใต้ path นั้น)
 function Wait-Healthy([int]$Port, [int]$TimeoutSec = 90) {
     $basePath = ([string]$env:NEXT_PUBLIC_BASE_PATH).TrimEnd("/")
-    $url = "http://127.0.0.1:$Port$basePath/"
+    # /api/health ไม่ต้อง login และตรวจการเชื่อมต่อฐานข้อมูลด้วย (หน้าแรกต้อง login จึง redirect ไปหน้า login ที่ไม่แตะ DB)
+    $url = "http://127.0.0.1:$Port$basePath/api/health"
     $deadline = (Get-Date).AddSeconds($TimeoutSec)
     while ((Get-Date) -lt $deadline) {
         try {

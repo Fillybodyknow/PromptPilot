@@ -16,7 +16,7 @@ export function MainNav({ vertical = false, onNavigate }: { vertical?: boolean; 
             href={item.href}
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-11 items-center rounded-lg px-3.5 text-[15px] transition-colors ${
+            className={`flex min-h-11 items-center whitespace-nowrap rounded-lg px-3.5 text-[15px] transition-colors ${
               active ? "bg-brand-soft font-semibold text-brand" : "font-medium text-ink hover:bg-chip"
             }`}
           >

@@ -9,13 +9,13 @@ import { getSessionUser } from "@/lib/auth/session";
 import { one, type SearchParams } from "@/lib/params";
 import { HERO_VISUAL } from "@/lib/visuals";
 
-export const metadata: Metadata = { title: "เข้าสู่ระบบผู้ดูแล", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "เข้าสู่ระบบ", robots: { index: false, follow: false } };
 
 const NOTICES: Record<string, { tone: "info" | "error"; title: string; body: string }> = {
   "status:pending": {
     tone: "info",
     title: "ส่งคำขอเข้าใช้งานแล้ว",
-    body: "รอผู้ดูแลระบบอนุมัติ เมื่ออนุมัติแล้วกลับมากด “เข้าสู่ระบบด้วย Microsoft” อีกครั้ง",
+    body: "บัญชีนี้เป็นบัญชี guest จากองค์กรอื่น ต้องรอผู้ดูแลระบบอนุมัติก่อน เมื่ออนุมัติแล้วกลับมากด “เข้าสู่ระบบด้วย Microsoft” อีกครั้ง",
   },
   "status:denied": { tone: "error", title: "บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน", body: "ถ้าคิดว่าควรได้สิทธิ์ ติดต่อผู้ดูแลระบบ" },
   "error:config": { tone: "error", title: "ยังไม่ได้ตั้งค่า Microsoft login", body: "ผู้ดูแล server ต้องใส่ MS_TENANT_ID, MS_CLIENT_ID และ MS_CLIENT_SECRET ตาม DEPLOY.md" },
@@ -49,8 +49,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageBanner visual={HERO_VISUAL} size="sm">
-        <h1 className="text-3xl font-bold">เข้าสู่ระบบผู้ดูแล</h1>
-        <p className="mt-2 text-white/80">สำหรับทีมที่อนุมัติข่าวและแก้ไขเครื่องมือ คู่มือ และแหล่งข่าว</p>
+        <h1 className="text-3xl font-bold">เข้าสู่ระบบ PromptPilot</h1>
+        <p className="mt-2 text-white/80">ข่าว AI และคู่มือใช้ AI ในองค์กร สำหรับพนักงานของบริษัท</p>
       </PageBanner>
       <main className="mx-auto max-w-md px-4 pb-16 sm:px-6">
         <div className={`${card} relative z-10 -mt-8 flex flex-col gap-5 p-6 shadow-xl shadow-black/10 sm:p-8`}>
@@ -69,7 +69,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             เข้าสู่ระบบด้วย Microsoft
           </a>
           <p className="text-center text-sm leading-relaxed text-muted">
-            ใช้บัญชี Microsoft 365 ของบริษัท ครั้งแรกจะเป็นการส่งคำขอเข้าใช้งาน และต้องรอผู้ดูแลระบบอนุมัติก่อน
+            ใช้บัญชี Microsoft 365 ของบริษัท พนักงานเข้าใช้ได้ทันที บัญชีจากภายนอกบริษัทเข้าไม่ได้
           </p>
         </div>
       </main>

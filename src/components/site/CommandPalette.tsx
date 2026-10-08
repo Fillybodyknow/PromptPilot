@@ -104,8 +104,8 @@ export function CommandPalette() {
         className="hidden h-11 items-center gap-2 rounded-lg border border-line bg-background px-3 text-sm text-muted transition hover:border-brand/50 hover:text-ink lg:flex"
       >
         <SearchIcon />
-        <span className="hidden w-36 text-left xl:inline">ค้นหา…</span>
-        <kbd className="hidden rounded border border-line bg-chip px-1.5 py-0.5 font-sans text-[11px] xl:inline">Ctrl K</kbd>
+        <span className="hidden w-36 text-left 2xl:inline">ค้นหา…</span>
+        <kbd className="hidden whitespace-nowrap rounded border border-line bg-chip px-1.5 py-0.5 font-sans text-[11px] 2xl:inline">Ctrl K</kbd>
       </button>
 
       <dialog

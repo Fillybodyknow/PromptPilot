@@ -64,6 +64,20 @@
       "when": 1791431189169,
       "tag": "0008_app_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1791433356050,
+      "tag": "0009_viewer_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1791434383507,
+      "tag": "0010_employees_become_viewers",
+      "breakpoints": true
     }
   ]
 }

@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { withBasePath } from "@/lib/basePath";
 import { CloseIcon, MenuIcon, SearchIcon } from "./icons";
 import { MainNav } from "./MainNav";
+import Link from "next/link";
+import { logout } from "@/app/login/actions";
+import { Avatar, type HeaderUser } from "./UserMenu";
 
-export function MobileNav() {
+export function MobileNav({ user }: { user: HeaderUser | null }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -88,6 +91,31 @@ export function MobileNav() {
             <div className="p-3">
               <MainNav vertical onNavigate={() => setOpen(false)} />
             </div>
+            {user && (
+              // บัญชีผู้ใช้ + เมนู admin (บนจอใหญ่อยู่ที่ top bar)
+              <div className="mt-auto border-t border-line p-3">
+                <div className="flex items-center gap-3 px-2 pb-3">
+                  <Avatar name={user.name} />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{user.name}</p>
+                    <p className="truncate text-xs text-muted">
+                      {user.email} · {user.roleLabel}
+                    </p>
+                  </div>
+                </div>
+                {user.staff && (
+                  <Link href="/admin" onClick={() => setOpen(false)} className="flex h-11 items-center justify-between rounded-lg px-3 text-sm font-semibold hover:bg-chip">
+                    หน้า Admin
+                    {user.admin && user.pending > 0 && <span className="rounded-full bg-urgent px-2 py-0.5 text-[11px] font-bold text-background">{user.pending} รออนุมัติ</span>}
+                  </Link>
+                )}
+                <form action={logout}>
+                  <button type="submit" className="flex h-11 w-full items-center rounded-lg px-3 text-sm text-urgent hover:bg-chip">
+                    ออกจากระบบ
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       )}

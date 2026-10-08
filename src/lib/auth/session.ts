@@ -1,17 +1,17 @@
-import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gt, lt } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
+import { eq, lt } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { cache } from "react";
 import { getDb } from "@/db/client";
-import { sessions, users } from "@/db/schema";
+import { sessions } from "@/db/schema";
 import { isHttpsApp } from "./config";
 import { SESSION_COOKIE } from "./session-cookie";
-import type { UserRole } from "./users";
+import { findSessionByToken, hashToken, type SessionUser } from "./sessionLookup";
+
+export type { SessionUser };
 
 /** login ครั้งหนึ่งใช้ได้ 12 ชั่วโมง (ครอบวันทำงาน) แล้วต้อง login ใหม่ */
 const SESSION_HOURS = 12;
-
-const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
 export async function createSession(userId: number): Promise<void> {
   const token = randomBytes(32).toString("base64url");
@@ -31,25 +31,10 @@ export async function createSession(userId: number): Promise<void> {
   });
 }
 
-export interface SessionUser {
-  sessionId: string;
-  userId: number;
-  email: string;
-  displayName: string | null;
-  role: UserRole;
-}
-
 /** ผู้ใช้ที่ login อยู่และสถานะยังเป็น "ใช้งาน" หรือ null — cache ต่อ request เพราะหน้าเดียวอาจเรียกหลายครั้ง */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (!token) return null;
-  const id = hashToken(token);
-  const [row] = await getDb()
-    .select({ userId: users.id, email: users.email, displayName: users.displayName, role: users.role })
-    .from(sessions)
-    .innerJoin(users, eq(users.id, sessions.userId))
-    .where(and(eq(sessions.id, id), gt(sessions.expiresAt, new Date()), eq(users.status, "active")));
-  return row ? { sessionId: id, ...row } : null;
+  return token ? findSessionByToken(token) : null;
 });
 
 export async function destroySession(): Promise<void> {

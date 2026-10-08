@@ -7,7 +7,10 @@ import type { MicrosoftIdentity } from "./microsoft";
 export type UserRole = (typeof USER_ROLES)[number];
 export type UserStatus = (typeof USER_STATUSES)[number];
 
-export const ROLE_LABEL: Record<UserRole, string> = { admin: "ผู้ดูแลระบบ", editor: "ผู้ดูแลเนื้อหา" };
+export const ROLE_LABEL: Record<UserRole, string> = { admin: "ผู้ดูแลระบบ", editor: "ผู้ดูแลเนื้อหา", viewer: "ผู้อ่าน" };
+
+/** เข้าหน้า admin ได้ไหม (ผู้อ่านอ่านได้อย่างเดียว) */
+export const isStaff = (role: UserRole) => role === "admin" || role === "editor";
 export const STATUS_LABEL: Record<UserStatus, string> = { pending: "รออนุมัติ", active: "ใช้งาน", rejected: "ปฏิเสธ", disabled: "ปิดใช้" };
 
 export interface UserRow {
@@ -60,9 +63,11 @@ export function isConfiguredAdmin(identity: Pick<MicrosoftIdentity, "upn" | "gue
 }
 
 /**
- * เรียกหลัง login ด้วย Microsoft สำเร็จ: สร้างคำขอใหม่ถ้ายังไม่เคยเห็นคนนี้ และอัปเดตชื่อ/อีเมลถ้าเปลี่ยน
+ * เรียกหลัง login ด้วย Microsoft สำเร็จ: สร้างผู้ใช้ใหม่ถ้ายังไม่เคยเห็นคนนี้ และอัปเดตชื่อ/อีเมลถ้าเปลี่ยน
+ * พนักงาน (บัญชีของ tenant เอง) เป็นผู้อ่านที่ใช้งานได้ทันที ส่วนบัญชี guest จากองค์กรอื่นต้องรอผู้ดูแลระบบอนุมัติ
+ * สิทธิ์เข้าหน้า admin (ผู้ดูแลเนื้อหา/ผู้ดูแลระบบ) ผู้ดูแลระบบเป็นคนให้ในหน้า /admin/users
  * ADMIN_EMAILS ใช้ตั้งผู้ดูแลระบบได้เฉพาะตอน "ยังไม่มีผู้ดูแลระบบที่ใช้งานได้เลย" (ติดตั้งครั้งแรก หรือกู้คืนเมื่อถูกปิดใช้หมด)
- * — ถ้ามีผู้ดูแลระบบอยู่แล้ว คนในรายชื่อก็ต้องรออนุมัติตามปกติ และการปิดใช้/ลดสิทธิ์ที่ผู้ดูแลทำไว้จะไม่ถูกย้อน
+ * — ถ้ามีผู้ดูแลระบบอยู่แล้ว คนในรายชื่อเป็นผู้อ่านเหมือนพนักงานทั่วไป และการปิดใช้/ลดสิทธิ์ที่ผู้ดูแลทำไว้จะไม่ถูกย้อน
  * ทำใน transaction ที่ล็อกแถวผู้ดูแลระบบ กันสองคนในรายชื่อ login พร้อมกันแล้วต่างคนต่างคิดว่ายังไม่มีใคร (ซึ่งก็ไม่อันตราย แต่ให้ผลแน่นอน)
  */
 export async function upsertMicrosoftUser(identity: MicrosoftIdentity): Promise<{ id: number; status: UserStatus }> {
@@ -79,21 +84,23 @@ export async function upsertMicrosoftUser(identity: MicrosoftIdentity): Promise<
       const makeAdmin = admins.length === 0 && isConfiguredAdmin(identity);
       const [existing] = await tx.select({ id: users.id, status: users.status }).from(users).where(eq(users.msOid, identity.oid)).for("update");
       if (existing) {
+        // พนักงานที่ค้าง "รออนุมัติ" (เช่นเคยเป็น guest แล้ว IT เปลี่ยนเป็นบัญชีพนักงาน) อ่านเว็บได้เลย
+        const promoteMember = !makeAdmin && !identity.guest && existing.status === "pending";
         await tx
           .update(users)
-          .set({ ...profile, ...(makeAdmin ? bootstrap : {}) })
+          .set({ ...profile, ...(makeAdmin ? bootstrap : promoteMember ? { status: "active" as const, role: "viewer" as const } : {}) })
           .where(eq(users.id, existing.id));
-        return { id: existing.id, status: makeAdmin ? "active" : existing.status };
+        return { id: existing.id, status: makeAdmin || promoteMember ? "active" : existing.status };
       }
       const [res] = await tx.insert(users).values({
         msOid: identity.oid,
         ...profile,
-        role: "editor",
-        status: "pending",
+        role: "viewer",
+        status: identity.guest ? "pending" : "active",
         requestedAt: now,
         ...(makeAdmin ? bootstrap : {}),
       });
-      return { id: res.insertId, status: makeAdmin ? "active" : "pending" };
+      return { id: res.insertId, status: makeAdmin || !identity.guest ? "active" : "pending" };
     });
   } catch (err) {
     // login ครั้งแรกพร้อมกันสองแท็บ — อีกแท็บสร้างไปแล้ว
