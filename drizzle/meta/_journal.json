@@ -36,6 +36,27 @@
       "when": 1791422824026,
       "tag": "0004_users_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1791424810382,
+      "tag": "0005_drop_password_login",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1791424812756,
+      "tag": "0006_microsoft_login",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1791425644202,
+      "tag": "0007_users_guest",
+      "breakpoints": true
     }
   ]
 }

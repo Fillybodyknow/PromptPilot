@@ -31,7 +31,7 @@ drizzle/            # ไฟล์ migration
 ## รันโปรเจกต์
 
 คัดลอก `.env.example` เป็น `.env.local` แล้วกรอก: `DB_NAME`, `DB_PASS` (+ `DB_HOST`, `DB_PORT` ถ้าไม่ใช่ `localhost:3306` และ `DB_USER` ถ้าชื่อผู้ใช้ MySQL ไม่ตรงกับ `DB_NAME`),
-`ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` (ใช้ Claude ก่อน ถ้าเรียกไม่สำเร็จจะใช้ OpenAI แทน)
+`APP_URL`, `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `ADMIN_EMAILS` (Microsoft login ดู DEPLOY.md ขั้นที่ 3.5) และ `ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` (ใช้ Claude ก่อน ถ้าเรียกไม่สำเร็จจะใช้ OpenAI แทน)
 
 ```bash
 npm install
@@ -46,7 +46,7 @@ npm run lint
 
 ## เพิ่ม/แก้ข้อมูล
 
-แก้ทุกอย่างผ่านหน้า `/admin` (login ที่ `/login` ด้วยบัญชีในตาราง `users` — สร้างคนแรกด้วย `npm run user:create -- <username>` แล้วเพิ่มคนอื่นในหน้า `/admin/users`): อนุมัติข่าว, เครื่องมือ,
+แก้ทุกอย่างผ่านหน้า `/admin` (login ด้วย Microsoft 365 ของบริษัทที่ `/login` — คนใน `ADMIN_EMAILS` เป็นผู้ดูแลระบบทันที คนอื่นส่งคำขอแล้วรอผู้ดูแลระบบอนุมัติในหน้า `/admin/users` โดยกำหนดเป็นผู้ดูแลระบบหรือผู้ดูแลเนื้อหา): อนุมัติข่าว, เครื่องมือ,
 คู่มือและ prompt, แหล่งข่าว และดูประวัติการดึงข่าว ข้อมูลถูกตรวจด้วย Zod schema เดียวกับที่หน้าเว็บใช้
 และหน้าเว็บอัปเดตทันทีหลังบันทึก
 

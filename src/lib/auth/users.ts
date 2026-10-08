@@ -1,147 +1,158 @@
-import { and, asc, count, eq, ne, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { sessions, users } from "@/db/schema";
-import { getDummyHash, hashPassword, verifyPassword } from "./password";
+import { sessions, users, type USER_ROLES, type USER_STATUSES } from "@/db/schema";
+import { adminEmails } from "./config";
+import type { MicrosoftIdentity } from "./microsoft";
 
-/** ใส่รหัสผิดติดกันกี่ครั้งจึงล็อก และล็อกนานเท่าไร */
-const MAX_FAILED = 5;
-const LOCK_MINUTES = 15;
+export type UserRole = (typeof USER_ROLES)[number];
+export type UserStatus = (typeof USER_STATUSES)[number];
 
-export const USERNAME_RE = /^[a-z0-9._-]{3,64}$/;
-export const normalizeUsername = (s: string) => s.trim().toLowerCase();
+export const ROLE_LABEL: Record<UserRole, string> = { admin: "ผู้ดูแลระบบ", editor: "ผู้ดูแลเนื้อหา" };
+export const STATUS_LABEL: Record<UserStatus, string> = { pending: "รออนุมัติ", active: "ใช้งาน", rejected: "ปฏิเสธ", disabled: "ปิดใช้" };
 
 export interface UserRow {
   id: number;
-  username: string;
+  email: string;
   displayName: string | null;
-  isActive: boolean;
-  lockedUntil: Date | null;
+  role: UserRole;
+  status: UserStatus;
+  requestedAt: Date;
+  decidedBy: string | null;
+  decidedAt: Date | null;
   lastLoginAt: Date | null;
-  createdAt: Date;
-  createdBy: string | null;
+  isGuest: boolean;
 }
 
-const publicCols = {
+const cols = {
   id: users.id,
-  username: users.username,
+  email: users.email,
   displayName: users.displayName,
-  isActive: users.isActive,
-  lockedUntil: users.lockedUntil,
+  role: users.role,
+  status: users.status,
+  requestedAt: users.requestedAt,
+  decidedBy: users.decidedBy,
+  decidedAt: users.decidedAt,
   lastLoginAt: users.lastLoginAt,
-  createdAt: users.createdAt,
-  createdBy: users.createdBy,
+  isGuest: users.isGuest,
 };
 
 export async function listUsers(): Promise<UserRow[]> {
-  return getDb().select(publicCols).from(users).orderBy(asc(users.username));
+  return getDb().select(cols).from(users).orderBy(desc(users.requestedAt), asc(users.email));
 }
 
 export async function getUser(id: number): Promise<UserRow | undefined> {
-  const [row] = await getDb().select(publicCols).from(users).where(eq(users.id, id));
+  const [row] = await getDb().select(cols).from(users).where(eq(users.id, id));
   return row;
 }
 
-export async function countUsers(): Promise<number> {
-  const [{ n }] = await getDb().select({ n: count() }).from(users);
+export async function countPending(): Promise<number> {
+  const [{ n }] = await getDb().select({ n: count() }).from(users).where(eq(users.status, "pending"));
   return n;
 }
 
-/** คืน id ใหม่ หรือ null ถ้าชื่อผู้ใช้ซ้ำ (ชื่อเทียบแบบไม่สนตัวพิมพ์เล็กใหญ่ตาม collation ของ DB) */
-export async function createUser(input: { username: string; displayName: string | null; password: string; createdBy: string | null }): Promise<number | null> {
+/**
+ * อยู่ใน ADMIN_EMAILS ไหม — เทียบกับ UPN (ชื่อ login ที่ IT กำหนด) เท่านั้น ไม่ใช้ claim email
+ * เพราะ email ใน Entra ID ไม่ได้ผ่านการยืนยันและผู้ดูแล Microsoft 365 หลายระดับแก้ให้บัญชีอื่นได้
+ * และไม่นับบัญชี guest จากองค์กรอื่น
+ */
+export function isConfiguredAdmin(identity: Pick<MicrosoftIdentity, "upn" | "guest">): boolean {
+  return !identity.guest && identity.upn !== "" && adminEmails().has(identity.upn);
+}
+
+/**
+ * เรียกหลัง login ด้วย Microsoft สำเร็จ: สร้างคำขอใหม่ถ้ายังไม่เคยเห็นคนนี้ และอัปเดตชื่อ/อีเมลถ้าเปลี่ยน
+ * ADMIN_EMAILS ใช้ตั้งผู้ดูแลระบบได้เฉพาะตอน "ยังไม่มีผู้ดูแลระบบที่ใช้งานได้เลย" (ติดตั้งครั้งแรก หรือกู้คืนเมื่อถูกปิดใช้หมด)
+ * — ถ้ามีผู้ดูแลระบบอยู่แล้ว คนในรายชื่อก็ต้องรออนุมัติตามปกติ และการปิดใช้/ลดสิทธิ์ที่ผู้ดูแลทำไว้จะไม่ถูกย้อน
+ * ทำใน transaction ที่ล็อกแถวผู้ดูแลระบบ กันสองคนในรายชื่อ login พร้อมกันแล้วต่างคนต่างคิดว่ายังไม่มีใคร (ซึ่งก็ไม่อันตราย แต่ให้ผลแน่นอน)
+ */
+export async function upsertMicrosoftUser(identity: MicrosoftIdentity): Promise<{ id: number; status: UserStatus }> {
   const now = new Date();
+  const profile = { email: identity.email, displayName: identity.name, isGuest: identity.guest, updatedAt: now };
+  const bootstrap = { role: "admin" as const, status: "active" as const, decidedBy: "ADMIN_EMAILS", decidedAt: now };
   try {
-    const [res] = await getDb()
-      .insert(users)
-      .values({
-        username: input.username,
-        displayName: input.displayName,
-        passwordHash: await hashPassword(input.password),
-        createdAt: now,
-        createdBy: input.createdBy,
-        updatedAt: now,
+    return await getDb().transaction(async (tx) => {
+      const admins = await tx
+        .select({ id: users.id })
+        .from(users)
+        .where(and(eq(users.role, "admin"), eq(users.status, "active")))
+        .for("update");
+      const makeAdmin = admins.length === 0 && isConfiguredAdmin(identity);
+      const [existing] = await tx.select({ id: users.id, status: users.status }).from(users).where(eq(users.msOid, identity.oid)).for("update");
+      if (existing) {
+        await tx
+          .update(users)
+          .set({ ...profile, ...(makeAdmin ? bootstrap : {}) })
+          .where(eq(users.id, existing.id));
+        return { id: existing.id, status: makeAdmin ? "active" : existing.status };
+      }
+      const [res] = await tx.insert(users).values({
+        msOid: identity.oid,
+        ...profile,
+        role: "editor",
+        status: "pending",
+        requestedAt: now,
+        ...(makeAdmin ? bootstrap : {}),
       });
-    return res.insertId;
+      return { id: res.insertId, status: makeAdmin ? "active" : "pending" };
+    });
   } catch (err) {
-    if ((err as { cause?: { code?: string }; code?: string }).cause?.code === "ER_DUP_ENTRY" || (err as { code?: string }).code === "ER_DUP_ENTRY") return null;
-    throw err;
+    // login ครั้งแรกพร้อมกันสองแท็บ — อีกแท็บสร้างไปแล้ว
+    const code = (err as { cause?: { code?: string }; code?: string }).cause?.code ?? (err as { code?: string }).code;
+    if (code !== "ER_DUP_ENTRY") throw err;
+    const [row] = await getDb().select({ id: users.id, status: users.status }).from(users).where(eq(users.msOid, identity.oid));
+    return row;
   }
 }
 
-/** ตั้งรหัสใหม่ + ปลดล็อก + ออกจากระบบทุกเครื่อง (ยกเว้น session ที่ระบุ เช่นของคนที่เปลี่ยนรหัสตัวเอง) */
-export async function setPassword(id: number, password: string, keepSessionId?: string): Promise<void> {
-  const db = getDb();
-  await db
-    .update(users)
-    .set({ passwordHash: await hashPassword(password), failedLogins: 0, lockedUntil: null, updatedAt: new Date() })
-    .where(eq(users.id, id));
-  await db.delete(sessions).where(keepSessionId ? and(eq(sessions.userId, id), ne(sessions.id, keepSessionId)) : eq(sessions.userId, id));
+export async function markLoggedIn(id: number): Promise<void> {
+  await getDb().update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, id));
 }
 
-/** ตรวจรหัสปัจจุบันของผู้ใช้ (ใช้ตอนเปลี่ยนรหัสของตัวเอง) */
-export async function checkUserPassword(id: number, password: string): Promise<boolean> {
-  const [row] = await getDb().select({ hash: users.passwordHash }).from(users).where(eq(users.id, id));
-  return row ? verifyPassword(password, row.hash) : false;
-}
-
-export async function setUserActive(id: number, active: boolean): Promise<void> {
-  const db = getDb();
-  await db.update(users).set({ isActive: active, failedLogins: 0, lockedUntil: null, updatedAt: new Date() }).where(eq(users.id, id));
-  if (!active) await db.delete(sessions).where(eq(sessions.userId, id));
-}
-
-export type LoginResult = { ok: true; userId: number; username: string } | { ok: false };
+export type ChangeResult = { ok: true } | { ok: false; message: string };
+type Change = { status?: UserStatus; role?: UserRole } | "delete";
 
 /**
- * ตรวจชื่อ/รหัส พร้อมนับครั้งที่ผิดและล็อกชั่วคราว
- * - นับครั้ง "ก่อน" ตรวจรหัสด้วย UPDATE เดียว (atomic) — ถ้าอ่านค่าแล้วค่อยเขียนทีหลัง คำขอที่ยิงพร้อมกันหลายร้อยครั้ง
- *   จะเห็นค่าเดิมหมดแล้วนับได้แค่ 1 เท่ากับได้เดารหัสหลายร้อยครั้งต่อการนับ
- * - ทุกกรณีที่ไม่ผ่าน (ไม่มีชื่อนี้ / ปิดใช้ / ถูกล็อก / รหัสผิด) ตอบเหมือนกันและใช้เวลาเท่ากัน จะได้เดาไม่ได้ว่าชื่อไหนมีจริง
+ * เปลี่ยนสถานะ/สิทธิ์ หรือลบผู้ใช้ — ไม่ยอมถ้าจะทำให้ไม่เหลือผู้ดูแลระบบที่ใช้งานได้เลย
+ * ล็อกแถวผู้ดูแลระบบที่ใช้งานอยู่ทั้งหมดก่อน (FOR UPDATE) กันผู้ดูแลสองคนลดสิทธิ์/ปิดกันเองพร้อมกันจนไม่เหลือใคร
+ * ถ้าผู้ใช้ถูกปิดใช้ ปฏิเสธ หรือลบ session ของเขาจะถูกลบทันที (ออกจากระบบทุกเครื่อง)
  */
-export async function verifyLogin(usernameInput: string, password: string): Promise<LoginResult> {
-  const db = getDb();
-  const [user] = await db
-    .select({ id: users.id, username: users.username, passwordHash: users.passwordHash, isActive: users.isActive })
-    .from(users)
-    .where(eq(users.username, normalizeUsername(usernameInput)));
-
-  let counted = false;
-  if (user?.isActive) {
-    // MySQL กำหนดค่าใน SET จากซ้ายไปขวา: locked_until คิดจาก failed_logins เดิมก่อน แล้วค่อยเพิ่ม/รีเซ็ต failed_logins
-    // เวลาใน DB เก็บเป็น UTC (ดู client.ts) จึงใช้ UTC_TIMESTAMP
-    const [res] = await db.execute(sql`
-      UPDATE users
-      SET locked_until = IF(failed_logins + 1 >= ${MAX_FAILED}, UTC_TIMESTAMP(3) + INTERVAL ${LOCK_MINUTES} MINUTE, NULL),
-          failed_logins = IF(failed_logins + 1 >= ${MAX_FAILED}, 0, failed_logins + 1)
-      WHERE id = ${user.id} AND (locked_until IS NULL OR locked_until <= UTC_TIMESTAMP(3))`);
-    counted = (res as unknown as { affectedRows: number }).affectedRows === 1;
-  }
-
-  // ตรวจรหัสทุกกรณี (ใช้ hash หลอกถ้าไม่ได้ตรวจจริง) ให้ใช้เวลาเท่ากัน
-  const ok = await verifyPassword(password, counted && user ? user.passwordHash : await getDummyHash());
-  if (!ok || !counted || !user) return { ok: false };
-
-  await db.update(users).set({ failedLogins: 0, lockedUntil: null, lastLoginAt: new Date() }).where(eq(users.id, user.id));
-  return { ok: true, userId: user.id, username: user.username };
-}
-
-export const LOGIN_FAILED_MESSAGE = `ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง (ใส่ผิด ${MAX_FAILED} ครั้งติดกัน บัญชีจะถูกล็อก ${LOCK_MINUTES} นาที)`;
-
-/**
- * ปิดใช้หรือลบผู้ใช้ แต่ไม่ยอมถ้าจะทำให้ไม่เหลือผู้ใช้ที่เปิดใช้อยู่เลย
- * ล็อกแถวผู้ใช้ที่เปิดใช้ทั้งหมดก่อน (FOR UPDATE) — ถ้าผู้ดูแล 2 คนปิดกันเองพร้อมกัน คนหนึ่งจะต้องรออีกคน แล้วเห็นจำนวนที่ถูกต้อง
- * คืน false ถ้าไม่ได้ทำเพราะเป็นคนสุดท้าย
- */
-export async function deactivateOrDeleteUser(id: number, action: "disable" | "delete"): Promise<boolean> {
+export async function changeUser(id: number, change: Change, by: string): Promise<ChangeResult> {
   return getDb().transaction(async (tx) => {
-    const active = await tx.select({ id: users.id }).from(users).where(eq(users.isActive, true)).for("update");
-    if (active.some((u) => u.id === id) && active.length <= 1) return false;
-    if (action === "delete") {
+    const admins = await tx
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.role, "admin"), eq(users.status, "active")))
+      .for("update");
+    const [target] = await tx.select({ role: users.role, status: users.status }).from(users).where(eq(users.id, id)).for("update");
+    if (!target) return { ok: false, message: "ไม่พบผู้ใช้นี้" };
+
+    const isActiveAdmin = target.role === "admin" && target.status === "active";
+    const staysActiveAdmin = change !== "delete" && (change.role ?? target.role) === "admin" && (change.status ?? target.status) === "active";
+    if (isActiveAdmin && !staysActiveAdmin && admins.length <= 1) {
+      return { ok: false, message: "ต้องมีผู้ดูแลระบบที่ใช้งานได้อย่างน้อย 1 คน" };
+    }
+
+    if (change === "delete") {
       // session ถูกลบตามด้วย foreign key (cascade)
       await tx.delete(users).where(eq(users.id, id));
-    } else {
-      await tx.update(users).set({ isActive: false, updatedAt: new Date() }).where(eq(users.id, id));
-      await tx.delete(sessions).where(eq(sessions.userId, id));
+      return { ok: true };
     }
-    return true;
+    const now = new Date();
+    const statusChanged = change.status !== undefined && change.status !== target.status;
+    await tx
+      .update(users)
+      .set({ ...change, updatedAt: now, ...(statusChanged ? { decidedBy: by.slice(0, 320), decidedAt: now } : {}) })
+      .where(eq(users.id, id));
+    if (change.status && change.status !== "active") await tx.delete(sessions).where(eq(sessions.userId, id));
+    return { ok: true };
   });
+}
+
+/** สำหรับ scripts/user.ts */
+export async function countByStatus(): Promise<Record<string, number>> {
+  const rows = await getDb()
+    .select({ status: users.status, n: sql<number>`count(*)` })
+    .from(users)
+    .groupBy(users.status);
+  return Object.fromEntries(rows.map((r) => [r.status, Number(r.n)]));
 }

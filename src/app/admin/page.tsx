@@ -2,15 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { card } from "@/components/site/ui";
 import { requireAdminPage } from "@/lib/adminSession";
+import { countPending } from "@/lib/auth/users";
 import { catalogCounts } from "@/lib/catalog/admin";
 import { countByStatus, latestRun } from "@/lib/news/repo";
 
 export const metadata: Metadata = { title: "ภาพรวมผู้ดูแล" };
 
 export default async function AdminHomePage() {
-  await requireAdminPage();
-  const [news, catalog, run] = await Promise.all([countByStatus(), catalogCounts(), latestRun()]);
+  const me = await requireAdminPage();
+  const [news, catalog, run, pendingUsers] = await Promise.all([countByStatus(), catalogCounts(), latestRun(), me.role === "admin" ? countPending() : 0]);
   const cards = [
+    // เฉพาะผู้ดูแลระบบ: แจ้งคำขอเข้าใช้งานที่ยังไม่ได้ตัดสิน
+    ...(me.role === "admin"
+      ? [{ href: "/admin/users", title: "ผู้ใช้", value: `${pendingUsers} คำขอรออนุมัติ`, note: "อนุมัติคำขอ กำหนดสิทธิ์ ปิดใช้บัญชี", highlight: pendingUsers > 0 }]
+      : []),
     { href: "/admin/news", title: "อนุมัติข่าว", value: `${news.pending ?? 0} รออนุมัติ`, note: `อนุมัติแล้ว ${news.approved ?? 0} · ข่าวซ้ำ ${news.duplicate ?? 0}`, highlight: (news.pending ?? 0) > 0 },
     { href: "/admin/tools", title: "เครื่องมือ", value: `${catalog.tools} รายการ`, note: "เพิ่ม แก้ไข เรียงลำดับ ติดธงแนะนำ" },
     { href: "/admin/guides", title: "คู่มือและ prompt", value: `${catalog.guides} หมวด`, note: `prompt ${catalog.prompts} ตัว` },

@@ -173,24 +173,33 @@ export const fetchRuns = mysqlTable("fetch_runs", {
 });
 
 // ---------------------------------------------------------------------------
-// ผู้ใช้หน้า admin และ session ที่ login อยู่ — ทุกคนเป็นผู้ดูแลเท่ากัน (ยังไม่มีระดับสิทธิ์)
+// ผู้ใช้หน้า admin (login ด้วย Microsoft Entra ID เท่านั้น) และ session ที่ login อยู่
 // ---------------------------------------------------------------------------
 
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  username: varchar("username", { length: 64 }).notNull().unique("uq_users_username"),
-  displayName: varchar("display_name", { length: 100 }),
-  // scrypt$N$r$p$salt$hash (ดู src/lib/auth/password.ts) — ไม่เก็บรหัสผ่านจริง
-  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
-  isActive: boolean("is_active").notNull().default(true),
-  // กันเดารหัส: นับครั้งที่ใส่ผิดติดกัน แล้วล็อกชั่วคราว
-  failedLogins: int("failed_logins").notNull().default(0),
-  lockedUntil: datetime("locked_until", { mode: "date", fsp: 3 }),
-  lastLoginAt: datetime("last_login_at", { mode: "date", fsp: 3 }),
-  createdAt: datetime("created_at", { mode: "date", fsp: 3 }).notNull(),
-  createdBy: varchar("created_by", { length: 64 }),
-  updatedAt: datetime("updated_at", { mode: "date", fsp: 3 }).notNull(),
-});
+export const USER_ROLES = ["admin", "editor"] as const;
+export const USER_STATUSES = ["pending", "active", "rejected", "disabled"] as const;
+
+export const users = mysqlTable(
+  "users",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    // object ID ของผู้ใช้ใน Entra ID — ไม่เปลี่ยนตลอดอายุบัญชี ใช้ระบุตัวตนแทนอีเมล (อีเมลเปลี่ยน/ถูกนำไปใช้ซ้ำได้)
+    msOid: varchar("ms_oid", { length: 64 }).notNull().unique("uq_users_ms_oid"),
+    email: varchar("email", { length: 320 }).notNull(),
+    displayName: varchar("display_name", { length: 200 }),
+    // บัญชี guest (B2B) ที่ถูกเชิญจากองค์กรอื่น — แสดงป้ายในหน้าอนุมัติ ให้ผู้ดูแลรู้ว่าไม่ใช่พนักงาน
+    isGuest: boolean("is_guest").notNull().default(false),
+    // admin = ผู้ดูแลระบบ (จัดการผู้ใช้ได้), editor = ผู้ดูแลเนื้อหา
+    role: mysqlEnum("role", USER_ROLES).notNull().default("editor"),
+    status: mysqlEnum("status", USER_STATUSES).notNull().default("pending"),
+    requestedAt: datetime("requested_at", { mode: "date", fsp: 3 }).notNull(),
+    decidedBy: varchar("decided_by", { length: 320 }),
+    decidedAt: datetime("decided_at", { mode: "date", fsp: 3 }),
+    lastLoginAt: datetime("last_login_at", { mode: "date", fsp: 3 }),
+    updatedAt: datetime("updated_at", { mode: "date", fsp: 3 }).notNull(),
+  },
+  (t) => [index("idx_users_status").on(t.status)],
+);
 
 export const sessions = mysqlTable(
   "sessions",

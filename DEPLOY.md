@@ -46,7 +46,7 @@ Task Scheduler ──ทุกวัน 06:00──▶ ดึงข่าว AI 
 | สิทธิ์เข้าถึง repository `https://github.com/Fillybodyknow/PromptPilot` (ติดตั้งจาก branch `main`) | ดาวน์โหลดโค้ด |
 | ไฟล์ `promptpilot-....sql` (สำรองฐานข้อมูลจากเครื่องผู้พัฒนา) | ย้ายข้อมูลปัจจุบัน (ข่าวที่อนุมัติแล้ว, เครื่องมือที่แก้ไว้) ขึ้น server ถ้าไม่มี ระบบจะใส่ข้อมูลตั้งต้นให้แทน |
 | `ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` | ให้ AI สรุปข่าว ระบบใช้ Claude ก่อน ถ้าใช้ไม่ได้จะใช้ OpenAI แทน มีอย่างน้อย 1 ตัว |
-| ชื่อผู้ใช้ของผู้ดูแลคนแรก | สคริปต์ติดตั้งจะถามชื่อและรหัสผ่านเพื่อสร้างบัญชีแรก แล้วคนนั้นเพิ่มคนอื่นเองในหน้า `/admin/users` |
+| ชื่อ login Microsoft 365 (UPN) ของผู้ดูแลระบบคนแรก | ใส่ใน `ADMIN_EMAILS` — คนแรกในรายชื่อที่ login จะเป็นผู้ดูแลระบบทันที แล้วอนุมัติคนอื่นเองในหน้า `/admin/users` |
 
 > ส่ง API key และรหัสผ่านผ่านช่องทางที่ปลอดภัย (เช่น password manager ของบริษัท) ห้ามส่งทางแชตหรืออีเมลธรรมดา
 
@@ -62,7 +62,7 @@ powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1 -OutDir C:\Temp
 - **ทรัพยากร:** RAM ว่างอย่างน้อย 1 GB สำหรับแอป, พื้นที่ดิสก์ 3 GB (ไม่รวมไฟล์สำรอง)
 - **การเชื่อมต่อขาออก (outbound HTTPS 443) ที่ต้องเปิด:**
   - ตอนติดตั้ง/อัปเดต: `registry.npmjs.org`, `github.com`, `fonts.googleapis.com`, `fonts.gstatic.com` (build ดาวน์โหลดฟอนต์)
-  - ตอนใช้งาน: `api.anthropic.com`, `api.openai.com` และเว็บแหล่งข่าว เช่น `news.google.com`, `blog.google`, `deepmind.google`, `openai.com`, `huggingface.co`, `github.blog`, `github.com`, `aws.amazon.com`, `azure.microsoft.com`, `www.microsoft.com`, `cloudblog.withgoogle.com`, `www.blognone.com`
+  - ตอนใช้งาน: `login.microsoftonline.com` (เข้าสู่ระบบหน้า admin), `api.anthropic.com`, `api.openai.com` และเว็บแหล่งข่าว เช่น `news.google.com`, `blog.google`, `deepmind.google`, `openai.com`, `huggingface.co`, `github.blog`, `github.com`, `aws.amazon.com`, `azure.microsoft.com`, `www.microsoft.com`, `cloudblog.withgoogle.com`, `www.blognone.com`
   - ผู้ดูแลเนื้อหาเพิ่มแหล่งข่าวใหม่ได้เองจากหน้า admin ถ้า firewall ใช้ allowlist ต้องเพิ่มโดเมนตามไปด้วย
 - **ถ้าองค์กรออกอินเทอร์เน็ตผ่าน HTTP proxy:** ดูหัวข้อ "ใช้ผ่าน proxy ขององค์กร" ในขั้นที่ 4
 - **ขาเข้า:** เปิดแค่ 443 (และ 80 ถ้าจะ redirect ไป HTTPS) ที่ IIS/Apache ส่วน port 3000 **ไม่ต้องเปิด** เพราะแอปรับเฉพาะจากเครื่องตัวเอง
@@ -105,6 +105,25 @@ EXIT;
 - ถ้า MySQL อยู่คนละเครื่องกับแอป ให้เปลี่ยน `'localhost'` เป็น IP ของเครื่องแอป และเปิด port 3306 ระหว่างสองเครื่องเท่านั้น
 - แอปต้องการสิทธิ์สร้าง/แก้ตารางด้วย (ใช้ตอนอัปเดตเวอร์ชัน) จึงให้ `ALL PRIVILEGES` เฉพาะฐานข้อมูลนี้
 
+## 3.5 ลงทะเบียนแอปใน Microsoft Entra ID (ให้ผู้ดูแล Microsoft 365 ทำ)
+
+หน้า admin ของเว็บ login ด้วยบัญชี Microsoft 365 ของบริษัทเท่านั้น จึงต้องลงทะเบียนแอปก่อน 1 ครั้ง
+
+1. เข้า https://entra.microsoft.com ด้วยบัญชีที่มีสิทธิ์ Application Administrator ขึ้นไป
+2. **Identity > Applications > App registrations > New registration**
+   - **Name:** `PromptPilot`
+   - **Supported account types:** *Accounts in this organizational directory only* (Single tenant) — บัญชีส่วนตัวหรือของบริษัทอื่นจะ login ไม่ได้
+   - **Redirect URI:** เลือก **Web** แล้วใส่ `https://promptpilot.company.local/auth/microsoft/callback` (ใช้ชื่อเว็บจริง ต้องตรงกับ `APP_URL` ทุกตัวอักษร ถ้าเว็บอยู่ใต้ path ย่อยให้ใส่ path นั้นด้วย เช่น `https://intranet.company.local/promptpilot/auth/microsoft/callback`)
+   - กด **Register**
+3. หน้า **Overview** ของแอป: จด **Directory (tenant) ID** และ **Application (client) ID**
+4. **Certificates & secrets > Client secrets > New client secret**: ตั้งอายุ (สูงสุด 24 เดือน) แล้วจด **Value** ทันที (แสดงครั้งเดียว — ไม่ใช่ Secret ID)
+5. **API permissions:** ใช้ค่าเริ่มต้น `Microsoft Graph > User.Read` ได้เลย (ระบบขอแค่ `openid`, `profile`, `email`) ไม่ต้องขอสิทธิ์อื่น
+6. (ไม่บังคับ) **Enterprise applications > PromptPilot > Properties > Assignment required = Yes** แล้วเพิ่มเฉพาะคนหรือกลุ่มที่อนุญาต — คนอื่นจะส่งคำขอเข้าใช้งานไม่ได้ตั้งแต่แรก
+
+> **ลงปฏิทินต่ออายุ Client secret** ก่อนวันหมดอายุ ถ้าหมดอายุ จะไม่มีใครเข้าหน้า admin ได้ (หน้าเว็บสาธารณะไม่กระทบ) วิธีต่อ: สร้าง secret ใหม่ในข้อ 4 → แก้ `MS_CLIENT_SECRET` ใน `.env.local` → `Restart-Service PromptPilot` → ลบ secret เก่า
+>
+> ถ้าผู้พัฒนาจะทดสอบบนเครื่องตัวเอง ให้เพิ่ม Redirect URI `http://localhost:3000/auth/microsoft/callback` ในแอปเดียวกัน หรือแยกแอปสำหรับทดสอบ
+
 ## 4. ดาวน์โหลดโค้ดและกรอกไฟล์ตั้งค่า
 
 ```powershell
@@ -127,6 +146,9 @@ notepad .env.local
 | `DB_PASS` | รหัสผ่าน MySQL จากขั้นที่ 3 |
 | `DB_USER` | เว้นว่าง ยกเว้นชื่อผู้ใช้ MySQL ไม่ใช่ชื่อเดียวกับ `DB_NAME` |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | API key จากผู้พัฒนา (มีอย่างน้อย 1 ตัว) |
+| `APP_URL` | ที่อยู่เว็บที่ผู้ใช้เปิดจริง เช่น `https://promptpilot.company.local` (ไม่มี `/` ท้าย) |
+| `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | จากขั้นที่ 3.5 |
+| `ADMIN_EMAILS` | ชื่อ login Microsoft (UPN) ของผู้ดูแลระบบคนแรก คั่นด้วย `,` เช่น `somchai@company.com,suda@company.com` มีผลเฉพาะตอนที่ยังไม่มีผู้ดูแลระบบสักคน (ติดตั้งครั้งแรก หรือกู้คืน) — หลังจากนั้นคนในรายชื่อก็ต้องรออนุมัติเหมือนคนอื่น |
 
 > ห้าม commit หรือคัดลอกไฟล์ `.env.local` ไปที่อื่น สคริปต์ติดตั้งจะล็อกให้อ่านได้เฉพาะ Administrators และ SYSTEM
 
@@ -169,11 +191,9 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1
 4. นำเข้าไฟล์สำรอง (ถ้าใส่ `-SqlDump`) แล้วสร้าง/อัปเดตตาราง
    - ถ้าไม่ได้นำเข้าไฟล์สำรอง จะใส่ข้อมูลตั้งต้นให้
    - ฐานข้อมูลที่มีข้อมูลอยู่แล้วจะไม่ถูกเขียนทับ
-5. **ถ้ายังไม่มีบัญชีผู้ดูแลเลย จะถามชื่อผู้ใช้และรหัสผ่าน** เพื่อสร้างบัญชีแรก (รหัสอย่างน้อย 8 ตัวอักษร) ส่งบัญชีนี้ให้ผู้ดูแลเนื้อหาทางช่องทางที่ปลอดภัย
-   - ถ้านำเข้าไฟล์สำรองจากผู้พัฒนา บัญชีที่ผู้พัฒนาสร้างไว้จะติดมาด้วย และจะไม่ถามข้อนี้
-6. build เว็บ
-7. ติดตั้ง Windows Service ชื่อ `PromptPilot` (เปิดเองเมื่อเครื่องรีสตาร์ต และเปิดใหม่เองถ้าล่ม) แล้วตรวจว่าเว็บตอบ 200
-8. ตั้ง Task Scheduler 2 งาน:
+5. build เว็บ
+6. ติดตั้ง Windows Service ชื่อ `PromptPilot` (เปิดเองเมื่อเครื่องรีสตาร์ต และเปิดใหม่เองถ้าล่ม) แล้วตรวจว่าเว็บตอบ 200
+7. ตั้ง Task Scheduler 2 งาน:
    - `PromptPilot News Fetch`: ดึงข่าวทุกวัน 06:00
    - `PromptPilot DB Backup`: สำรองฐานข้อมูลทุกคืน 02:00 ไปที่ `C:\Apps\backup` เก็บย้อนหลัง 30 วัน
 
@@ -279,8 +299,9 @@ Start-ScheduledTask -TaskName "PromptPilot News Fetch"
 |---|---|---|
 | 1 | เปิด `https://promptpilot.company.local/` | หน้าแรกขึ้น มีข่าวและรูปภาพ |
 | 2 | เปิด `/news`, `/guides`, `/tools` | ขึ้นครบทุกหน้า |
-| 3 | เปิด `/admin` | ถูกส่งไปหน้า "เข้าสู่ระบบผู้ดูแล" |
-| 4 | login ด้วยบัญชีที่สร้างตอนติดตั้ง | เข้าหน้า admin ได้ มีชื่อผู้ใช้และปุ่ม "ออกจากระบบ" มุมขวา |
+| 3 | เปิด `/admin` | ถูกส่งไปหน้า "เข้าสู่ระบบผู้ดูแล" มีปุ่ม "เข้าสู่ระบบด้วย Microsoft" |
+| 4 | กดปุ่มแล้ว login ด้วยบัญชีแรกที่อยู่ใน `ADMIN_EMAILS` | เข้าหน้า admin ได้ มุมขวาขึ้นชื่อ · ผู้ดูแลระบบ และมีเมนู "ผู้ใช้" |
+| 4.1 | ให้คนอื่น login | เห็น "ส่งคำขอเข้าใช้งานแล้ว" และผู้ดูแลระบบเห็นตัวเลขคำขอที่เมนู "ผู้ใช้" กดอนุมัติแล้วคนนั้น login ได้ |
 | 5 | แก้ข้อมูลเล็กน้อยในหน้า admin แล้วกดบันทึก (แล้วแก้กลับ) | บันทึกสำเร็จ หน้าเว็บเปลี่ยนตาม |
 | 6 | หน้า admin > ประวัติการดึงข่าว | เห็นรอบที่เพิ่งทดสอบ สถานะสำเร็จ |
 | 7 | `Start-ScheduledTask -TaskName "PromptPilot DB Backup"` แล้วดู `C:\Apps\backup` | มีไฟล์ `promptpilot-....sql` ใหม่ |
@@ -341,9 +362,14 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\update.ps1
 | `ECONNREFUSED ...:3306` | MySQL ไม่ได้รัน หรือ host/port ผิด | ตรวจ service MySQL และ `DB_HOST`, `DB_PORT` |
 | เข้า `/admin` แล้วขึ้นหน้า login ของ Windows หรือหน้า error ของ IIS | เปิด Windows Authentication ไว้ที่ Site | เปิด Anonymous Authentication อย่างเดียว (ขั้นที่ 6A ข้อ 4) |
 | กด "เข้าสู่ระบบ" หรือกดบันทึกในหน้า admin แล้วไม่เกิดอะไร / log มี `Invalid Server Actions request` | proxy ไม่ได้ส่ง Host header เดิม | IIS: `preserveHostHeader` (ขั้นที่ 6A ข้อ 2) / Apache: `ProxyPreserveHost On` |
-| login ผ่านแต่ถูกส่งกลับหน้า login ทุกครั้ง | เปิดเว็บผ่าน HTTP ธรรมดา browser จึงไม่เก็บ cookie | เปิดผ่าน `https://` (ขั้นที่ 6) |
-| ขึ้น `บัญชีถูกล็อก 15 นาที` | ใส่รหัสผิด 5 ครั้งติดกัน | รอ 15 นาที หรือให้ผู้ดูแลคนอื่นกด "ตั้งรหัสผ่านใหม่" ในหน้า `/admin/users` |
-| ลืมรหัส / ไม่มีใครเข้า admin ได้เลย | — | บน server: `Set-Location C:\Apps\PromptPilot` แล้ว `npm run user:password -- <ชื่อผู้ใช้>` (ตั้งรหัสใหม่และปลดล็อก) หรือ `npm run user:create -- <ชื่อใหม่>` / ดูรายชื่อด้วย `npm run user:list` |
+| login ผ่านแต่ถูกส่งกลับหน้า login ทุกครั้ง | เปิดเว็บผ่าน HTTP ธรรมดา browser จึงไม่เก็บ cookie | เปิดผ่าน `https://` และตั้ง `APP_URL` เป็น `https://...` |
+| หน้า Microsoft ขึ้น `AADSTS50011` (redirect URI mismatch) | Redirect URI ในขั้นที่ 3.5 ไม่ตรงกับ `APP_URL` | แก้ให้ตรงทุกตัวอักษร: `<APP_URL>/auth/microsoft/callback` |
+| หน้า Microsoft ขึ้น `AADSTS7000215` / `AADSTS7000222` | Client secret ผิดหรือหมดอายุ | สร้าง secret ใหม่ (ขั้นที่ 3.5 ข้อ 4) แก้ `MS_CLIENT_SECRET` แล้ว `Restart-Service PromptPilot` |
+| ขึ้น "ยังไม่ได้ตั้งค่า Microsoft login" | `.env.local` ไม่มี `MS_TENANT_ID` / `MS_CLIENT_ID` / `MS_CLIENT_SECRET` | กรอกแล้ว `Restart-Service PromptPilot` |
+| ขึ้น "เชื่อมต่อ Microsoft ไม่ได้" | server ออกไป `login.microsoftonline.com` ไม่ได้ | เปิด outbound หรือตั้ง proxy (ขั้นที่ 4) |
+| ขึ้น "เข้าสู่ระบบไม่สำเร็จ" | ดูรายละเอียดใน `logs\web.log` บรรทัดที่ขึ้นต้นด้วย `[auth]` | เช่น บัญชีไม่ได้อยู่ใน tenant ของบริษัท หรือเวลาเครื่อง server คลาดเคลื่อน (ตั้ง time sync) |
+| ไม่มีผู้ดูแลระบบเหลือ / ผู้ดูแลระบบถูกปิดใช้หมด | — | ใส่ UPN ของคนที่จะเป็นผู้ดูแลระบบใน `ADMIN_EMAILS` แล้ว `Restart-Service PromptPilot` คนนั้น login ด้วย Microsoft จะเป็นผู้ดูแลระบบ (ใช้ได้เพราะตอนนั้นไม่มีผู้ดูแลระบบเหลือ) ดูรายชื่อผู้ใช้ด้วย `npm run user:list` |
+| พนักงานลาออก | — | ปิดบัญชีใน Microsoft 365 ก็ login ไม่ได้แล้ว แต่ควรกด "ปิดใช้" ในหน้า `/admin/users` ด้วย เพื่อตัด session ที่ยังค้างอยู่ทันที |
 | รูปไม่ขึ้น หรือ `/_next/image` ได้ 500 | `node_modules` ถูกคัดลอกมาจากเครื่องอื่น | ลบโฟลเดอร์ `node_modules` แล้วรัน `install.ps1` ใหม่ |
 | build ค้างหรือ error ตอนโหลดฟอนต์ | เครื่องออก `fonts.googleapis.com` ไม่ได้ | เปิด outbound หรือตั้ง proxy (ขั้นที่ 4) |
 | log ข่าวขึ้น `ดึงข่าวไม่ได้เลยสักแหล่ง` | ออกอินเทอร์เน็ตไม่ได้ | ตรวจ firewall / proxy (ขั้นที่ 1 และ 4) |

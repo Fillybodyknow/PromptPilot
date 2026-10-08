@@ -57,13 +57,14 @@ if (-not (Test-Path $envFile)) {
     Stop-WithError "Created $envFile from .env.example. Fill in the values (notepad `"$envFile`"), then run this script again."
 }
 $cfg = Read-EnvFile $envFile
-$missing = @("DB_NAME", "DB_PASS") | Where-Object { -not $cfg[$_] }
+$missing = @("DB_NAME", "DB_PASS", "APP_URL", "MS_TENANT_ID", "MS_CLIENT_ID", "MS_CLIENT_SECRET", "ADMIN_EMAILS") | Where-Object { -not $cfg[$_] }
 if ($missing) { Stop-WithError ("Empty in .env.local: " + ($missing -join ", ")) }
 if (-not $cfg["ANTHROPIC_API_KEY"] -and -not $cfg["OPENAI_API_KEY"]) { Stop-WithError "Set ANTHROPIC_API_KEY and/or OPENAI_API_KEY in .env.local." }
 # ตัวเว็บ (Next.js), สคริปต์ฐานข้อมูล และสคริปต์สำรองข้อมูล อ่านอักขระเหล่านี้ใน .env ต่างกัน
 # (เช่น $ ถูกตีความเป็นตัวแปร, # เป็น comment) รหัสผ่านจะผิดแค่บางส่วน — จึงห้ามใช้ไปเลย
-$unsafe = @("DB_NAME", "DB_USER", "DB_PASS") |
+$unsafe = @("DB_NAME", "DB_USER", "DB_PASS", "MS_CLIENT_SECRET") |
     Where-Object { $cfg[$_] -and $cfg[$_] -match '[\$#"''`\s\\]' }
+if ($cfg["APP_URL"] -notmatch '^https://') { Write-Warn "APP_URL is not https:// - Microsoft login and session cookies need HTTPS on the server." }
 if ($unsafe) { Stop-WithError ("These values contain characters that are not allowed (`$ # quotes backtick backslash or spaces): " + ($unsafe -join ", ") + ". Use letters, digits and symbols like ! @ % ^ & * - _ + = . , ? instead.") }
 # ไฟล์มีรหัสผ่านและ API key — ให้อ่านได้เฉพาะ Administrators และ SYSTEM (ใช้ SID จะได้ไม่ขึ้นกับภาษาของ Windows)
 Invoke-Native "Set permissions on .env.local" "icacls.exe" @($envFile, "/inheritance:r", "/grant:r", "*S-1-5-32-544:F", "*S-1-5-18:F", "/Q")
@@ -99,38 +100,6 @@ try {
     Invoke-Native "Database migration" "npm.cmd" @("run", "db:migrate")
     # ใส่ข้อมูลตั้งต้นเฉพาะเมื่อตารางยังว่าง (seed ข้ามเองถ้ามีข้อมูลแล้ว เช่นหลังนำเข้า dump)
     Invoke-Native "Seed initial data" "npm.cmd" @("run", "db:seed")
-
-    # บัญชีหน้า admin อยู่ในตาราง users — ถ้ายังไม่มีใครเลย ให้สร้างคนแรกตอนนี้ (คนต่อไปเพิ่มในหน้า /admin/users)
-    $userCount = (& npx.cmd tsx scripts/user.ts count | Select-Object -Last 1)
-    if ($LASTEXITCODE -ne 0 -or "$userCount".Trim() -notmatch '^\d+$') { Stop-WithError "Could not read the users table (exit code $LASTEXITCODE)." }
-    if ("$userCount".Trim() -eq "0") {
-        Write-Step "Creating the first admin account"
-        Write-Host "    Username: a-z 0-9 . _ -  (3-64 chars). Password: at least 8 characters."
-        while ($true) {
-            $newUser = (Read-Host "    Admin username").Trim().ToLower()
-            $pw1 = Read-Host "    Password" -AsSecureString
-            $pw2 = Read-Host "    Confirm password" -AsSecureString
-            $bstr1 = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pw1)
-            $bstr2 = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pw2)
-            try {
-                $plain1 = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr1)
-                $plain2 = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr2)
-            } finally {
-                [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr1)
-                [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr2)
-            }
-            # -cne: เทียบแบบสนตัวพิมพ์เล็กใหญ่ (-ne ของ PowerShell ไม่สน)
-            if ($plain1 -cne $plain2) { Write-Warn "Passwords do not match. Try again."; $plain1 = $null; $plain2 = $null; continue }
-            # ส่งรหัสผ่านทาง environment variable ของ process นี้เท่านั้น — ไม่ใส่ใน command line ที่คนอื่นเห็นได้
-            $env:PP_NEW_PASSWORD = $plain1
-            try { $code = Invoke-NativeCode "npx.cmd" @("tsx", "scripts/user.ts", "create", $newUser) }
-            finally { Remove-Item Env:PP_NEW_PASSWORD -ErrorAction SilentlyContinue; $plain1 = $null; $plain2 = $null }
-            if ($code -eq 0) { break }
-            Write-Warn "Could not create the account (see the message above). Try again."
-        }
-    } else {
-        Write-Ok "Admin accounts already exist ($("$userCount".Trim()))"
-    }
 
     # ---------------------------------------------------------------- 7. build
     Write-Step "Building the web app (npm run build)"
@@ -202,5 +171,6 @@ Write-Host ""
 Write-Host "Installation complete." -ForegroundColor Green
 Write-Host "Next steps (see DEPLOY.md):"
 Write-Host "  1. Configure IIS or Apache to reverse-proxy https://<your-host>/ to http://127.0.0.1:$Port/"
-Write-Host "  2. Test the news fetch now:  Start-ScheduledTask -TaskName 'PromptPilot News Fetch'"
+Write-Host "  2. Open $($cfg["APP_URL"])/login and sign in with Microsoft using an address listed in ADMIN_EMAILS"
+Write-Host "  3. Test the news fetch now:  Start-ScheduledTask -TaskName 'PromptPilot News Fetch'"
 Write-Host "     then check $Repo\logs\news-$(Get-Date -Format 'yyyy-MM-dd').log"
