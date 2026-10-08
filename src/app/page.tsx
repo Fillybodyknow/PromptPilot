@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { connection } from "next/server";
 import { NewsLead, NewsList, NewsSecondary } from "@/components/news/NewsCards";
 import { GroupCard } from "@/components/site/GroupCard";
+import { HowItWorks } from "@/components/site/HowItWorks";
 import { KineticBand } from "@/components/site/KineticBand";
 import { ScrollFx } from "@/components/site/ScrollFx";
 import { AlertIcon, SearchIcon } from "@/components/site/icons";
@@ -13,6 +14,7 @@ import { VendorLogo } from "@/components/VendorLogo";
 import { withBasePath } from "@/lib/basePath";
 import { GROUP_SLUGS, categoryKeysOfGroup, getCategory } from "@/lib/categories";
 import { HERO_VISUAL, groupVisual } from "@/lib/visuals";
+import { getGroupAccent } from "@/lib/groupAccent";
 import { getAllCategoriesWithEntries, getCategoriesGrouped, getFeaturedTools } from "@/lib/data";
 import { formatClock, formatLongDate } from "@/lib/format";
 import { getVendorLogoInfo, vendorLogoKey } from "@/lib/logos";
@@ -177,6 +179,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
       </div>
 
+      {/* 4 ขั้นเริ่มใช้งานแบบ scrollytelling — ใช้กลุ่มงาน เครื่องมือแนะนำ และข่าวเด่นจริงเป็นหน้าจอตัวอย่าง */}
+      <HowItWorks
+        groups={groups.map((g) => ({ name: g.group, dot: getGroupAccent(g.group).dot }))}
+        tools={featured.map((t) => ({ name: t.name, vendor: t.vendor }))}
+        news={(top.length > 0 ? top : latest.items).map((n) => ({ title: n.titleTh ?? n.title, importance: n.importance }))}
+      />
+
       <KineticBand words={["ข่าว AI", "คู่มือตามงาน", "เครื่องมือที่ตรวจแล้ว", "PromptPilot"]} />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -202,7 +211,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       {featured.length > 0 && (
         <section aria-labelledby="tools" className="mt-14">
           <SectionHeader id="tools" title="เครื่องมือแนะนำ" href="/tools" linkLabel={`ดูเครื่องมือทั้ง ${totalTools} รายการ`} />
-          <div className="mt-4 flex flex-wrap gap-4">
+          {/* การ์ดเลื่อนเข้าจากข้างจอ — ตัดส่วนที่ล้นแนวนอนทิ้ง ไม่ให้หน้าเลื่อนข้างได้บนมือถือ (padding ติดลบเผื่อเงาการ์ด) */}
+          <div className="-mx-3 mt-1 flex flex-wrap gap-4 overflow-x-clip px-3 py-3">
             {featured.map((t, i) => (
               <Link
                 key={`${t.categoryKey}/${t.id}`}
