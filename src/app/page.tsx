@@ -1,7 +1,10 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { connection } from "next/server";
 import { NewsLead, NewsList, NewsSecondary } from "@/components/news/NewsCards";
 import { GroupCard } from "@/components/site/GroupCard";
+import { KineticBand } from "@/components/site/KineticBand";
+import { ScrollFx } from "@/components/site/ScrollFx";
 import { AlertIcon, SearchIcon } from "@/components/site/icons";
 import { PageBanner } from "@/components/site/PageBanner";
 import { CountUp, EmptyState, RotatingWords, SectionHeader, card } from "@/components/site/ui";
@@ -56,6 +59,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
   return (
     <>
+      {/* ลูกเล่นตอน scroll: header ซ่อน/โผล่ตามทิศ + แถบบอกว่าเลื่อนมาถึงไหนแล้ว */}
+      <ScrollFx />
+      <div aria-hidden className="read-progress fixed inset-x-0 top-0 z-50 h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-400" />
       <PageBanner visual={HERO_VISUAL} size="lg">
         <div className={lead ? "pb-16" : ""}>
           <p className="fade-up flex items-center gap-2 text-sm text-white/75">
@@ -104,7 +110,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </div>
       </PageBanner>
 
-      <main className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+      {/* main เต็มความกว้าง ให้แถบตัวอักษรวิ่งได้สุดขอบจอโดยไม่ใช้ 100vw (ซึ่งรวมความกว้าง scrollbar แล้วทำให้หน้าเลื่อนแนวนอนได้) */}
+      <main className="pb-16">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
       {lead ? (
         <section aria-label="ข่าวเด่นวันนี้" className="relative z-10 -mt-12 flex flex-wrap gap-6">
           <div className="min-w-0 flex-[2_1_560px]">
@@ -167,13 +175,20 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </div>
       </section>
 
-      <section aria-labelledby="groups" className="reveal mt-14">
+      </div>
+
+      <KineticBand words={["ข่าว AI", "คู่มือตามงาน", "เครื่องมือที่ตรวจแล้ว", "PromptPilot"]} />
+
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+
+      <section aria-labelledby="groups">
         <SectionHeader id="groups" title="เริ่มใช้ AI ตามงานของคุณ">
           คู่มือพร้อม prompt ตัวอย่างและเครื่องมือที่ทีมตรวจสอบแล้ว แยกตามลักษณะงาน
         </SectionHeader>
         <div className="mt-4 flex flex-wrap gap-4">
-          {groups.map((g) => (
+          {groups.map((g, i) => (
             <GroupCard
+              index={i}
               key={g.group}
               group={g.group}
               href={`/guides/${g.categories[0].key}`}
@@ -185,14 +200,15 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       </section>
 
       {featured.length > 0 && (
-        <section aria-labelledby="tools" className="reveal mt-14">
+        <section aria-labelledby="tools" className="mt-14">
           <SectionHeader id="tools" title="เครื่องมือแนะนำ" href="/tools" linkLabel={`ดูเครื่องมือทั้ง ${totalTools} รายการ`} />
           <div className="mt-4 flex flex-wrap gap-4">
-            {featured.map((t) => (
+            {featured.map((t, i) => (
               <Link
                 key={`${t.categoryKey}/${t.id}`}
                 href={`/tools/${t.categoryKey}/${t.id}`}
-                className={`${card} spotlight tilt reveal flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
+                style={{ "--dir": i % 2 ? 1 : -1 } as CSSProperties}
+                className={`${card} spotlight tilt reveal-side flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 p-5 transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg hover:shadow-black/10`}
               >
                 <span className="flex items-center gap-3">
                   <VendorLogo vendor={t.vendor} size={40} />
@@ -209,14 +225,15 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </section>
       )}
 
-      <section aria-labelledby="roles" className="reveal mt-14">
+      <section aria-labelledby="roles" className="mt-14">
         <SectionHeader id="roles" title="อ่านตามบทบาทของคุณ" />
         <div className="mt-4 flex flex-wrap gap-4">
-          {ROLES.map((r) => (
+          {ROLES.map((r, i) => (
             <Link
               key={r.role}
               href={r.href}
-              className={`${card} spotlight reveal relative flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
+              style={{ "--i": i } as CSSProperties}
+              className={`${card} spotlight reveal-pop relative flex min-w-0 flex-[1_1_300px] flex-col gap-2 overflow-hidden p-5 pt-6 transition hover:-translate-y-0.5 hover:border-brand/50`}
             >
               <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
               <span className="text-[13px] font-semibold text-brand">{r.role}</span>
@@ -226,6 +243,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           ))}
         </div>
       </section>
+      </div>
       </main>
     </>
   );

@@ -60,8 +60,8 @@ export function SectionHeader({ id, title, href, linkLabel, children }: { id: st
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h2 id={id} className="flex items-center gap-3 text-[22px] font-bold">
-          <span aria-hidden className="h-6 w-1.5 rounded-full bg-gradient-to-b from-indigo-500 via-violet-500 to-fuchsia-500" />
-          {title}
+          <span aria-hidden className="sh-bar h-6 w-1.5 rounded-full bg-gradient-to-b from-indigo-500 via-violet-500 to-fuchsia-500" />
+          <span className="sh-title">{title}</span>
         </h2>
         {children && <p className="mt-1 text-[15px] text-muted">{children}</p>}
       </div>

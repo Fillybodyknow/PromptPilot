@@ -378,3 +378,144 @@ html.theme-vt::view-transition-new(root) {
 html.theme-vt body {
   transition: none;
 }
+
+/* ---------- ลูกเล่นตอน scroll (หน้าแรก) ---------- */
+
+/* ตัวอักษรแบบเส้นขอบ */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in oklab, var(--foreground) 30%, transparent);
+}
+
+/* header ซ่อนเมื่อเลื่อนลง โผล่เมื่อเลื่อนขึ้น (ทิศมาจาก ScrollFx.tsx) — ใช้ translate ไม่ใช่ transform
+   และตอนแสดงต้องเป็น none: ค่า transform/translate ใดๆ ทำให้เมนูมือถือ (position: fixed) ถูกขังในกรอบ header */
+.site-header {
+  transition: translate 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+html[data-scroll-dir="down"] .site-header:not(:focus-within) {
+  translate: 0 -100%;
+}
+/* ปุ่มกลับขึ้นบนกลับกัน: ซ่อนตอนเลื่อนลง โผล่ตอนเลื่อนขึ้น (ตอนที่คนอยากกลับขึ้นไป) */
+.to-top {
+  transition: translate 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+html[data-scroll-dir="down"] .to-top {
+  translate: 0 160%;
+}
+
+@keyframes hero-bg-par {
+  to {
+    transform: translateY(28%) scale(1.08);
+  }
+}
+@keyframes hero-content-par {
+  to {
+    opacity: 0;
+    transform: translateY(-90px) scale(0.97);
+    filter: blur(6px);
+  }
+}
+@keyframes hero-orbs-par {
+  to {
+    transform: translateY(45%);
+  }
+}
+@keyframes kinetic-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-30%);
+  }
+}
+@keyframes kinetic-right {
+  from {
+    transform: translateX(-30%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translateY(70px) rotateX(20deg) scale(0.92);
+  }
+}
+@keyframes side-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--dir, 1) * 90px)) rotate(calc(var(--dir, 1) * 2deg));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* hero: รูปเลื่อนช้ากว่าหน้า + ซูมเล็กน้อย, ข้อความจางขึ้นและเบลอ, แสงสีลอยคนละความเร็ว */
+    .hero-par-bg {
+      animation: hero-bg-par linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+    .hero-par-content {
+      animation: hero-content-par linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 75vh;
+    }
+    .hero-par-orbs {
+      animation: hero-orbs-par linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+    /* แถบตัวอักษรเลื่อนสวนกันตลอดช่วงที่อยู่ในจอ — ตั้ง timeline ที่กล่องนอก แล้วให้แถวด้านในอ้างชื่อ
+       (ใช้ view() ที่แถวตรงๆ ไม่ได้ เพราะกล่องนอกเป็น overflow: hidden จึงกลายเป็นตัว scroll ที่ไม่เคยเลื่อน) */
+    .kinetic {
+      view-timeline: --kinetic block;
+    }
+    .kinetic-left {
+      animation: kinetic-left linear both;
+      animation-timeline: --kinetic;
+      animation-range: cover;
+    }
+    .kinetic-right {
+      animation: kinetic-right linear both;
+      animation-timeline: --kinetic;
+      animation-range: cover;
+    }
+    /* หัวข้อ section: แถบสียืดขึ้น หัวข้อเลื่อนเข้าจากซ้าย */
+    .sh-bar {
+      transform-origin: bottom;
+      animation: grow-y linear backwards;
+      animation-timeline: view();
+      animation-range: entry 30% entry 90%;
+    }
+    .sh-title {
+      animation: slide-in-left linear backwards;
+      animation-timeline: view();
+      animation-range: entry 20% entry 80%;
+    }
+    /* การ์ดพลิกขึ้นมาทีละใบ (--i = ลำดับการ์ด ทำให้ใบหลังเริ่มช้ากว่า) — backwards: จบแล้วไม่ทับ hover/tilt */
+    .reveal-pop {
+      animation: pop-in linear backwards;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 7%) entry calc(55% + var(--i, 0) * 7%);
+    }
+    /* การ์ดเลื่อนเข้าจากซ้าย/ขวาสลับกัน (--dir = -1 หรือ 1) */
+    .reveal-side {
+      animation: side-in linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}

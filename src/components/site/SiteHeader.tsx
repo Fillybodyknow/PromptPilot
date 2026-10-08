@@ -9,7 +9,7 @@ import { MobileNav } from "./MobileNav";
 
 export function SiteHeader() {
   return (
-    <header className="header-scroll sticky top-0 z-40 isolate border-b border-line">
+    <header className="site-header header-scroll sticky top-0 z-40 isolate border-b border-line">
       {/* blur อยู่บนชั้นพื้นหลังแยก ไม่ใส่ที่ header ตรงๆ เพราะ backdrop-filter ทำให้เมนูมือถือ (position: fixed) ถูกขังอยู่ในกรอบ header */}
       <div aria-hidden className="absolute inset-0 -z-10 bg-surface/85 backdrop-blur-lg" />
       {/* เต็มความกว้างจอ (ไม่จำกัด max-w เหมือนเนื้อหา) เหลือแค่ระยะขอบเล็กน้อยไม่ให้ชิดขอบจอ */}

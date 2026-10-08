@@ -20,27 +20,24 @@ export function PageBanner({
   const height = { sm: "min-h-[180px]", md: "min-h-[260px] sm:min-h-[300px]", lg: "min-h-[440px] sm:min-h-[500px]" }[size];
   return (
     <section className={`relative isolate overflow-hidden bg-[#0c0d11] ${height}`}>
-      <Image
-        src={visual.src}
-        alt={visual.alt}
-        fill
-        priority={priority}
-        placeholder="blur"
-        sizes="100vw"
-        className="ken-burns -z-20 object-cover object-center"
-      />
+      {/* hero หน้าแรก (lg): รูปเลื่อนช้ากว่าหน้า (parallax) — ห่อด้วย div เพราะตัวรูปใช้ transform กับ ken-burns อยู่แล้ว */}
+      <div className={`absolute inset-0 -z-20 ${size === "lg" ? "hero-par-bg" : ""}`}>
+        <Image src={visual.src} alt={visual.alt} fill priority={priority} placeholder="blur" sizes="100vw" className="ken-burns object-cover object-center" />
+      </div>
       {/* ไล่เข้มจากซ้าย (ฝั่งข้อความ) และจากล่าง ให้ข้อความขาวผ่าน contrast บนทุกส่วนของรูป */}
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0c0d11]/95 via-[#0c0d11]/75 to-[#0c0d11]/25" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0c0d11]/80 via-transparent to-transparent" />
       {size === "lg" && (
         // แสงสีลอยช้าๆ บน hero หน้าแรก (หยุดนิ่งถ้าผู้ใช้ตั้งลดการเคลื่อนไหว)
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden mix-blend-screen">
+        <div aria-hidden className="hero-par-orbs pointer-events-none absolute inset-0 -z-10 overflow-hidden mix-blend-screen">
           <div className="orb absolute -left-[10%] top-[5%] h-[55%] w-[45%] rounded-full bg-indigo-600/40 blur-3xl" />
           <div className="orb absolute left-[30%] top-[45%] h-[50%] w-[35%] rounded-full bg-fuchsia-600/30 blur-3xl [animation-delay:-6s]" />
           <div className="orb absolute right-[5%] top-[-10%] h-[45%] w-[30%] rounded-full bg-cyan-500/20 blur-3xl [animation-delay:-11s]" />
         </div>
       )}
-      <div className={`relative mx-auto flex max-w-6xl flex-col justify-end px-4 pb-8 pt-10 text-white sm:px-6 ${height}`}>{children}</div>
+      <div className={`relative mx-auto flex max-w-6xl flex-col justify-end px-4 pb-8 pt-10 text-white sm:px-6 ${height} ${size === "lg" ? "hero-par-content" : ""}`}>
+        {children}
+      </div>
     </section>
   );
 }

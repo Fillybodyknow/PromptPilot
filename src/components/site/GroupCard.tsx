@@ -1,15 +1,17 @@
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { groupVisual } from "@/lib/visuals";
 import { GroupDot } from "./ui";
 
 /** การ์ดกลุ่มงานแบบรูปเต็มใบ — ข้อความอยู่บน overlay สีเข้ม อ่านออกทั้งสองธีม */
-export function GroupCard({ group, href, categories, toolCount }: { group: string; href: string; categories: string[]; toolCount: number }) {
+export function GroupCard({ group, href, categories, toolCount, index = 0 }: { group: string; href: string; categories: string[]; toolCount: number; index?: number }) {
   const visual = groupVisual(group);
   return (
     <Link
       href={href}
-      className="tilt reveal group relative isolate flex min-h-52 min-w-0 flex-[1_1_260px] flex-col justify-end overflow-hidden rounded-2xl p-5 text-white shadow-lg shadow-black/10"
+      style={{ "--i": index } as CSSProperties}
+      className="tilt reveal-pop group relative isolate flex min-h-52 min-w-0 flex-[1_1_260px] flex-col justify-end overflow-hidden rounded-2xl p-5 text-white shadow-lg shadow-black/10"
     >
       <Image
         src={visual.src}
