@@ -1,9 +1,10 @@
-import { and, asc, count, desc, eq, inArray, like, lt } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, inArray, like, lt } from "drizzle-orm";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { getDb, getPool } from "@/db/client";
-import { checkRuns, contentSuggestions, SUGGESTION_STATUSES, watchPages, type SuggestedChange } from "@/db/schema";
+import { checkRuns, contentSuggestions, SUGGESTION_STATUSES, SUGGESTION_TARGETS, watchPages, type SuggestedChange } from "@/db/schema";
 
 export type SuggestionStatus = (typeof SUGGESTION_STATUSES)[number];
+export type SuggestionTarget = (typeof SUGGESTION_TARGETS)[number];
 export type SuggestionRow = typeof contentSuggestions.$inferSelect;
 export type WatchPageRow = typeof watchPages.$inferSelect;
 export type CheckRunRow = typeof checkRuns.$inferSelect;
@@ -40,7 +41,9 @@ export async function setWatchPages(toolId: number, urls: string[]): Promise<voi
 export async function ensureWatchPages(toolId: number, defaultUrls: string[]): Promise<WatchPageRow[]> {
   const pages = await listWatchPages(toolId);
   if (pages.length > 0) return pages;
-  await getDb().insert(watchPages).values(defaultUrls.map((url) => ({ toolId, url: url.slice(0, 500) })));
+  await getDb()
+    .insert(watchPages)
+    .values(defaultUrls.map((url) => ({ toolId, url: url.slice(0, 500) })));
   return listWatchPages(toolId);
 }
 
@@ -50,7 +53,12 @@ export async function ensureWatchPages(toolId: number, defaultUrls: string[]): P
  */
 export async function listNeedsManualCheck(marker: string): Promise<{ toolId: number; message: string; at: Date }[]> {
   const rows = await getDb()
-    .select({ scope: checkRuns.scope, message: checkRuns.message, startedAt: checkRuns.startedAt, status: checkRuns.status })
+    .select({
+      scope: checkRuns.scope,
+      message: checkRuns.message,
+      startedAt: checkRuns.startedAt,
+      status: checkRuns.status,
+    })
     .from(checkRuns)
     .where(like(checkRuns.scope, "tool:%"))
     .orderBy(desc(checkRuns.id))
@@ -59,7 +67,11 @@ export async function listNeedsManualCheck(marker: string): Promise<{ toolId: nu
   for (const r of rows) if (r.status !== "running" && !latest.has(r.scope)) latest.set(r.scope, r);
   return [...latest.values()]
     .filter((r) => r.status === "ok" && r.message?.includes(marker))
-    .map((r) => ({ toolId: Number(r.scope.slice(5)), message: r.message ?? "", at: r.startedAt }));
+    .map((r) => ({
+      toolId: Number(r.scope.slice(5)),
+      message: r.message ?? "",
+      at: r.startedAt,
+    }));
 }
 
 /** checked: false = บันทึกสถานะอย่างเดียว ยังไม่นับเป็นเวลาที่ AI ตรวจล่าสุด (รอบอัตโนมัติใช้เวลานี้เลือกเครื่องมือ) */
@@ -80,9 +92,12 @@ export async function markWatchChecked(ids: number[]): Promise<void> {
 
 // ---------------------------------------------------------------- ข้อเสนอแก้ไข
 
-/** สร้างข้อเสนอใหม่ และปิดข้อเสนอเดิมที่ยังค้างของเป้าหมายเดียวกัน (ข้อมูลใหม่กว่าแทนที่) */
+/**
+ * สร้างข้อเสนอใหม่ — ข้อเสนอแก้ข้อมูล (tool/guide) ปิดข้อเสนอเดิมที่ยังค้างของเป้าหมายเดียวกัน (ข้อมูลใหม่กว่าแทนที่)
+ * ส่วน prompt/เครื่องมือใหม่ แต่ละรายการเป็นข้อเสนอแยก ตัดสินแยกกัน จึงไม่ทับกัน
+ */
 export async function createSuggestion(s: {
-  targetType: "tool" | "guide";
+  targetType: SuggestionTarget;
   targetKey: string;
   changes: SuggestedChange[];
   summary: string | null;
@@ -91,11 +106,16 @@ export async function createSuggestion(s: {
   triggerRef: string | null;
 }): Promise<number> {
   return getDb().transaction(async (tx) => {
-    await tx
-      .update(contentSuggestions)
-      .set({ status: "superseded" })
-      .where(and(eq(contentSuggestions.targetType, s.targetType), eq(contentSuggestions.targetKey, s.targetKey), eq(contentSuggestions.status, "pending")));
-    const [res] = await tx.insert(contentSuggestions).values({ ...s, triggerRef: s.triggerRef?.slice(0, 320) ?? null, createdAt: new Date() });
+    if (s.targetType === "tool" || s.targetType === "guide")
+      await tx
+        .update(contentSuggestions)
+        .set({ status: "superseded" })
+        .where(and(eq(contentSuggestions.targetType, s.targetType), eq(contentSuggestions.targetKey, s.targetKey), eq(contentSuggestions.status, "pending")));
+    const [res] = await tx.insert(contentSuggestions).values({
+      ...s,
+      triggerRef: s.triggerRef?.slice(0, 320) ?? null,
+      createdAt: new Date(),
+    });
     return res.insertId;
   });
 }
@@ -107,14 +127,65 @@ async function expireOldSuggestions(): Promise<void> {
     .where(and(eq(contentSuggestions.status, "pending"), lt(contentSuggestions.createdAt, new Date(Date.now() - SUGGESTION_TTL_DAYS * 86_400_000))));
 }
 
-export async function listSuggestions(status: SuggestionStatus, limit = 50): Promise<SuggestionRow[]> {
+export async function listSuggestions(status: SuggestionStatus, limit = 50, type?: SuggestionTarget): Promise<SuggestionRow[]> {
   if (status === "pending") await expireOldSuggestions();
   return getDb()
     .select()
     .from(contentSuggestions)
-    .where(eq(contentSuggestions.status, status))
+    .where(and(eq(contentSuggestions.status, status), type ? eq(contentSuggestions.targetType, type) : undefined))
     .orderBy(status === "pending" ? asc(contentSuggestions.createdAt) : desc(contentSuggestions.decidedAt), desc(contentSuggestions.id))
     .limit(limit);
+}
+
+/** จำนวนข้อเสนอที่รอตรวจแยกตามประเภท (ใช้กับแท็บกรอง) */
+export async function countPendingByType(): Promise<Partial<Record<SuggestionTarget, number>>> {
+  await expireOldSuggestions();
+  const rows = await getDb()
+    .select({ type: contentSuggestions.targetType, n: count() })
+    .from(contentSuggestions)
+    .where(eq(contentSuggestions.status, "pending"))
+    .groupBy(contentSuggestions.targetType);
+  return Object.fromEntries(rows.map((r) => [r.type, r.n]));
+}
+
+/** ข้อเสนอที่รอตรวจของหมวดหนึ่ง (แก้คู่มือ, prompt ใหม่, เครื่องมือใหม่) — แสดงในหน้าแก้คู่มือ */
+export async function countPendingForCategory(categoryKey: string): Promise<number> {
+  await expireOldSuggestions();
+  const [{ n }] = await getDb()
+    .select({ n: count() })
+    .from(contentSuggestions)
+    .where(
+      and(
+        eq(contentSuggestions.status, "pending"),
+        eq(contentSuggestions.targetKey, categoryKey),
+        inArray(contentSuggestions.targetType, ["guide", "prompt", "new_tool"]),
+      ),
+    );
+  return n;
+}
+
+/** งานของ prompt ที่เคยเสนอให้หมวดนี้ (ทุกสถานะ) ในช่วงที่กำหนด — ไม่เสนอซ้ำทั้งที่ยังรอตรวจและที่ถูกปฏิเสธ */
+export async function recentPromptTasks(categoryKey: string, days: number): Promise<string[]> {
+  const rows = await getDb()
+    .select({ changes: contentSuggestions.changes })
+    .from(contentSuggestions)
+    .where(
+      and(
+        eq(contentSuggestions.targetType, "prompt"),
+        eq(contentSuggestions.targetKey, categoryKey),
+        gt(contentSuggestions.createdAt, new Date(Date.now() - days * 86_400_000)),
+      ),
+    );
+  return rows.flatMap((r) => r.changes.map((c) => String((c.after as { task?: string } | null)?.task ?? ""))).filter(Boolean);
+}
+
+/** ชื่อเครื่องมือใหม่ที่เคยเสนอไปแล้ว (ทุกสถานะ) ในช่วงที่กำหนด — ไม่เสนอซ้ำตัวที่คนเคยปฏิเสธหรือยังค้างอยู่ */
+export async function recentNewToolNames(days: number): Promise<string[]> {
+  const rows = await getDb()
+    .select({ changes: contentSuggestions.changes })
+    .from(contentSuggestions)
+    .where(and(eq(contentSuggestions.targetType, "new_tool"), gt(contentSuggestions.createdAt, new Date(Date.now() - days * 86_400_000))));
+  return rows.flatMap((r) => r.changes.map((c) => String((c.after as { name?: string } | null)?.name ?? ""))).filter(Boolean);
 }
 
 export async function getSuggestion(id: number): Promise<SuggestionRow | null> {
@@ -142,14 +213,27 @@ export async function pendingSuggestionFor(targetType: "tool" | "guide", targetK
 export async function decideSuggestion(id: number, status: "accepted" | "partial" | "rejected", by: string, note: string | null): Promise<boolean> {
   const [res] = await getDb()
     .update(contentSuggestions)
-    .set({ status, decidedBy: by.slice(0, 320), decidedAt: new Date(), decisionNote: note })
+    .set({
+      status,
+      decidedBy: by.slice(0, 320),
+      decidedAt: new Date(),
+      decisionNote: note,
+    })
     .where(and(eq(contentSuggestions.id, id), eq(contentSuggestions.status, "pending")));
   return res.affectedRows === 1;
 }
 
 /** ย้อนการตัดสิน เมื่อบันทึกข้อมูลจริงไม่สำเร็จหลังจองสถานะแล้ว */
 export async function reopenSuggestion(id: number): Promise<void> {
-  await getDb().update(contentSuggestions).set({ status: "pending", decidedBy: null, decidedAt: null, decisionNote: null }).where(eq(contentSuggestions.id, id));
+  await getDb()
+    .update(contentSuggestions)
+    .set({
+      status: "pending",
+      decidedBy: null,
+      decidedAt: null,
+      decisionNote: null,
+    })
+    .where(eq(contentSuggestions.id, id));
 }
 
 // ---------------------------------------------------------------- รอบตรวจ (กันรันซ้อนด้วย MySQL lock แบบเดียวกับการดึงข่าว)
@@ -165,7 +249,14 @@ export async function beginCheckRun(triggeredBy: string, scope: string): Promise
     return null;
   }
   lockConn = conn;
-  const [res] = await getDb().insert(checkRuns).values({ triggeredBy: triggeredBy.slice(0, 320), scope, startedAt: new Date(), status: "running" });
+  const [res] = await getDb()
+    .insert(checkRuns)
+    .values({
+      triggeredBy: triggeredBy.slice(0, 320),
+      scope,
+      startedAt: new Date(),
+      status: "running",
+    });
   return res.insertId;
 }
 
@@ -195,5 +286,12 @@ export async function latestCheckRunFor(scope: string): Promise<CheckRunRow | nu
 export async function recordRun(scope: string, triggeredBy: string, startedAt: Date, status: "ok" | "failed", message: string): Promise<void> {
   await getDb()
     .insert(checkRuns)
-    .values({ triggeredBy: triggeredBy.slice(0, 320), scope, startedAt, finishedAt: new Date(), status, message: message.slice(0, 2000) });
+    .values({
+      triggeredBy: triggeredBy.slice(0, 320),
+      scope,
+      startedAt,
+      finishedAt: new Date(),
+      status,
+      message: message.slice(0, 2000),
+    });
 }

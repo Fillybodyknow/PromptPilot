@@ -36,6 +36,14 @@ export const GUIDE_NOTE_LABEL = {
   accuracyNote: "ความแม่นยำ",
 } as const;
 
+/** ช่องข้อความของคู่มือที่ AI เสนอแก้ได้ (ลิงก์ ขั้นตอนติดตั้ง และวิธีเข้าถึง คนแก้เอง) */
+export const GUIDE_FIELD_LABEL = {
+  howToUse: "ใช้ AI กับงานนี้อย่างไร",
+  dataHandlingNote: "ข้อมูลที่ห้ามวางลงใน AI",
+  ...GUIDE_NOTE_LABEL,
+} as const;
+export type GuideField = keyof typeof GUIDE_FIELD_LABEL;
+
 export const IMPORTANCE_LABEL: Record<number, string> = { 3: "ด่วน", 2: "ควรรู้", 1: "ทั่วไป" };
 
 export const ROLE_LABEL = { roleEmployee: "พนักงานทั่วไป", roleIt: "ฝ่าย IT", roleExec: "ผู้บริหาร" } as const;

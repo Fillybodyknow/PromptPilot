@@ -70,6 +70,21 @@ export async function staleCandidates(limit: number, exclude: Set<number>): Prom
     .map((r) => ({ toolId: r.id, name: r.name, ref: `ข้อมูลตรวจล่าสุด ${r.verifiedAt}` }));
 }
 
+/** รอบทบทวนคู่มือห่างกันอย่างน้อยเท่านี้ (task รันทุกวัน แต่ส่วนนี้ทำเดือนละครั้ง) */
+const MONTHLY_PASS_EVERY_MS = 28 * DAY;
+
+/** หมวดนี้ทบทวนสำเร็จในรอบเดือนนี้แล้วหรือยัง (ใช้ทำรอบรายเดือนต่อจากที่ค้าง) */
+export async function guideReviewedRecently(categoryKey: string): Promise<boolean> {
+  const last = await latestCheckRunFor(`guide:${categoryKey}`);
+  return !!last && last.status === "ok" && last.startedAt.getTime() > Date.now() - MONTHLY_PASS_EVERY_MS;
+}
+
+/** ถึงรอบทบทวนคู่มือประจำเดือนหรือยัง — รอบที่ไม่ครบ (ผิดพลาด/หมดเวลา) ทำต่อวันถัดไป */
+export async function monthlyPassDue(): Promise<boolean> {
+  const last = await latestCheckRunFor("auto:monthly");
+  return !last || last.status === "failed" || last.startedAt.getTime() < Date.now() - MONTHLY_PASS_EVERY_MS;
+}
+
 /** ถึงรอบตรวจข้อมูลเก่าประจำสัปดาห์หรือยัง */
 export async function stalePassDue(): Promise<boolean> {
   const last = await latestCheckRunFor("auto:stale");

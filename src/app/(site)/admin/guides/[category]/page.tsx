@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/admin/ActionForm";
 import { AdminPage } from "@/components/admin/AdminPage";
+import { AutoRefresh } from "@/components/admin/AutoRefresh";
 import { FieldGroup, SelectField, TextArea } from "@/components/admin/fields";
 import { PromptFields } from "@/components/admin/PromptFields";
 import { requireAdminPage } from "@/lib/adminSession";
@@ -10,8 +11,10 @@ import { listPromptRows } from "@/lib/catalog/admin";
 import { guideFormValues, promptFormValues } from "@/lib/catalog/forms";
 import { loadAllGuides } from "@/lib/catalog/repo";
 import { getCategory } from "@/lib/categories";
+import { countPendingForCategory, latestCheckRunFor } from "@/lib/content/repo";
 import { ACCESS_LABEL_LONG, GUIDE_NOTE_LABEL } from "@/lib/labels";
 import { accessMethodEnum, type CategoryGuide, type PromptTemplate } from "@/lib/schema";
+import { triggerGuideCheck } from "../../suggestions/actions";
 import { deletePromptAction, movePromptDown, movePromptUp, saveGuideAction, savePromptAction } from "../actions";
 
 export const metadata: Metadata = { title: "แก้คู่มือ" };
@@ -32,7 +35,13 @@ export default async function AdminGuidePage({ params }: { params: Promise<{ cat
   await requireAdminPage();
   const category = getCategory((await params).category);
   if (!category) notFound();
-  const [guides, prompts] = await Promise.all([loadAllGuides(), listPromptRows(category.key)]);
+  const [guides, prompts, lastRun, pending] = await Promise.all([
+    loadAllGuides(),
+    listPromptRows(category.key),
+    latestCheckRunFor(`guide:${category.key}`),
+    countPendingForCategory(category.key),
+  ]);
+  const running = lastRun?.status === "running";
   const guide = (guides[category.key] ?? {}) as Partial<CategoryGuide>;
   const g = guideFormValues(guide);
 
@@ -48,6 +57,32 @@ export default async function AdminGuidePage({ params }: { params: Promise<{ cat
         </Link>
       }
     >
+      {/* ---------- ให้ AI ทบทวนคู่มือจากข่าวเดือนที่ผ่านมา ---------- */}
+      <section className="mb-8 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-line bg-surface p-5 text-sm">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-semibold">ทบทวนคู่มือด้วย AI</h2>
+          <p className="mt-1 text-muted">
+            AI อ่านข่าวในหมวดนี้ 35 วันล่าสุดกับข้อมูลเครื่องมือ แล้วเสนอแก้คู่มือ ร่าง prompt ใหม่ และเครื่องมือที่ควรเพิ่ม (ทำอัตโนมัติเดือนละครั้ง)
+            {lastRun && (
+              <>
+                {" "}
+                · ล่าสุด {lastRun.startedAt.toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" })} —{" "}
+                <span className={lastRun.status === "failed" ? "text-urgent" : ""}>{running ? "กำลังทบทวน…" : lastRun.message}</span>
+                {running && <AutoRefresh />}
+              </>
+            )}
+          </p>
+          {pending > 0 && (
+            <Link href="/admin/suggestions" className="mt-2 inline-block font-semibold text-brand hover:underline">
+              มีข้อเสนอของหมวดนี้รอตรวจ {pending} รายการ →
+            </Link>
+          )}
+        </div>
+        <ActionForm action={triggerGuideCheck} submitLabel={running ? "กำลังทบทวน…" : "ให้ AI ทบทวนคู่มือหมวดนี้"} pendingLabel="กำลังเริ่ม…" variant="neutral" className="[&>div]:mt-0">
+          <input type="hidden" name="categoryKey" value={category.key} />
+        </ActionForm>
+      </section>
+
       <ActionForm action={saveGuideAction} submitLabel="บันทึกคู่มือ">
         <input type="hidden" name="categoryKey" value={category.key} />
         <div className="flex flex-col gap-5">

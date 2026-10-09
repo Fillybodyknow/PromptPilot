@@ -1,10 +1,12 @@
 /**
  * ให้ AI ตรวจข้อมูลเครื่องมือกับหน้าทางการของผู้ให้บริการ แล้วสร้าง "ข้อเสนอแก้ไข" ให้คนอนุมัติในหน้า /admin/suggestions
  *
- *   npx tsx scripts/check-content.ts --tool=<id>   ตรวจ 1 ตัว (ปุ่ม "ให้ AI ตรวจตัวนี้" ในหน้า admin สั่งให้)
- *   npm run content:check                           รอบอัตโนมัติ (Task Scheduler เรียกวันละครั้ง หลังดึงข่าว):
+ *   npm run content:check -- --tool=<id>     ตรวจเครื่องมือ 1 ตัว (ปุ่ม "ให้ AI ตรวจตัวนี้" ในหน้า admin สั่งให้)
+ *   npm run content:check -- --guide=<หมวด>  ทบทวนคู่มือ 1 หมวด (ปุ่มในหน้าแก้คู่มือ)
+ *   npm run content:check                     รอบอัตโนมัติ (Task Scheduler เรียกวันละครั้ง หลังดึงข่าว):
  *     1. ทุกวัน: เครื่องมือที่มีข่าวอนุมัติใหม่หลังจาก AI ตรวจครั้งล่าสุด
  *     2. สัปดาห์ละครั้ง: เครื่องมือที่ข้อมูลเก่ากว่า 30 วัน — ถ้าหน้าทางการไม่เปลี่ยนจากครั้งก่อนจะข้ามโดยไม่เรียก AI
+ *     3. เดือนละครั้ง: ทบทวนคู่มือทุกหมวดจากข่าวเดือนที่ผ่านมา — เสนอแก้คู่มือ ร่าง prompt ใหม่ และเครื่องมือที่ควรเพิ่ม
  *
  * env: เหมือนการดึงข่าว (ANTHROPIC_API_KEY / OPENAI_API_KEY), CONTENT_CHECK_TRIGGER = ใครสั่ง
  *      CONTENT_CHECK_MAX_NEWS (ค่าเริ่มต้น 10), CONTENT_CHECK_MAX_STALE (ค่าเริ่มต้น 20) = จำนวนเครื่องมือสูงสุดต่อรอบ คุมค่า AI
@@ -12,7 +14,9 @@
 import { closeDb } from "../src/db/client";
 import { hasAiKey } from "../src/lib/ai/structured";
 import { beginCheckRun, finishCheckRun, recordRun } from "../src/lib/content/repo";
-import { newsCandidates, staleCandidates, stalePassDue, type Candidate } from "../src/lib/content/schedule";
+import { CATEGORIES, getCategory } from "../src/lib/categories";
+import { checkGuide } from "../src/lib/content/guideCheck";
+import { guideReviewedRecently, monthlyPassDue, newsCandidates, staleCandidates, stalePassDue, type Candidate } from "../src/lib/content/schedule";
 import { checkTool } from "../src/lib/content/toolCheck";
 
 try {
@@ -20,6 +24,10 @@ try {
 } catch {
   // ใช้ env ของระบบแทน
 }
+
+const PROCESS_START = Date.now();
+/** หลังจากนี้ไม่เริ่มหมวดคู่มือใหม่ (task ถูกตัดที่ 1 ชม. และ AI 1 ครั้งอาจนานหลายนาที) */
+const MONTHLY_DEADLINE_MS = 40 * 60_000;
 
 const errorText = (err: unknown) => (err instanceof Error ? err.message : String(err));
 const limit = (name: string, fallback: number) => {
@@ -29,14 +37,15 @@ const limit = (name: string, fallback: number) => {
   return Number.isInteger(n) && n >= 0 ? n : fallback;
 };
 
-async function runOne(toolId: number, triggeredBy: string): Promise<void> {
-  const runId = await beginCheckRun(triggeredBy, `tool:${toolId}`);
+/** ตรวจรายการเดียวที่คนสั่ง (เครื่องมือหรือคู่มือ) — บันทึกเป็นรอบของ scope นั้น */
+async function runOne(scope: string, check: () => Promise<{ message: string }>, triggeredBy: string): Promise<void> {
+  const runId = await beginCheckRun(triggeredBy, scope);
   if (runId === null) {
     console.log("มีการตรวจอื่นกำลังทำงานอยู่ — ข้ามรอบนี้");
     return;
   }
   try {
-    const outcome = await checkTool(toolId, "manual", triggeredBy);
+    const outcome = await check();
     console.log(outcome.message);
     await finishCheckRun(runId, "ok", outcome.message);
   } catch (err) {
@@ -104,6 +113,47 @@ async function runAuto(triggeredBy: string): Promise<void> {
     } else {
       summary.push("ข้อมูลเก่า: ยังไม่ถึงรอบสัปดาห์");
     }
+
+    if (await monthlyPassDue()) {
+      const started = new Date();
+      let created = 0;
+      let failed = 0;
+      let done = 0;
+      let left = 0;
+      for (const c of CATEGORIES) {
+        // ทำต่อจากรอบที่ค้าง: หมวดที่ทบทวนสำเร็จในรอบเดือนนี้แล้ว (รวมที่คนกดเอง) ไม่ต้องทำซ้ำ
+        if (await guideReviewedRecently(c.key)) {
+          done++;
+          continue;
+        }
+        // เผื่อเวลาให้จบก่อน time limit ของ Task Scheduler (1 ชม.) — ที่เหลือทำพรุ่งนี้
+        if (Date.now() - PROCESS_START > MONTHLY_DEADLINE_MS) {
+          left++;
+          continue;
+        }
+        const t0 = new Date();
+        try {
+          const outcome = await checkGuide(c.key, "monthly", "ทบทวนรายเดือน");
+          console.log(`  ${outcome.message}`);
+          await recordRun(`guide:${c.key}`, "auto:monthly", t0, "ok", outcome.message);
+          created += outcome.created;
+          done++;
+        } catch (err) {
+          console.error(`  ❌ ${c.titleTh}: ${errorText(err)}`);
+          await recordRun(`guide:${c.key}`, "auto:monthly", t0, "failed", `${c.titleTh}: ${errorText(err)}`);
+          failed++;
+        }
+      }
+      const text =
+        `คู่มือ: ทบทวนแล้ว ${done}/${CATEGORIES.length} หมวด · สร้างข้อเสนอ ${created}` +
+        (failed ? ` · ผิดพลาด ${failed}` : "") +
+        (left ? ` · เหลือ ${left} หมวด ทำต่อพรุ่งนี้` : "");
+      summary.push(text);
+      // ยังไม่ครบทุกหมวด (ผิดพลาดหรือหมดเวลา) → นับเป็นรอบไม่สำเร็จ พรุ่งนี้ทำต่อเฉพาะหมวดที่ค้าง
+      await recordRun("auto:monthly", triggeredBy, started, done === CATEGORIES.length ? "ok" : "failed", text);
+    } else {
+      summary.push("คู่มือ: ยังไม่ถึงรอบเดือน");
+    }
     console.log(summary.join("\n"));
     await finishCheckRun(runId, "ok", summary.join(" · "));
   } catch (err) {
@@ -114,12 +164,19 @@ async function runAuto(triggeredBy: string): Promise<void> {
 }
 
 async function run(): Promise<void> {
-  const toolArg = process.argv.find((a) => a.startsWith("--tool="))?.slice("--tool=".length);
-  const triggeredBy = process.env.CONTENT_CHECK_TRIGGER ?? (toolArg === undefined ? "ตั้งเวลา" : "command line");
+  const arg = (name: string) => process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+  const toolArg = arg("tool");
+  const guideArg = arg("guide");
+  const triggeredBy = process.env.CONTENT_CHECK_TRIGGER ?? (toolArg === undefined && guideArg === undefined ? "ตั้งเวลา" : "command line");
+  if (guideArg !== undefined) {
+    const category = getCategory(guideArg);
+    if (!category) throw new Error(`ไม่พบหมวด ${guideArg}`);
+    return runOne(`guide:${category.key}`, () => checkGuide(category.key, "manual", triggeredBy), triggeredBy);
+  }
   if (toolArg === undefined) return runAuto(triggeredBy);
   const toolId = Number(toolArg);
   if (!Number.isInteger(toolId) || toolId <= 0) throw new Error("ระบุเครื่องมือ: --tool=<id>");
-  return runOne(toolId, triggeredBy);
+  return runOne(`tool:${toolId}`, () => checkTool(toolId, "manual", triggeredBy), triggeredBy);
 }
 
 run()

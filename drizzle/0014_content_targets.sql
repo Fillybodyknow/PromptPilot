@@ -1,0 +1,1 @@
+ALTER TABLE `content_suggestions` MODIFY COLUMN `target_type` enum('tool','guide','prompt','new_tool') NOT NULL;

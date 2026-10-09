@@ -233,6 +233,8 @@ export const appSettings = mysqlTable("app_settings", {
 // ให้ AI ช่วยตรวจ/อัปเดตเครื่องมือและคู่มือ — AI เสนอเป็น "ข้อเสนอแก้ไข" แล้วคนอนุมัติ ไม่แก้ข้อมูลเอง
 // ---------------------------------------------------------------------------
 
+/** tool = แก้ข้อมูลเครื่องมือ, guide = แก้คู่มือหมวด, prompt = prompt ตัวอย่างใหม่, new_tool = เครื่องมือที่ควรเพิ่ม (targetKey = หมวด สำหรับ 3 แบบหลัง) */
+export const SUGGESTION_TARGETS = ["tool", "guide", "prompt", "new_tool"] as const;
 export const SUGGESTION_STATUSES = ["pending", "accepted", "partial", "rejected", "expired", "superseded"] as const;
 
 /** ข้อเสนอแก้ไขหนึ่งรายการ: changes = [{ field, before, after, evidenceUrl, quote, reason }] */
@@ -240,7 +242,7 @@ export const contentSuggestions = mysqlTable(
   "content_suggestions",
   {
     id: int("id").autoincrement().primaryKey(),
-    targetType: mysqlEnum("target_type", ["tool", "guide"]).notNull(),
+    targetType: mysqlEnum("target_type", SUGGESTION_TARGETS).notNull(),
     // tools.id (เป็นข้อความ) หรือ guides.category_key
     targetKey: varchar("target_key", { length: 100 }).notNull(),
     changes: json("changes").$type<SuggestedChange[]>().notNull(),

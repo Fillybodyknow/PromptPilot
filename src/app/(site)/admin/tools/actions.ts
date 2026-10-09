@@ -9,6 +9,7 @@ import { createTool, deleteTool, getToolRow, moveTool, updateTool } from "@/lib/
 import { withDbErrors } from "@/lib/catalog/dbErrors";
 import { parseToolForm } from "@/lib/catalog/forms";
 import { getCategory } from "@/lib/categories";
+import { markNewToolCreated } from "@/lib/content/apply";
 import { TOOLS_TAG } from "@/lib/data";
 
 const idOf = (fd: FormData) => z.coerce.number().int().positive().parse(fd.get("id"));
@@ -46,6 +47,17 @@ export async function saveTool(_: FormState, fd: FormData): Promise<FormState> {
     return newId ? null : slugTaken;
   });
   if (!newId) return result;
+  // สร้างจากข้อเสนอเครื่องมือใหม่ของ AI → ปิดข้อเสนอนั้น
+  const fromSuggestion = Number(fd.get("fromSuggestion"));
+  if (Number.isInteger(fromSuggestion) && fromSuggestion > 0) {
+    try {
+      await markNewToolCreated(fromSuggestion, category.key, newId, user);
+      revalidatePath("/admin/suggestions");
+    } catch (err) {
+      // เครื่องมือบันทึกแล้ว — ข้อเสนอที่ยังค้างหมดอายุเองใน 30 วัน หรือกดปฏิเสธได้
+      console.error("close new-tool suggestion failed", err);
+    }
+  }
   done();
   redirect(`/admin/tools/${newId}?created=1`);
 }
