@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionForm } from "@/components/admin/ActionForm";
+import { AdminPage, EmptyState, FilterTabs } from "@/components/admin/AdminPage";
 import { AutoRefresh } from "@/components/admin/AutoRefresh";
 import { card } from "@/components/site/ui";
 import type { SuggestedChange } from "@/db/schema";
@@ -72,7 +73,7 @@ function RunPanel({ runs }: { runs: CheckRunRow[] }) {
   if (runs.length === 0) return null;
   const running = runs.some((r) => r.status === "running");
   return (
-    <section className={`${card} mt-6 p-5 text-sm`}>
+    <section className={`${card} mt-10 p-5 text-sm`}>
       <h2 className="font-semibold">
         การตรวจล่าสุด
         {/* ระหว่างตรวจ ให้หน้าโหลดผลใหม่เองจนกว่าจะเสร็จ (หยุดถ้ามีคนกำลังแก้ฟอร์ม) */}
@@ -334,46 +335,31 @@ export default async function SuggestionsPage({
   const tools = new Map(toolRows.map((t) => [String(t.id), t]));
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
-      <h1 className="text-2xl font-bold">ข้อเสนอแก้ไขจาก AI</h1>
-      <p className="mt-1 max-w-3xl text-sm text-muted">
-        AI เทียบข้อมูลเครื่องมือกับหน้าทางการของผู้ให้บริการ
-        แล้วเสนอสิ่งที่ควรแก้พร้อมหลักฐาน
-        ข้อมูลบนเว็บจะเปลี่ยนเมื่อผู้ดูแลกดใช้เท่านั้น
-        สั่งตรวจได้จากหน้าแก้ไขเครื่องมือ
-      </p>
+    <AdminPage
+      title="ข้อเสนอแก้ไขจาก AI"
+      description="AI เทียบข้อมูลเครื่องมือกับหน้าทางการของผู้ให้บริการ แล้วเสนอสิ่งที่ควรแก้พร้อมหลักฐาน ข้อมูลบนเว็บจะเปลี่ยนเมื่อผู้ดูแลกดใช้เท่านั้น · สั่งตรวจได้จากหน้าแก้ไขเครื่องมือ"
+    >
+      <FilterTabs
+        label="สถานะข้อเสนอ"
+        items={TABS.map((t) => ({
+          href: t.key === "pending" ? "/admin/suggestions" : `/admin/suggestions?status=${t.key}`,
+          label: t.label,
+          count: counts[t.key] ?? 0,
+          active: t.key === status,
+          alert: t.key === "pending",
+        }))}
+      />
 
-      <RunPanel runs={runs} />
-
-      <nav aria-label="สถานะข้อเสนอ" className="mt-6 flex flex-wrap gap-2">
-        {TABS.map((t) => (
-          <Link
-            key={t.key}
-            href={
-              t.key === "pending"
-                ? "/admin/suggestions"
-                : `/admin/suggestions?status=${t.key}`
-            }
-            aria-current={t.key === status ? "page" : undefined}
-            className={`flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm ${t.key === status ? "bg-ink text-background" : "bg-chip hover:bg-surface"}`}
-          >
-            {t.label}
-            <span className="text-xs opacity-70">{counts[t.key] ?? 0}</span>
-          </Link>
-        ))}
-      </nav>
-
-      <div className="mt-6 space-y-4">
+      <div className="mt-5 space-y-4">
         {suggestions.length === 0 ? (
-          <p className={`${card} p-8 text-center text-muted`}>
-            {status === "pending" ? "ไม่มีข้อเสนอที่รอตรวจ" : "ยังไม่มีรายการ"}
-          </p>
+          <EmptyState>{status === "pending" ? "ไม่มีข้อเสนอที่รอตรวจ" : "ยังไม่มีรายการ"}</EmptyState>
         ) : (
-          suggestions.map((s) => (
-            <SuggestionCard key={s.id} s={s} tool={tools.get(s.targetKey)} />
-          ))
+          suggestions.map((s) => <SuggestionCard key={s.id} s={s} tool={tools.get(s.targetKey)} />)
         )}
       </div>
-    </main>
+
+      {/* ประวัติการตรวจอยู่ท้ายหน้า — งานหลักของหน้านี้คือรายการข้อเสนอ */}
+      <RunPanel runs={runs} />
+    </AdminPage>
   );
 }

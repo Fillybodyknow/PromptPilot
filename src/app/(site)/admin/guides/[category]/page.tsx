@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/admin/ActionForm";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { FieldGroup, SelectField, TextArea } from "@/components/admin/fields";
 import { PromptFields } from "@/components/admin/PromptFields";
 import { requireAdminPage } from "@/lib/adminSession";
@@ -36,18 +37,18 @@ export default async function AdminGuidePage({ params }: { params: Promise<{ cat
   const g = guideFormValues(guide);
 
   return (
-    <main className="mx-auto max-w-4xl px-4 pb-16 pt-8 sm:px-6">
-      <Link href="/admin/guides" className="text-sm text-muted hover:text-brand">
-        ← คู่มือทุกหมวด
-      </Link>
-      <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-bold">คู่มือ {category.titleTh}</h1>
+    <AdminPage
+      width="narrow"
+      back={{ href: "/admin/guides", label: "คู่มือทุกหมวด" }}
+      title={`คู่มือ ${category.titleTh}`}
+      description="ส่วนบนคือคู่มือของหมวด ส่วนล่างคือ prompt ตัวอย่าง — แต่ละส่วนมีปุ่มบันทึกของตัวเอง"
+      actions={
         <Link href={`/guides/${category.key}`} className="text-sm font-semibold text-brand hover:underline">
           ดูหน้าเว็บ →
         </Link>
-      </div>
-
-      <ActionForm action={saveGuideAction} submitLabel="บันทึกคู่มือ" className="mt-6">
+      }
+    >
+      <ActionForm action={saveGuideAction} submitLabel="บันทึกคู่มือ">
         <input type="hidden" name="categoryKey" value={category.key} />
         <div className="flex flex-col gap-5">
           <FieldGroup title="เนื้อหาหลัก">
@@ -67,7 +68,7 @@ export default async function AdminGuidePage({ params }: { params: Promise<{ cat
         </div>
       </ActionForm>
 
-      <section className="mt-12" aria-labelledby="prompts">
+      <section className="mt-12 border-t border-line pt-8" aria-labelledby="prompts">
         <h2 id="prompts" className="text-xl font-bold">
           Prompt ตัวอย่าง ({prompts.length})
         </h2>
@@ -109,6 +110,6 @@ export default async function AdminGuidePage({ params }: { params: Promise<{ cat
           </ActionForm>
         </div>
       </section>
-    </main>
+    </AdminPage>
   );
 }

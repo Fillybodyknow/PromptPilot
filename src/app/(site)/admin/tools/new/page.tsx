@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/admin/ActionForm";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { ToolFields } from "@/components/admin/ToolFields";
 import { requireAdminPage } from "@/lib/adminSession";
 import { getCategory } from "@/lib/categories";
@@ -17,15 +17,16 @@ export default async function NewToolPage({ searchParams }: { searchParams: Prom
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
 
   return (
-    <main className="mx-auto max-w-4xl px-4 pb-16 pt-8 sm:px-6">
-      <Link href={`/admin/tools?category=${category.key}`} className="text-sm text-muted hover:text-brand">
-        ← กลับไปหมวด{category.titleTh}
-      </Link>
-      <h1 className="mt-2 text-2xl font-bold">เพิ่มเครื่องมือในหมวด{category.titleTh}</h1>
-      <ActionForm action={saveTool} submitLabel="เพิ่มเครื่องมือ" className="mt-6">
+    <AdminPage
+      width="narrow"
+      back={{ href: `/admin/tools?category=${category.key}`, label: `เครื่องมือหมวด${category.titleTh}` }}
+      title={`เพิ่มเครื่องมือในหมวด${category.titleTh}`}
+      description="ช่องที่มี * ต้องกรอก · เพิ่มแล้วแสดงบนหน้าเว็บทันที"
+    >
+      <ActionForm action={saveTool} submitLabel="เพิ่มเครื่องมือ">
         <input type="hidden" name="categoryKey" value={category.key} />
         <ToolFields category={category} values={{ verifiedAt: today }} featured={false} />
       </ActionForm>
-    </main>
+    </AdminPage>
   );
 }

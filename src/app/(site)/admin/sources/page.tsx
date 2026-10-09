@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ActionForm } from "@/components/admin/ActionForm";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { IdButton, TextField } from "@/components/admin/fields";
 import { card } from "@/components/site/ui";
 import { requireAdminPage } from "@/lib/adminSession";
@@ -14,13 +15,11 @@ export default async function AdminSourcesPage() {
   const enabled = sources.filter((s) => s.enabled).length;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-16 pt-8 sm:px-6">
-      <h1 className="text-2xl font-bold">จัดการแหล่งข่าว</h1>
-      <p className="mt-1 text-sm text-muted">
-        เปิดใช้ {enabled} จาก {sources.length} แหล่ง · สคริปต์ดึงข่าวรายวันใช้เฉพาะแหล่งที่เปิดอยู่ (สูงสุด 15 ข่าวต่อแหล่งต่อรอบ)
-      </p>
-
-      <div className="mt-6 flex flex-col gap-3">
+    <AdminPage
+      title="แหล่งข่าว"
+      description={`เปิดใช้ ${enabled} จาก ${sources.length} แหล่ง · การดึงข่าวรายวันใช้เฉพาะแหล่งที่เปิดอยู่ (สูงสุด 15 ข่าวต่อแหล่งต่อรอบ)`}
+    >
+      <div className="flex flex-col gap-3">
         {sources.map((s) => (
           <div key={s.id} className={`${card} p-4 ${s.enabled ? "" : "opacity-60"}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -64,6 +63,6 @@ export default async function AdminSourcesPage() {
           </div>
         </ActionForm>
       </section>
-    </main>
+    </AdminPage>
   );
 }

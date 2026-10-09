@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdminPage, btnPrimary, EmptyState, FilterTabs } from "@/components/admin/AdminPage";
 import { IdButton } from "@/components/admin/fields";
 import { ToolStatusBadge, card } from "@/components/site/ui";
 import { requireAdminPage } from "@/lib/adminSession";
@@ -18,36 +19,25 @@ export default async function AdminToolsPage({ searchParams }: { searchParams: P
   const rows = await listToolRows(category.key);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">จัดการเครื่องมือ</h1>
-          <p className="mt-1 text-sm text-muted">แก้แล้วหน้าเว็บอัปเดตทันที ข้อมูลถูกตรวจด้วย schema ของหมวดก่อนบันทึก</p>
-        </div>
-        <Link href={`/admin/tools/new?category=${category.key}`} className="flex h-11 items-center rounded-lg bg-ink px-5 text-sm font-semibold text-background">
+    <AdminPage
+      title="เครื่องมือ"
+      description="เลือกหมวด แล้วกดชื่อเครื่องมือเพื่อแก้ไข · บันทึกแล้วหน้าเว็บอัปเดตทันที · ให้ AI ตรวจกับหน้าทางการได้จากหน้าแก้ไข"
+      actions={
+        <Link href={`/admin/tools/new?category=${category.key}`} className={btnPrimary}>
           + เพิ่มเครื่องมือในหมวดนี้
         </Link>
-      </div>
+      }
+    >
+      <FilterTabs
+        label="เลือกหมวด"
+        items={CATEGORIES.map((c) => ({ href: `/admin/tools?category=${c.key}`, label: c.titleTh, active: c.key === category.key }))}
+      />
 
-      <nav aria-label="เลือกหมวด" className="mt-5 flex flex-wrap gap-1.5">
-        {CATEGORIES.map((c) => (
-          <Link
-            key={c.key}
-            href={`/admin/tools?category=${c.key}`}
-            aria-current={c.key === category.key ? "true" : undefined}
-            className={`flex min-h-9 items-center rounded-full border px-3 text-[13px] ${
-              c.key === category.key ? "border-ink bg-ink font-semibold text-background" : "border-line bg-surface hover:border-ink"
-            }`}
-          >
-            {c.titleTh}
-          </Link>
-        ))}
-      </nav>
-
-      <div className={`${card} mt-5 overflow-x-auto`}>
+      <div className={`${card} mt-5 overflow-x-auto ${rows.length === 0 ? "hidden" : ""}`}>
         <table className="w-full min-w-[720px] border-collapse text-sm">
+          <caption className="sr-only">เครื่องมือในหมวด{category.titleTh}</caption>
           <thead>
-            <tr className="text-left text-muted">
+            <tr className="bg-chip text-left text-muted">
               <th className="px-4 py-3 font-semibold">ลำดับ</th>
               <th className="px-4 py-3 font-semibold">เครื่องมือ</th>
               <th className="px-4 py-3 font-semibold">สถานะ</th>
@@ -65,7 +55,7 @@ export default async function AdminToolsPage({ searchParams }: { searchParams: P
                   </div>
                 </td>
                 <td className="px-4 py-2.5">
-                  <Link href={`/admin/tools/${r.id}`} className="font-semibold text-brand hover:underline">
+                  <Link href={`/admin/tools/${r.id}`} className="text-[15px] font-semibold text-brand hover:underline">
                     {r.name}
                   </Link>
                   <span className="block text-[13px] text-muted">
@@ -84,8 +74,12 @@ export default async function AdminToolsPage({ searchParams }: { searchParams: P
             ))}
           </tbody>
         </table>
-        {rows.length === 0 && <p className="p-6 text-center text-muted">ยังไม่มีเครื่องมือในหมวดนี้</p>}
       </div>
-    </main>
+      {rows.length === 0 && (
+        <div className="mt-5">
+          <EmptyState>ยังไม่มีเครื่องมือในหมวดนี้</EmptyState>
+        </div>
+      )}
+    </AdminPage>
   );
 }

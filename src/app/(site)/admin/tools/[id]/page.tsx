@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/admin/ActionForm";
+import { AdminPage } from "@/components/admin/AdminPage";
 import { AutoRefresh } from "@/components/admin/AutoRefresh";
 import { ToolFields } from "@/components/admin/ToolFields";
 import { requireAdminPage } from "@/lib/adminSession";
@@ -29,23 +30,21 @@ export default async function EditToolPage({ params, searchParams }: { params: P
   const running = lastRun?.status === "running";
 
   return (
-    <main className="mx-auto max-w-4xl px-4 pb-16 pt-8 sm:px-6">
-      <Link href={`/admin/tools?category=${category.key}`} className="text-sm text-muted hover:text-brand">
-        ← กลับไปหมวด{category.titleTh}
-      </Link>
-      <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-bold">{row.name}</h1>
+    <AdminPage
+      width="narrow"
+      back={{ href: `/admin/tools?category=${category.key}`, label: `เครื่องมือหมวด${category.titleTh}` }}
+      title={row.name}
+      description={`หมวด${category.titleTh} · ย้ายหมวดไม่ได้ ถ้าต้องการให้เพิ่มใหม่ในหมวดที่ถูกแล้วลบตัวนี้`}
+      actions={
         <Link href={`/tools/${category.key}/${row.slug}`} className="text-sm font-semibold text-brand hover:underline">
           ดูหน้าเว็บ →
         </Link>
-      </div>
-      <p className="mt-1 text-sm text-muted">
-        หมวด{category.titleTh} (ย้ายหมวดไม่ได้ ถ้าต้องการให้เพิ่มใหม่ในหมวดที่ถูกแล้วลบตัวนี้)
-      </p>
-      {created && <p className="mt-4 rounded-xl bg-good-bg px-4 py-3 text-sm text-good">เพิ่มเครื่องมือแล้ว และแสดงบนหน้าเว็บแล้ว</p>}
+      }
+    >
+      {created && <p className="mb-6 rounded-xl bg-good-bg px-4 py-3 text-sm text-good">เพิ่มเครื่องมือแล้ว และแสดงบนหน้าเว็บแล้ว</p>}
 
       {/* ---------- ให้ AI ตรวจกับหน้าทางการ ---------- */}
-      <section className="mt-6 rounded-2xl border border-line bg-surface p-5 text-sm">
+      <section className="rounded-2xl border border-line bg-surface p-5 text-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold">ตรวจข้อมูลด้วย AI</h2>
@@ -104,6 +103,6 @@ export default async function EditToolPage({ params, searchParams }: { params: P
           </button>
         </form>
       </details>
-    </main>
+    </AdminPage>
   );
 }

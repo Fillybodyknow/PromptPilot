@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AdminPage, EmptyState } from "@/components/admin/AdminPage";
 import { card } from "@/components/site/ui";
 import { requireAdminPage } from "@/lib/adminSession";
 import { listRuns } from "@/lib/catalog/admin";
@@ -19,13 +20,14 @@ export default async function AdminRunsPage() {
   const runs = await listRuns(50);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-16 pt-8 sm:px-6">
-      <h1 className="text-2xl font-bold">ประวัติการดึงข่าว</h1>
-      <p className="mt-1 text-sm text-muted">50 รอบล่าสุด ทั้งที่ตั้งเวลาไว้และที่กดปุ่มในหน้าอนุมัติข่าว</p>
-      <div className={`${card} mt-6 overflow-x-auto`}>
+    <AdminPage title="ประวัติการดึงข่าว" description="50 รอบล่าสุด ทั้งที่ตั้งเวลาไว้และที่กดปุ่มในหน้าอนุมัติข่าว">
+      {runs.length === 0 ? (
+        <EmptyState>ยังไม่เคยดึงข่าว</EmptyState>
+      ) : (
+      <div className={`${card} overflow-x-auto`}>
         <table className="w-full min-w-[640px] border-collapse text-sm">
           <thead>
-            <tr className="text-left text-muted">
+            <tr className="bg-chip text-left text-muted">
               <th className="px-4 py-3 font-semibold">เริ่ม</th>
               <th className="px-4 py-3 font-semibold">สั่งโดย</th>
               <th className="px-4 py-3 font-semibold">ผล</th>
@@ -45,8 +47,8 @@ export default async function AdminRunsPage() {
             ))}
           </tbody>
         </table>
-        {runs.length === 0 && <p className="p-6 text-center text-muted">ยังไม่เคยดึงข่าว</p>}
       </div>
-    </main>
+      )}
+    </AdminPage>
   );
 }

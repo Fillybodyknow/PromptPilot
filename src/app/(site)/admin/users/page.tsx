@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ActionForm } from "@/components/admin/ActionForm";
+import { AdminPage, SectionTitle } from "@/components/admin/AdminPage";
 import { IdButton } from "@/components/admin/fields";
 import { card } from "@/components/site/ui";
 import { requireSystemAdminPage } from "@/lib/adminSession";
@@ -111,17 +112,26 @@ export default async function AdminUsersPage() {
   for (const u of pending) pendingPerTenant.set(u.msTid, (pendingPerTenant.get(u.msTid) ?? 0) + 1);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-16 pt-8 sm:px-6">
-      <h1 className="text-2xl font-bold">ผู้ใช้</h1>
-      <p className="mt-1 text-sm leading-relaxed text-muted">
-        ทั้งเว็บต้อง login ด้วย Microsoft พนักงานที่ login ครั้งแรกเป็น <strong>{ROLE_LABEL.viewer}</strong> ทันที บัญชีอื่น (guest, องค์กรอื่น, บัญชีส่วนตัว) ต้องรออนุมัติ ·{" "}
-        {ROLE_LABEL.editor}: {ROLE_HINT.editor} · {ROLE_LABEL.admin}: {ROLE_HINT.admin}
-      </p>
+    <AdminPage
+      title="ผู้ใช้"
+      description={
+        <>
+          ทั้งเว็บต้อง login ด้วย Microsoft — พนักงานที่ login ครั้งแรกเป็น <strong className="text-ink">{ROLE_LABEL.viewer}</strong> ทันที ส่วนบัญชีอื่น (guest,
+          องค์กรอื่น, บัญชีส่วนตัว) ต้องรออนุมัติ
+        </>
+      }
+    >
+      <dl className="grid gap-2 sm:grid-cols-3">
+        {(["viewer", "editor", "admin"] as const).map((r) => (
+          <div key={r} className="rounded-xl bg-chip px-4 py-3">
+            <dt className="text-sm font-semibold">{ROLE_LABEL[r]}</dt>
+            <dd className="text-[13px] text-muted">{ROLE_HINT[r]}</dd>
+          </div>
+        ))}
+      </dl>
 
-      <section className="mt-6" aria-labelledby="pending">
-        <h2 id="pending" className="text-lg font-bold">
-          คำขอรออนุมัติ ({pending.length})
-        </h2>
+      <section className="mt-8" aria-labelledby="pending">
+        <SectionTitle id="pending" title={`คำขอรออนุมัติ (${pending.length})`} />
         {pending.length > 0 && (
           <p className="mt-2 rounded-xl bg-warn-bg px-4 py-3 text-sm leading-relaxed text-warn">
             คำขอเหล่านี้มาจากบัญชีที่ไม่ใช่พนักงาน <strong>ชื่อและอีเมลเจ้าของบัญชีตั้งเองได้</strong> — ยืนยันตัวตนกับเจ้าของจริงนอกระบบ (เช่นโทรหรือถามผู้ประสานงาน) ก่อนกดอนุมัติ ·
@@ -157,11 +167,8 @@ export default async function AdminUsersPage() {
       </section>
 
       <section className="mt-8" aria-labelledby="staff">
-        <h2 id="staff" className="text-lg font-bold">
-          ทีมดูแล ({staff.length})
-        </h2>
-        <p className="mt-1 text-sm text-muted">{ROLE_LABEL.admin} และ{ROLE_LABEL.editor} — เข้าหน้า Admin ได้</p>
-        <div className="mt-3 flex flex-col gap-3">
+        <SectionTitle id="staff" title={`ทีมดูแล (${staff.length})`} note={`${ROLE_LABEL.admin} และ${ROLE_LABEL.editor} — เข้าหน้า Admin ได้`} />
+        <div className="flex flex-col gap-3">
           {staff.map((u) => (
             <div key={u.id} className={`${card} p-4`}>
               <Who u={u} isMe={u.id === me.userId} />
@@ -172,10 +179,7 @@ export default async function AdminUsersPage() {
       </section>
 
       <section className="mt-8" aria-labelledby="readers">
-        <h2 id="readers" className="text-lg font-bold">
-          ผู้อ่าน ({readers.length})
-        </h2>
-        <p className="mt-1 text-sm text-muted">พนักงานที่เคย login · ถ้าจะให้ช่วยดูแลเนื้อหา เปลี่ยนสิทธิ์เป็น{ROLE_LABEL.editor}</p>
+        <SectionTitle id="readers" title={`ผู้อ่าน (${readers.length})`} note={`พนักงานที่เคย login · ถ้าจะให้ช่วยดูแลเนื้อหา เปลี่ยนสิทธิ์เป็น${ROLE_LABEL.editor}`} />
         {readers.length === 0 ? (
           <p className="mt-2 text-sm text-muted">ยังไม่มีพนักงานคนอื่น login</p>
         ) : (
@@ -192,11 +196,12 @@ export default async function AdminUsersPage() {
 
       {inactive.length > 0 && (
         <section className="mt-8" aria-labelledby="inactive">
-          <h2 id="inactive" className="text-lg font-bold">
-            ปฏิเสธ / ปิดใช้ ({inactive.length})
-          </h2>
-          <p className="mt-1 text-sm text-muted">คนกลุ่มนี้เข้าเว็บไม่ได้ · ถ้าลบออก พนักงานจะกลับมาเป็นผู้อ่านเมื่อ login ครั้งหน้า (guest จะเป็นคำขอใหม่)</p>
-          <div className="mt-3 flex flex-col gap-3">
+          <SectionTitle
+            id="inactive"
+            title={`ปฏิเสธ / ปิดใช้ (${inactive.length})`}
+            note="คนกลุ่มนี้เข้าเว็บไม่ได้ · ถ้าลบออก พนักงานจะกลับมาเป็นผู้อ่านเมื่อ login ครั้งหน้า (guest จะเป็นคำขอใหม่)"
+          />
+          <div className="flex flex-col gap-3">
             {inactive.map((u) => (
               <div key={u.id} className={`${card} p-4 opacity-80`}>
                 <Who u={u} isMe={false} />
@@ -209,6 +214,6 @@ export default async function AdminUsersPage() {
           </div>
         </section>
       )}
-    </main>
+    </AdminPage>
   );
 }
