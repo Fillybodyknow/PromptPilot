@@ -168,7 +168,7 @@ export async function checkGuide(categoryKey: string, trigger: "manual" | "month
     `ข่าวที่อนุมัติแล้วในหมวดนี้ ${NEWS_DAYS} วันล่าสุด:\n${
       [...sources].filter(([, s]) => s.kind === "news").map(([id, s]) => `[${id}] ${clip(s.text, 900)}`).join("\n") || "(ไม่มีข่าว)"
     }`;
-  const { data, usage, label, failures } = await runStructured(checkSchema, "guide_check", SYSTEM, user);
+  const { data, usage, label, failures } = await runStructured(checkSchema, "guide_check", SYSTEM, user, { feature: "guide_check", ref: `guide:${categoryKey}` });
 
   const dropped: string[] = [];
   const quoted = (sourceId: string, quote: string) => {

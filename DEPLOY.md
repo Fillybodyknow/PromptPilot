@@ -177,6 +177,7 @@ notepad .env.local
 | `APP_URL` | ที่อยู่เว็บที่ผู้ใช้เปิดจริง เช่น `https://promptpilot.company.local` (ไม่มี `/` ท้าย) |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | จากขั้นที่ 3.5 |
 | `ADMIN_EMAILS` | ชื่อ login Microsoft (UPN) ของผู้ดูแลระบบคนแรก คั่นด้วย `,` เช่น `somchai@company.com,suda@company.com` มีผลเฉพาะตอนที่ยังไม่มีผู้ดูแลระบบสักคน (ติดตั้งครั้งแรก หรือกู้คืน) — หลังจากนั้นคนในรายชื่อก็ต้องรออนุมัติเหมือนคนอื่น |
+| `AI_MONTHLY_BUDGET_THB` | (ไม่บังคับ) งบ AI ต่อเดือนเป็นบาท เช่น `300` — เกิน 80% ขึ้นเตือนในหน้า admin, เกินงบหยุดการตรวจข้อมูลอัตโนมัติ (ดึงข่าวยังทำต่อ) ดูยอดที่หน้า admin > การใช้ AI |
 
 > ห้าม commit หรือคัดลอกไฟล์ `.env.local` ไปที่อื่น สคริปต์ติดตั้งจะล็อกให้อ่านได้เฉพาะ Administrators และ SYSTEM
 

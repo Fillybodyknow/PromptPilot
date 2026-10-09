@@ -295,3 +295,16 @@ export async function recordRun(scope: string, triggeredBy: string, startedAt: D
       message: message.slice(0, 2000),
     });
 }
+
+/** ผลตัดสินข้อเสนอแต่ละประเภทในช่วงที่กำหนด — ใช้ดูความคุ้มค่าของการตรวจด้วย AI (หน้า /admin/ai-usage) */
+export async function decisionsByType(days: number): Promise<{ type: SuggestionTarget; used: number; rejected: number; expired: number }[]> {
+  const rows = await getDb()
+    .select({ type: contentSuggestions.targetType, status: contentSuggestions.status, n: count() })
+    .from(contentSuggestions)
+    .where(gt(contentSuggestions.createdAt, new Date(Date.now() - days * 86_400_000)))
+    .groupBy(contentSuggestions.targetType, contentSuggestions.status);
+  return SUGGESTION_TARGETS.map((type) => {
+    const n = (s: string) => rows.filter((r) => r.type === type && r.status === s).reduce((a, r) => a + r.n, 0);
+    return { type, used: n("accepted") + n("partial"), rejected: n("rejected"), expired: n("expired") };
+  });
+}

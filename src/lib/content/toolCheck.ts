@@ -199,7 +199,7 @@ export async function checkTool(
       ? `ข่าวที่อนุมัติแล้วซึ่งพูดถึงเครื่องมือนี้:\n${JSON.stringify(news.map((n) => ({ title: n.title, summary: n.summary, url: n.url, date: n.publishedAt.toISOString().slice(0, 10) })))}\n\n`
       : "") +
     fetched.map((p) => `===== หน้า: ${p.url} =====\n${focusText(p.text, keywords)}`).join("\n\n");
-  const { data, usage, label, failures } = await runStructured(checkSchema, "tool_check", SYSTEM, user);
+  const { data, usage, label, failures } = await runStructured(checkSchema, "tool_check", SYSTEM, user, { feature: "tool_check", ref: `tool:${row.id}` });
   await commitPages();
 
   // 3) ตรวจทีละการแก้: หลักฐานต้องมีจริง รูปแบบต้องถูก และค่าต้องเปลี่ยนจริง

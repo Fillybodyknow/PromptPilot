@@ -65,7 +65,7 @@ $values = @{
 $values.APP_URL = if ($AppUrl) { $AppUrl } else { $todo.APP_URL = "ที่อยู่เว็บจริง เช่น https://promptpilot.company.local"; "<<ที่อยู่เว็บจริง https://...>>" }
 $values.MS_CLIENT_SECRET = if ($IncludeClientSecret -and $local["MS_CLIENT_SECRET"]) { $local["MS_CLIENT_SECRET"] } else { $todo.MS_CLIENT_SECRET = "client secret ใหม่ของ server จาก Entra (Certificates & secrets)"; "<<client secret ใหม่จาก Entra>>" }
 # ค่าที่เหมือนเครื่องนี้ทุกประการ
-foreach ($k in "MS_TENANT_ID", "MS_CLIENT_ID", "ADMIN_EMAILS", "MS_ALLOW_EXTERNAL", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_MODEL", "OPENAI_MODEL", "CONTENT_CHECK_MAX_NEWS", "CONTENT_CHECK_MAX_STALE") {
+foreach ($k in "MS_TENANT_ID", "MS_CLIENT_ID", "ADMIN_EMAILS", "MS_ALLOW_EXTERNAL", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_MODEL", "OPENAI_MODEL", "CONTENT_CHECK_MAX_NEWS", "CONTENT_CHECK_MAX_STALE", "AI_MONTHLY_BUDGET_THB", "AI_USD_THB") {
     if ($local[$k]) { $values[$k] = $local[$k] }
 }
 foreach ($k in "MS_TENANT_ID", "MS_CLIENT_ID", "ADMIN_EMAILS") {

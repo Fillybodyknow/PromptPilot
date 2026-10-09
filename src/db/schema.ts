@@ -3,6 +3,7 @@ import {
   char,
   date,
   datetime,
+  decimal,
   double,
   index,
   int,
@@ -299,3 +300,28 @@ export const checkRuns = mysqlTable("check_runs", {
   status: mysqlEnum("status", ["running", "ok", "failed"]).notNull(),
   message: text("message"),
 });
+
+// ---------------------------------------------------------------- การใช้ AI (หน้า /admin/ai-usage และงบรายเดือน)
+
+export const AI_FEATURES = ["news", "tool_check", "guide_check"] as const;
+
+/** 1 แถว = เรียก AI 1 ครั้ง (รวมครั้งที่ล้มเหลว) — ค่าใช้จ่ายคิดจาก token ตามตารางราคาใน src/lib/ai/pricing.ts ตอนบันทึก */
+export const aiUsage = mysqlTable(
+  "ai_usage",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    at: datetime("at", { mode: "date", fsp: 3 }).notNull(),
+    feature: mysqlEnum("feature", AI_FEATURES).notNull(),
+    provider: varchar("provider", { length: 20 }).notNull(),
+    model: varchar("model", { length: 100 }).notNull(),
+    inputTokens: int("input_tokens").notNull().default(0),
+    outputTokens: int("output_tokens").notNull().default(0),
+    // null = ไม่มีราคาของรุ่นนี้ในตาราง
+    costUsd: decimal("cost_usd", { precision: 12, scale: 6, mode: "number" }),
+    ok: boolean("ok").notNull(),
+    error: varchar("error", { length: 500 }),
+    // เช่น "tool:12", "guide:coding-tools", "batch 20 ข่าว"
+    ref: varchar("ref", { length: 200 }),
+  },
+  (t) => [index("idx_ai_usage_at").on(t.at)],
+);

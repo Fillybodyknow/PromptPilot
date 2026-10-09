@@ -7,6 +7,7 @@ import { countPending } from "@/lib/auth/users";
 import { catalogCounts } from "@/lib/catalog/admin";
 import { countSuggestionsByStatus, listCheckRuns } from "@/lib/content/repo";
 import { countByStatus, latestRun } from "@/lib/news/repo";
+import { budgetStatus } from "@/lib/ai/usage";
 import { getAutoApproveNews } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "ภาพรวมผู้ดูแล" };
@@ -34,7 +35,7 @@ function StatCard({ s }: { s: Stat }) {
 export default async function AdminHomePage() {
   const me = await requireAdminPage();
   const isAdmin = me.role === "admin";
-  const [news, catalog, run, pendingUsers, autoApprove, suggestions, [check]] = await Promise.all([
+  const [news, catalog, run, pendingUsers, autoApprove, suggestions, [check], budget] = await Promise.all([
     countByStatus(),
     catalogCounts(),
     latestRun(),
@@ -42,10 +43,16 @@ export default async function AdminHomePage() {
     getAutoApproveNews(),
     countSuggestionsByStatus(),
     listCheckRuns(1),
+    budgetStatus(),
   ]);
 
   // งานที่รอคน — เรียงตามความเร่งด่วน
   const todo = [
+    ...(budget.level === "over"
+      ? [{ href: "/admin/ai-usage", text: `เกินงบ AI เดือนนี้ (${Math.round(budget.spentThb)}/${budget.budgetThb} บาท) — การตรวจข้อมูลอัตโนมัติหยุดแล้ว`, tone: "urgent" as const }]
+      : budget.level === "warn"
+        ? [{ href: "/admin/ai-usage", text: `ใช้งบ AI ไปแล้ว ${Math.round((budget.ratio ?? 0) * 100)}% (${Math.round(budget.spentThb)}/${budget.budgetThb} บาท)`, tone: "warn" as const }]
+        : []),
     ...(isAdmin && pendingUsers > 0 ? [{ href: "/admin/users", text: `${pendingUsers} คำขอเข้าใช้งานรออนุมัติ`, tone: "urgent" as const }] : []),
     ...(run?.status === "failed" ? [{ href: "/admin/runs", text: `ดึงข่าวรอบล่าสุดมีปัญหา (${fmt(run.startedAt)})`, tone: "urgent" as const }] : []),
     ...((news.pending ?? 0) > 0 ? [{ href: "/admin/news", text: `${news.pending} ข่าวรออนุมัติ`, tone: "warn" as const }] : []),

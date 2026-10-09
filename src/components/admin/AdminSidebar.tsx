@@ -46,6 +46,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
   {
     title: "ระบบ",
     items: [
+      { href: "/admin/ai-usage", label: "การใช้ AI", icon: "M4 20V10M10 20V4M16 20v-7M22 20H2" },
       { href: "/admin/users", label: "ผู้ใช้", icon: "M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M22 19v-1a4 4 0 0 0-3-3.87M16 5.13a3 3 0 0 1 0 5.75", badge: "users", adminOnly: true },
     ],
   },

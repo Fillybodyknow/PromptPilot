@@ -9,10 +9,12 @@
  *     3. เดือนละครั้ง: ทบทวนคู่มือทุกหมวดจากข่าวเดือนที่ผ่านมา — เสนอแก้คู่มือ ร่าง prompt ใหม่ และเครื่องมือที่ควรเพิ่ม
  *
  * env: เหมือนการดึงข่าว (ANTHROPIC_API_KEY / OPENAI_API_KEY), CONTENT_CHECK_TRIGGER = ใครสั่ง
+ *      AI_MONTHLY_BUDGET_THB = งบ AI ต่อเดือน (บาท) — เกินงบแล้วรอบอัตโนมัติหยุด (ดึงข่าวและการสั่งตรวจเองยังทำได้)
  *      CONTENT_CHECK_MAX_NEWS (ค่าเริ่มต้น 10), CONTENT_CHECK_MAX_STALE (ค่าเริ่มต้น 20) = จำนวนเครื่องมือสูงสุดต่อรอบ คุมค่า AI
  */
 import { closeDb } from "../src/db/client";
 import { hasAiKey } from "../src/lib/ai/structured";
+import { budgetStatus } from "../src/lib/ai/usage";
 import { beginCheckRun, finishCheckRun, recordRun } from "../src/lib/content/repo";
 import { CATEGORIES, getCategory } from "../src/lib/categories";
 import { checkGuide } from "../src/lib/content/guideCheck";
@@ -26,6 +28,12 @@ try {
 }
 
 const PROCESS_START = Date.now();
+
+/** เกินงบ AI เดือนนี้แล้วหรือยัง — เช็กก่อนเรียก AI ทุกรายการในรอบอัตโนมัติ (ค่าใช้จ่ายเพิ่มระหว่างรอบ) */
+async function overBudget(): Promise<string | null> {
+  const b = await budgetStatus();
+  return b.level === "over" ? `เกินงบ AI เดือนนี้ (${Math.round(b.spentThb)}/${b.budgetThb} บาท)` : null;
+}
 /** หลังจากนี้ไม่เริ่มหมวดคู่มือใหม่ (task ถูกตัดที่ 1 ชม. และ AI 1 ครั้งอาจนานหลายนาที) */
 const MONTHLY_DEADLINE_MS = 40 * 60_000;
 
@@ -57,8 +65,12 @@ async function runOne(scope: string, check: () => Promise<{ message: string }>, 
 
 /** ตรวจทีละตัว บันทึกผลของแต่ละตัว และคืนสรุปจำนวน — ตัวที่พังไม่หยุดตัวอื่น */
 async function pass(list: Candidate[], trigger: "news" | "stale", triggeredBy: string) {
-  const tally = { suggested: 0, skipped: 0, failed: 0, manual: 0 };
+  const tally = { suggested: 0, skipped: 0, failed: 0, manual: 0, budget: 0 };
   for (const c of list) {
+    if (await overBudget()) {
+      tally.budget++;
+      continue;
+    }
     const started = new Date();
     try {
       const outcome = await checkTool(c.toolId, trigger, c.ref, { skipIfUnchanged: trigger === "stale" });
@@ -83,7 +95,8 @@ const describe = (label: string, n: number, t: Awaited<ReturnType<typeof pass>>)
     : `${label} ${n} ตัว: สร้างข้อเสนอ ${t.suggested}` +
       (t.skipped ? ` · หน้าไม่เปลี่ยน ข้าม ${t.skipped}` : "") +
       (t.manual ? ` · ต้องตรวจเอง ${t.manual}` : "") +
-      (t.failed ? ` · ผิดพลาด ${t.failed}` : "");
+      (t.failed ? ` · ผิดพลาด ${t.failed}` : "") +
+      (t.budget ? ` · ข้าม ${t.budget} ตัวเพราะเกินงบ AI` : "");
 
 async function runAuto(triggeredBy: string): Promise<void> {
   if (!hasAiKey()) {
@@ -108,8 +121,9 @@ async function runAuto(triggeredBy: string): Promise<void> {
       const t = await pass(stale, "stale", "auto:stale");
       const text = describe("ข้อมูลเก่า", stale.length, t);
       summary.push(text);
-      // ทุกตัวพังหมด (เช่น AI เรียกไม่ได้) → นับเป็นรอบล้มเหลว พรุ่งนี้ลองใหม่
-      await recordRun("auto:stale", triggeredBy, started, stale.length > 0 && t.failed === stale.length ? "failed" : "ok", text);
+      // ทุกตัวพังหมด (เช่น AI เรียกไม่ได้) หรือติดงบ → นับเป็นรอบไม่สำเร็จ ลองใหม่วันถัดไป (เดือนใหม่งบจะกลับมา)
+      const incomplete = stale.length > 0 && (t.failed === stale.length || t.budget > 0);
+      await recordRun("auto:stale", triggeredBy, started, incomplete ? "failed" : "ok", text);
     } else {
       summary.push("ข้อมูลเก่า: ยังไม่ถึงรอบสัปดาห์");
     }
@@ -126,8 +140,8 @@ async function runAuto(triggeredBy: string): Promise<void> {
           done++;
           continue;
         }
-        // เผื่อเวลาให้จบก่อน time limit ของ Task Scheduler (1 ชม.) — ที่เหลือทำพรุ่งนี้
-        if (Date.now() - PROCESS_START > MONTHLY_DEADLINE_MS) {
+        // เผื่อเวลาให้จบก่อน time limit ของ Task Scheduler (1 ชม.) หรือเกินงบ AI — ที่เหลือทำวันถัดไป
+        if (Date.now() - PROCESS_START > MONTHLY_DEADLINE_MS || (await overBudget())) {
           left++;
           continue;
         }
@@ -147,13 +161,15 @@ async function runAuto(triggeredBy: string): Promise<void> {
       const text =
         `คู่มือ: ทบทวนแล้ว ${done}/${CATEGORIES.length} หมวด · สร้างข้อเสนอ ${created}` +
         (failed ? ` · ผิดพลาด ${failed}` : "") +
-        (left ? ` · เหลือ ${left} หมวด ทำต่อพรุ่งนี้` : "");
+        (left ? ` · เหลือ ${left} หมวด ทำต่อวันถัดไป (หมดเวลาหรือเกินงบ AI)` : "");
       summary.push(text);
       // ยังไม่ครบทุกหมวด (ผิดพลาดหรือหมดเวลา) → นับเป็นรอบไม่สำเร็จ พรุ่งนี้ทำต่อเฉพาะหมวดที่ค้าง
       await recordRun("auto:monthly", triggeredBy, started, done === CATEGORIES.length ? "ok" : "failed", text);
     } else {
       summary.push("คู่มือ: ยังไม่ถึงรอบเดือน");
     }
+    const budget = await overBudget();
+    if (budget) summary.push(`${budget} — หยุดการตรวจอัตโนมัติจนถึงเดือนหน้าหรือจนกว่าจะเพิ่มงบ`);
     console.log(summary.join("\n"));
     await finishCheckRun(runId, "ok", summary.join(" · "));
   } catch (err) {
