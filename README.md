@@ -59,7 +59,7 @@ App registration ใน Entra ID ต้องมี Redirect URI แบบ **Web
 - ชื่อเว็บและ certificate HTTPS ขององค์กร
 - App registration ใน Microsoft Entra ID แบบ Single tenant ที่มี Redirect URI `https://<ชื่อเว็บ>/auth/microsoft/callback` (ให้ผู้ดูแล Microsoft 365 ทำ — [DEPLOY.md ขั้นที่ 3.5](DEPLOY.md#35-ลงทะเบียนแอปใน-microsoft-entra-id-ให้ผู้ดูแล-microsoft-365-ทำ))
 - API key ของ Claude และ/หรือ OpenAI
-- ไฟล์สำรองฐานข้อมูลจากผู้พัฒนา (ถ้าต้องการย้ายข้อมูลเดิม)
+- ไฟล์สำรองฐานข้อมูลจากผู้พัฒนา (ถ้าต้องการย้ายข้อมูลเดิม) — หรือ **ชุดส่งมอบ** จาก `scripts\handoff.ps1` ที่รวมไฟล์ข้อมูล ไฟล์ตั้งค่าที่กรอกเกือบครบ และขั้นตอนพร้อมคำสั่ง (ดู [DEPLOY.md ขั้นที่ 0](DEPLOY.md#0-สิ่งที่ต้องได้จากผู้พัฒนาก่อนเริ่ม))
 - server ออกอินเทอร์เน็ตได้ไปที่ `login.microsoftonline.com`, `api.anthropic.com`, `api.openai.com` และเว็บแหล่งข่าว
 
 **ขั้นตอน**
@@ -68,7 +68,7 @@ App registration ใน Entra ID ต้องมี Redirect URI แบบ **Web
 2. **สร้างฐานข้อมูล:** ฐานข้อมูล `promptpilot` แบบ `utf8mb4` และผู้ใช้ชื่อเดียวกัน
 3. **ดาวน์โหลดโค้ดและตั้งค่า**
    ```powershell
-   git clone --branch main https://github.com/Fillybodyknow/PromptPilot.git C:\Apps\PromptPilot
+   git clone --branch main https://github.com/all2gether-webcenter/PromptPilot.git C:\Apps\PromptPilot
    Set-Location C:\Apps\PromptPilot
    Copy-Item .env.example .env.local
    notepad .env.local
@@ -81,6 +81,8 @@ App registration ใน Entra ID ต้องมี Redirect URI แบบ **Web
 4. **รันสคริปต์ติดตั้ง** (PowerShell แบบ Administrator)
    ```powershell
    powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1 -SqlDump C:\Apps\promptpilot.sql
+   # หรือจากชุดส่งมอบ (ไม่ต้องสร้าง .env.local เอง)
+   powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1 -EnvFile C:\Apps\handoff\env.server -SqlDump C:\Apps\handoff\promptpilot.sql
    ```
    สคริปต์จะทำทุกอย่างต่อจากนี้ให้ แล้วจบด้วย `Installation complete.`
    - **ติดตั้งและสร้างฐานข้อมูล:** ติดตั้ง package, นำเข้าข้อมูลหรือใส่ข้อมูลตั้งต้น, สร้างตาราง และ build

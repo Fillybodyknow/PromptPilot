@@ -45,18 +45,23 @@ Task Scheduler ──ทุกวัน 07:00──▶ เปิดหน้า�
 
 | รายการ | ใช้ทำอะไร |
 |---|---|
-| สิทธิ์เข้าถึง repository `https://github.com/Fillybodyknow/PromptPilot` (ติดตั้งจาก branch `main`) | ดาวน์โหลดโค้ด |
+| สิทธิ์เข้าถึง repository `https://github.com/all2gether-webcenter/PromptPilot` (ติดตั้งจาก branch `main`) | ดาวน์โหลดโค้ด |
+| **ชุดส่งมอบ** (`PromptPilot-handoff-<วันที่>`) — แนะนำ | มีไฟล์ข้อมูล `promptpilot.sql`, ไฟล์ตั้งค่า `env.server` ที่กรอกค่าส่วนใหญ่ไว้แล้ว (รวม API key และรหัสผ่าน MySQL ที่สุ่มให้) และ `อ่านก่อน-IT.txt` ที่มีคำสั่งพร้อมค่าจริง ถ้าได้ชุดนี้ ทำตาม `อ่านก่อน-IT.txt` ได้เลย ไม่ต้องกรอกตารางในขั้นที่ 4 |
 | ไฟล์ `promptpilot-....sql` (สำรองฐานข้อมูลจากเครื่องผู้พัฒนา) | ย้ายข้อมูลปัจจุบัน (ข่าวที่อนุมัติแล้ว, เครื่องมือที่แก้ไว้) ขึ้น server ถ้าไม่มี ระบบจะใส่ข้อมูลตั้งต้นให้แทน |
 | `ANTHROPIC_API_KEY` และ/หรือ `OPENAI_API_KEY` | ให้ AI สรุปข่าว ระบบใช้ Claude ก่อน ถ้าใช้ไม่ได้จะใช้ OpenAI แทน มีอย่างน้อย 1 ตัว |
 | ชื่อ login Microsoft 365 (UPN) ของผู้ดูแลระบบคนแรก | ใส่ใน `ADMIN_EMAILS` — คนแรกในรายชื่อที่ login จะเป็นผู้ดูแลระบบทันที แล้วอนุมัติคนอื่นเองในหน้า `/admin/users` |
 
 > ส่ง API key และรหัสผ่านผ่านช่องทางที่ปลอดภัย (เช่น password manager ของบริษัท) ห้ามส่งทางแชตหรืออีเมลธรรมดา
 
-**สำหรับผู้พัฒนา:** สร้างไฟล์สำรองจากเครื่องตัวเองด้วยสคริปต์เดียวกับที่ server ใช้ (ไม่ต้องเปิดแบบ Administrator):
+**สำหรับผู้พัฒนา:** สร้างชุดส่งมอบจากเครื่องตัวเองด้วยคำสั่งเดียว (ไม่ต้องเปิดแบบ Administrator) ได้โฟลเดอร์บน Desktop:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1 -OutDir C:\Temp
+powershell -ExecutionPolicy Bypass -File scripts\handoff.ps1 -AppUrl https://promptpilot.company.local
 ```
+
+- ไม่รู้ที่อยู่เว็บจริงก็ไม่ต้องใส่ `-AppUrl` IT จะกรอกเองในช่องที่ขึ้นต้นด้วย `<<`
+- `MS_CLIENT_SECRET` จะเว้นไว้ให้ IT สร้าง secret ใหม่ของ server ใน Entra (ปลอดภัยกว่าใช้ secret เดียวกับเครื่องผู้พัฒนา) ถ้าจะใช้ตัวเดิมให้ใส่ `-IncludeClientSecret`
+- ถ้าต้องการแค่ไฟล์ข้อมูล: `powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1 -OutDir C:\Temp`
 
 ## 1. สเปกเครื่องและเครือข่าย
 
@@ -149,13 +154,15 @@ EXIT;
 
 ```powershell
 New-Item -ItemType Directory -Force C:\Apps | Out-Null
-git clone --branch main https://github.com/Fillybodyknow/PromptPilot.git C:\Apps\PromptPilot
+git clone --branch main https://github.com/all2gether-webcenter/PromptPilot.git C:\Apps\PromptPilot
 Set-Location C:\Apps\PromptPilot
 Copy-Item .env.example .env.local
 notepad .env.local
 ```
 
 กรอกค่าในไฟล์ตามคำอธิบายในไฟล์ แล้วบันทึก
+
+> **ถ้าได้ชุดส่งมอบ** ไม่ต้องสร้าง `.env.local` เอง กรอกช่องที่ขึ้นต้นด้วย `<<` ใน `env.server` แล้วใส่ `-EnvFile <path>\env.server` ตอนรันสคริปต์ติดตั้งในขั้นที่ 5 สคริปต์จะคัดลอกให้ และจะหยุดถ้ายังมีช่อง `<<` ค้างอยู่
 
 > รหัสผ่านฐานข้อมูล (`DB_PASS`) **ห้ามมี** `$` `#` `"` `'` `` ` `` `\` และช่องว่าง และห้ามใส่เครื่องหมายคำพูดครอบค่า (สคริปต์ติดตั้งจะตรวจให้) ถ้ารหัสผ่าน MySQL ที่ตั้งในขั้นที่ 3 มีอักขระพวกนี้ ให้เปลี่ยนรหัสก่อน
 

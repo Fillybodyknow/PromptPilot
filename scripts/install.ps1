@@ -4,7 +4,10 @@
   ทำ: ตรวจเครื่อง -> npm ci -> นำเข้า/สร้างฐานข้อมูล -> build -> Windows Service -> งานดึงข่าวรายวัน -> งานสำรองข้อมูลรายคืน -> ทดสอบ
   รันซ้ำได้ (เช่นหลังแก้ .env.local) — ส่วนที่ติดตั้งไว้แล้วจะถูกตั้งค่าใหม่ ข้อมูลในฐานข้อมูลไม่ถูกลบ
 .EXAMPLE
-  # ครั้งแรก พร้อมนำเข้าข้อมูลจากเครื่องผู้พัฒนา
+  # ครั้งแรก จากชุดส่งมอบของผู้พัฒนา (scripts\handoff.ps1) — ไฟล์ตั้งค่า + ข้อมูลทั้งหมด
+  powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1 -EnvFile D:\handoff\env.server -SqlDump D:\handoff\promptpilot.sql
+.EXAMPLE
+  # ครั้งแรก พร้อมนำเข้าข้อมูลจากเครื่องผู้พัฒนา (กรอก .env.local เอง)
   powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1 -SqlDump C:\Apps\promptpilot.sql
 .EXAMPLE
   # ครั้งแรก เริ่มจากข้อมูลตั้งต้น (ไม่มีข่าวเก่า)
@@ -13,6 +16,8 @@
 param(
     # ไฟล์ dump จาก mysqldump ของผู้พัฒนา — นำเข้าได้เฉพาะฐานข้อมูลที่ยังว่าง
     [string]$SqlDump,
+    # ไฟล์ตั้งค่าจากชุดส่งมอบ (env.server) — คัดลอกเป็น .env.local ถ้ายังไม่มี
+    [string]$EnvFile,
     # port ภายในที่แอปรับ (reverse proxy ต้องชี้มาที่ port นี้)
     [int]$Port = 3000,
     [string]$Nssm = "C:\Tools\nssm\nssm.exe",
@@ -54,6 +59,11 @@ if ($env:NEXT_PUBLIC_BASE_PATH) { Write-Ok "Sub-path (NEXT_PUBLIC_BASE_PATH): $e
 # ---------------------------------------------------------------- 2. ตรวจ .env.local
 Write-Step "Checking .env.local"
 $envFile = Join-Path $Repo ".env.local"
+if ($EnvFile) {
+    if (-not (Test-Path $EnvFile)) { Stop-WithError "Env file not found: $EnvFile" }
+    if (Test-Path $envFile) { Write-Warn "$envFile already exists - using it and ignoring -EnvFile (delete it first to start over from $EnvFile)." }
+    else { Copy-Item $EnvFile $envFile; Write-Ok "Copied $EnvFile to $envFile" }
+}
 if (-not (Test-Path $envFile)) {
     Copy-Item (Join-Path $Repo ".env.example") $envFile
     Stop-WithError "Created $envFile from .env.example. Fill in the values (notepad `"$envFile`"), then run this script again."
@@ -61,6 +71,9 @@ if (-not (Test-Path $envFile)) {
 $cfg = Read-EnvFile $envFile
 $missing = @("DB_NAME", "DB_PASS", "APP_URL", "MS_TENANT_ID", "MS_CLIENT_ID", "MS_CLIENT_SECRET", "ADMIN_EMAILS") | Where-Object { -not $cfg[$_] }
 if ($missing) { Stop-WithError ("Empty in .env.local: " + ($missing -join ", ")) }
+# ช่องที่ชุดส่งมอบเว้นไว้ให้กรอก (ขึ้นต้นด้วย <<)
+$placeholders = @($cfg.Keys | Where-Object { [string]$cfg[$_] -like "<<*" })
+if ($placeholders) { Stop-WithError ("Fill in these values in $envFile (they still contain <<...>>): " + (($placeholders | Sort-Object) -join ", ")) }
 if (-not $cfg["ANTHROPIC_API_KEY"] -and -not $cfg["OPENAI_API_KEY"]) { Stop-WithError "Set ANTHROPIC_API_KEY and/or OPENAI_API_KEY in .env.local." }
 # ตัวเว็บ (Next.js), สคริปต์ฐานข้อมูล และสคริปต์สำรองข้อมูล อ่านอักขระเหล่านี้ใน .env ต่างกัน
 # (เช่น $ ถูกตีความเป็นตัวแปร, # เป็น comment) รหัสผ่านจะผิดแค่บางส่วน — จึงห้ามใช้ไปเลย
