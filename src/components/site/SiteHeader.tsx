@@ -28,8 +28,6 @@ export async function SiteHeader() {
       {/* เต็มความกว้างจอ (ไม่จำกัด max-w เหมือนเนื้อหา) เหลือแค่ระยะขอบเล็กน้อยไม่ให้ชิดขอบจอ */}
       <div className="flex w-full items-center gap-3 px-4 py-2 sm:px-6 md:gap-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <PartnersSection />
-          <span aria-hidden className="h-7 w-px shrink-0 bg-line" />
           <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="PromptPilot หน้าแรก">
             <Image
               src={withBasePath("/images/app/app_logo.png")}
@@ -42,6 +40,8 @@ export async function SiteHeader() {
             {/* ซ่อนชื่อบนจอแคบ และช่วง lg (1024–1279px) ที่ top bar มีทั้งเมนู ปุ่ม Admin และชื่อผู้ใช้ — ให้โลโก้พาร์ทเนอร์ทั้ง 5 ยังอยู่ในแถวเดียวได้ */}
             <span className="hidden text-lg font-bold tracking-tight sm:inline lg:hidden xl:inline">PromptPilot</span>
           </Link>
+          <span aria-hidden className="h-7 w-px shrink-0 bg-line" />
+          <PartnersSection />
         </div>
         {/* แถบพาร์ทเนอร์กินที่ ~200–260px — เมนูเต็มจึงเริ่มที่ lg และช่องค้นหาเต็มที่ xl ไม่อย่างนั้นแถวล้น */}
         <div className="hidden lg:block">
