@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, lt } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, like, lt } from "drizzle-orm";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { getDb, getPool } from "@/db/client";
 import { checkRuns, contentSuggestions, SUGGESTION_STATUSES, watchPages, type SuggestedChange } from "@/db/schema";
@@ -10,8 +10,11 @@ export type CheckRunRow = typeof checkRuns.$inferSelect;
 
 /** ข้อเสนอที่ค้างเกินนี้ปิดเอง — ข้อมูลที่ AI อ่านมาอาจไม่ทันสมัยแล้ว */
 const SUGGESTION_TTL_DAYS = 30;
-/** รอบตรวจที่ค้างสถานะ "กำลังตรวจ" นานเกินนี้ถือว่าหยุดกลางคัน */
-const STALE_RUN_MS = 15 * 60_000;
+/** รอบตรวจที่ค้างสถานะ "กำลังตรวจ" นานเกินนี้ถือว่าหยุดกลางคัน — รอบอัตโนมัติตรวจหลายตัวจึงให้เวลานานกว่า (เท่ากับ time limit ของ Task Scheduler) */
+const stuckAfterMs = (scope: string) => (scope.startsWith("auto") ? 60 : 15) * 60_000;
+const STUCK_MESSAGE = "รอบนี้หยุดทำงานกลางคันโดยไม่มีผลลัพธ์";
+const withStuck = (r: CheckRunRow): CheckRunRow =>
+  r.status === "running" && r.startedAt.getTime() < Date.now() - stuckAfterMs(r.scope) ? { ...r, status: "failed", message: STUCK_MESSAGE } : r;
 
 // ---------------------------------------------------------------- หน้าที่ใช้ตรวจ
 
@@ -33,19 +36,46 @@ export async function setWatchPages(toolId: number, urls: string[]): Promise<voi
   if (add.length) await db.insert(watchPages).values(add.map((url) => ({ toolId, url })));
 }
 
-/** ยังไม่เคยตั้งหน้าที่ใช้ตรวจ → เริ่มจากลิงก์หน้าทางการของเครื่องมือ */
-export async function ensureWatchPages(toolId: number, defaultUrl: string): Promise<WatchPageRow[]> {
+/** ยังไม่เคยตั้งหน้าที่ใช้ตรวจ → เริ่มจากหน้าตั้งต้นของเครื่องมือ (ดู defaultWatchUrls) */
+export async function ensureWatchPages(toolId: number, defaultUrls: string[]): Promise<WatchPageRow[]> {
   const pages = await listWatchPages(toolId);
   if (pages.length > 0) return pages;
-  await getDb().insert(watchPages).values({ toolId, url: defaultUrl.slice(0, 500) });
+  await getDb().insert(watchPages).values(defaultUrls.map((url) => ({ toolId, url: url.slice(0, 500) })));
   return listWatchPages(toolId);
 }
 
-export async function recordWatchResult(id: number, result: { hash?: string; status: string }): Promise<void> {
+/**
+ * เครื่องมือที่ผลตรวจล่าสุดบอกว่า AI ตรวจแทนไม่ได้ (เปิดหน้าทางการไม่ได้ หรือหน้าไม่มีข้อมูลของเครื่องมือนี้)
+ * marker = คำที่ใส่ในข้อความผลตรวจกรณีนี้ (MANUAL_MARK ใน toolCheck — รับเป็นพารามิเตอร์เพื่อไม่ให้ repo พึ่ง toolCheck)
+ */
+export async function listNeedsManualCheck(marker: string): Promise<{ toolId: number; message: string; at: Date }[]> {
+  const rows = await getDb()
+    .select({ scope: checkRuns.scope, message: checkRuns.message, startedAt: checkRuns.startedAt, status: checkRuns.status })
+    .from(checkRuns)
+    .where(like(checkRuns.scope, "tool:%"))
+    .orderBy(desc(checkRuns.id))
+    .limit(2000);
+  const latest = new Map<string, (typeof rows)[number]>();
+  for (const r of rows) if (r.status !== "running" && !latest.has(r.scope)) latest.set(r.scope, r);
+  return [...latest.values()]
+    .filter((r) => r.status === "ok" && r.message?.includes(marker))
+    .map((r) => ({ toolId: Number(r.scope.slice(5)), message: r.message ?? "", at: r.startedAt }));
+}
+
+/** checked: false = บันทึกสถานะอย่างเดียว ยังไม่นับเป็นเวลาที่ AI ตรวจล่าสุด (รอบอัตโนมัติใช้เวลานี้เลือกเครื่องมือ) */
+export async function recordWatchResult(id: number, result: { hash?: string; status: string; checked?: boolean }): Promise<void> {
   await getDb()
     .update(watchPages)
-    .set({ ...(result.hash ? { lastHash: result.hash } : {}), lastStatus: result.status.slice(0, 200), lastCheckedAt: new Date() })
+    .set({
+      ...(result.hash ? { lastHash: result.hash } : {}),
+      lastStatus: result.status.slice(0, 200),
+      ...(result.checked === false ? {} : { lastCheckedAt: new Date() }),
+    })
     .where(eq(watchPages.id, id));
+}
+
+export async function markWatchChecked(ids: number[]): Promise<void> {
+  if (ids.length) await getDb().update(watchPages).set({ lastCheckedAt: new Date() }).where(inArray(watchPages.id, ids));
 }
 
 // ---------------------------------------------------------------- ข้อเสนอแก้ไข
@@ -150,15 +180,20 @@ export async function finishCheckRun(id: number, status: "ok" | "failed", messag
 
 export async function listCheckRuns(limit = 5): Promise<CheckRunRow[]> {
   const rows = await getDb().select().from(checkRuns).orderBy(desc(checkRuns.id)).limit(limit);
-  return rows.map((r) =>
-    r.status === "running" && r.startedAt.getTime() < Date.now() - STALE_RUN_MS
-      ? { ...r, status: "failed" as const, message: "รอบนี้หยุดทำงานกลางคันโดยไม่มีผลลัพธ์" }
-      : r,
-  );
+  return rows.map(withStuck);
 }
 
 export async function latestCheckRunFor(scope: string): Promise<CheckRunRow | null> {
   const [r] = await getDb().select().from(checkRuns).where(eq(checkRuns.scope, scope)).orderBy(desc(checkRuns.id)).limit(1);
-  if (!r) return null;
-  return r.status === "running" && r.startedAt.getTime() < Date.now() - STALE_RUN_MS ? { ...r, status: "failed", message: "รอบนี้หยุดทำงานกลางคันโดยไม่มีผลลัพธ์" } : r;
+  return r ? withStuck(r) : null;
+}
+
+/**
+ * บันทึกผลที่เสร็จแล้วระหว่างรอบอัตโนมัติ (รอบใหญ่ถือ lock อยู่แล้ว): ผลของเครื่องมือแต่ละตัว (scope tool:<id>)
+ * ให้หน้าแก้ไขเครื่องมือเห็นผลล่าสุดของตัวเอง และสรุปรอบข้อมูลเก่า (auto:stale) ที่ใช้นับรอบสัปดาห์
+ */
+export async function recordRun(scope: string, triggeredBy: string, startedAt: Date, status: "ok" | "failed", message: string): Promise<void> {
+  await getDb()
+    .insert(checkRuns)
+    .values({ triggeredBy: triggeredBy.slice(0, 320), scope, startedAt, finishedAt: new Date(), status, message: message.slice(0, 2000) });
 }

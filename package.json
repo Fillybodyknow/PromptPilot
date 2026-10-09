@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "news:fetch": "tsx scripts/fetch-news.ts",
+    "content:check": "node --max-http-header-size=65536 --import tsx scripts/check-content.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:import-sqlite": "tsx scripts/db/import-sqlite.ts",

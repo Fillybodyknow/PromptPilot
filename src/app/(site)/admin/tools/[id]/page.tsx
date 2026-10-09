@@ -11,6 +11,7 @@ import { toolFormValues } from "@/lib/catalog/forms";
 import { loadAllEntries } from "@/lib/catalog/repo";
 import { getCategory } from "@/lib/categories";
 import { latestCheckRunFor, listWatchPages, pendingSuggestionFor } from "@/lib/content/repo";
+import { defaultWatchUrls } from "@/lib/content/toolCheck";
 import { one, type SearchParams } from "@/lib/params";
 import { saveWatchPages, triggerToolCheck } from "../../suggestions/actions";
 import { removeTool, saveTool } from "../actions";
@@ -70,7 +71,7 @@ export default async function EditToolPage({ params, searchParams }: { params: P
           </ActionForm>
         </div>
         <details className="mt-4">
-          <summary className="cursor-pointer text-muted hover:text-ink">หน้าที่ใช้ตรวจ ({watch.length || "ยังไม่ได้ตั้ง — ใช้ลิงก์หน้าทางการ"})</summary>
+          <summary className="cursor-pointer text-muted hover:text-ink">หน้าที่ใช้ตรวจ ({watch.length || `ยังไม่ได้ตั้ง — จะใช้ ${defaultWatchUrls(row.url).join(", ")}`})</summary>
           <ActionForm action={saveWatchPages} submitLabel="บันทึกหน้าที่ใช้ตรวจ" variant="neutral" className="mt-3">
             <input type="hidden" name="toolId" value={row.id} />
             <p className="mb-2 text-muted">ใส่ลิงก์หน้าทางการของผู้ให้บริการ บรรทัดละ 1 ลิงก์ ไม่เกิน 5 หน้า เช่น หน้าราคา หน้ารายละเอียดโมเดล ควรเป็นหน้าที่เปิดแล้วเห็นข้อความทันที (ไม่ต้อง login)</p>

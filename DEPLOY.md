@@ -21,6 +21,7 @@
                MySQL 8.0 ขึ้นไป (ฐานข้อมูล promptpilot)
 
 Task Scheduler ──ทุกวัน 06:00──▶ ดึงข่าว AI จากอินเทอร์เน็ต → ให้ AI สรุป → บันทึกลง MySQL
+Task Scheduler ──ทุกวัน 07:00──▶ เปิดหน้าทางการของเครื่องมือ → ให้ AI เทียบข้อมูล → ข้อเสนอแก้ไขรอคนอนุมัติ
                ──ทุกคืน 02:00──▶ สำรองฐานข้อมูลเป็นไฟล์ .sql
 ```
 
@@ -213,8 +214,9 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1
    - ฐานข้อมูลที่มีข้อมูลอยู่แล้วจะไม่ถูกเขียนทับ
 5. build เว็บ
 6. ติดตั้ง Windows Service ชื่อ `PromptPilot` (เปิดเองเมื่อเครื่องรีสตาร์ต และเปิดใหม่เองถ้าล่ม) แล้วตรวจว่าเว็บตอบ 200
-7. ตั้ง Task Scheduler 2 งาน:
+7. ตั้ง Task Scheduler 3 งาน:
    - `PromptPilot News Fetch`: ดึงข่าวทุกวัน 06:00
+   - `PromptPilot Content Check`: ให้ AI ตรวจข้อมูลเครื่องมือทุกวัน 07:00 (เครื่องมือที่มีข่าวใหม่ทุกวัน, ข้อมูลเก่าสัปดาห์ละครั้ง) ผลเป็นข้อเสนอแก้ไขที่ต้องมีคนอนุมัติ ไม่แก้ข้อมูลบนเว็บเอง
    - `PromptPilot DB Backup`: สำรองฐานข้อมูลทุกคืน 02:00 ไปที่ `C:\Apps\backup` เก็บย้อนหลัง 30 วัน
 
 จบแล้วต้องขึ้น `Installation complete.` สีเขียว
@@ -226,6 +228,7 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\install.ps1
 | `-Port 3100` | `3000` | port 3000 ถูกโปรแกรมอื่นใช้อยู่ (ต้องแก้ reverse proxy ในขั้นที่ 6 ให้ตรงด้วย) |
 | `-Nssm D:\Tools\nssm.exe` | `C:\Tools\nssm\nssm.exe` | วาง NSSM ไว้ที่อื่น |
 | `-FetchTime 07:30` | `06:00` | อยากเปลี่ยนเวลาดึงข่าว |
+| `-CheckTime 08:00` | `07:00` | อยากเปลี่ยนเวลาที่ AI ตรวจข้อมูลเครื่องมือ (ควรหลังเวลาดึงข่าว) |
 | `-BackupDir D:\Backup\PromptPilot` | `C:\Apps\backup` | อยากเก็บไฟล์สำรองที่อื่น |
 | `-MysqlBin "C:\Program Files\MySQL\MySQL Server 8.0\bin"` | หาเองใน `C:\Program Files\MySQL` | ลง MySQL ไว้ที่อื่น |
 
@@ -324,6 +327,7 @@ Start-ScheduledTask -TaskName "PromptPilot News Fetch"
 | 4.1 | เปิด `https://promptpilot.company.local/robots.txt` | ขึ้น `Disallow: /` (ไม่ให้ search engine เก็บ) |
 | 5 | แก้ข้อมูลเล็กน้อยในหน้า admin แล้วกดบันทึก (แล้วแก้กลับ) | บันทึกสำเร็จ หน้าเว็บเปลี่ยนตาม |
 | 6 | หน้า admin > ประวัติการดึงข่าว | เห็นรอบที่เพิ่งทดสอบ สถานะสำเร็จ |
+| 6.1 | `Start-ScheduledTask -TaskName "PromptPilot Content Check"` รอ 1–5 นาที แล้วเปิดหน้า admin > ข้อเสนอแก้ไขจาก AI | ส่วน "การตรวจล่าสุด" ท้ายหน้ามีรอบที่เพิ่งรัน สถานะเสร็จ (log อยู่ที่ `logs\content-YYYY-MM-DD.log`) |
 | 7 | `Start-ScheduledTask -TaskName "PromptPilot DB Backup"` แล้วดู `C:\Apps\backup` | มีไฟล์ `promptpilot-....sql` ใหม่ |
 | 8 | รีสตาร์ตเครื่อง | เว็บกลับมาเองโดยไม่ต้องทำอะไร |
 
@@ -365,6 +369,7 @@ powershell -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\update.ps1
 3. หยุดเว็บ แล้วติดตั้ง package และ build (เว็บหยุดประมาณ 1–3 นาที)
 4. อัปเดตตาราง
 5. เปิดเว็บ แล้วตรวจว่าตอบ 200
+6. ถ้ายังไม่มีงาน `PromptPilot Content Check` (server ที่ติดตั้งก่อนมีฟีเจอร์ AI ตรวจข้อมูลเครื่องมือ) จะสร้างให้ ตั้งเวลา 07:00 ทุกวัน
 
 **ถ้าขั้นไหนผิดพลาด** สคริปต์จะคืนเว็บเป็นเวอร์ชันเดิมและเปิดกลับมาให้เอง แล้วขึ้นข้อความ error สีแดง ให้ส่งข้อความนั้นให้ผู้พัฒนา ถ้ารันซ้ำแล้วไม่มีเวอร์ชันใหม่แต่เว็บยังไม่ทำงาน สคริปต์จะ build และเปิดเว็บใหม่ให้
 
@@ -438,6 +443,10 @@ New-Item -ItemType Directory -Force C:\Apps\PromptPilot\logs | Out-Null
 # งานดึงข่าวทุกวัน 06:00
 schtasks /Create /TN "PromptPilot News Fetch" /SC DAILY /ST 06:00 /RU SYSTEM /RL HIGHEST /F `
   /TR "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\news-task.ps1"
+
+# งาน AI ตรวจข้อมูลเครื่องมือทุกวัน 07:00
+schtasks /Create /TN "PromptPilot Content Check" /SC DAILY /ST 07:00 /RU SYSTEM /RL HIGHEST /F `
+  /TR "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Apps\PromptPilot\scripts\content-task.ps1"
 
 # งานสำรองฐานข้อมูลทุกคืน 02:00
 schtasks /Create /TN "PromptPilot DB Backup" /SC DAILY /ST 02:00 /RU SYSTEM /RL HIGHEST /F `

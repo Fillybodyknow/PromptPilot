@@ -11,7 +11,8 @@ export function startToolCheck(toolId: number, triggeredBy: string): void {
   const logDir = path.join(cwd, "logs");
   mkdirSync(logDir, { recursive: true });
   const log = openSync(path.join(logDir, `content-${new Date().toLocaleDateString("sv-SE")}.log`), "a");
-  const child = spawn(process.execPath, ["--import", "tsx", "scripts/check-content.ts", `--tool=${toolId}`], {
+  // เว็บของ Google บางหน้าส่ง header ใหญ่เกินค่าเริ่มต้นของ Node (16 KB) — เปิดไม่ได้ถ้าไม่ขยาย
+  const child = spawn(process.execPath, ["--max-http-header-size=65536", "--import", "tsx", "scripts/check-content.ts", `--tool=${toolId}`], {
     cwd,
     detached: true,
     windowsHide: true,

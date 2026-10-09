@@ -113,5 +113,12 @@ try {
 }
 if (Test-Path $prev) { Remove-Item $prev -Recurse -Force -ErrorAction SilentlyContinue }
 
+# ---------------------------------------------------------------- 4. งานตามเวลาที่เพิ่มในเวอร์ชันหลัง
+# server ที่ติดตั้งก่อนมีการตรวจข้อมูลด้วย AI ยังไม่มีงานนี้ — สร้างให้ (ถ้ามีแล้วไม่แตะ เผื่อ IT ปรับเวลาไว้)
+if (-not (Get-ScheduledTask -TaskName "PromptPilot Content Check" -ErrorAction SilentlyContinue)) {
+    Register-DailyTask "PromptPilot Content Check" "07:00" "-File `"$Repo\scripts\content-task.ps1`""
+    Write-Ok "Added AI content check daily at 07:00 (task: PromptPilot Content Check)"
+}
+
 Write-Host ""
 Write-Host "Update complete: $before -> $after" -ForegroundColor Green

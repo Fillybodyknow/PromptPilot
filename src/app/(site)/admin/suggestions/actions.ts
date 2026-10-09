@@ -26,8 +26,10 @@ export async function triggerToolCheck(_: FormState, fd: FormData): Promise<Form
   const toolId = idOf(fd, "toolId");
   if (!(await getToolRow(toolId))) return { ok: false, message: "ไม่พบเครื่องมือนี้" };
   if (!hasAiKey()) return { ok: false, message: "ยังไม่ได้ตั้ง API key ของ AI ในเซิร์ฟเวอร์ (ANTHROPIC_API_KEY หรือ OPENAI_API_KEY)" };
-  const [latest] = await listCheckRuns(1);
-  if (latest?.status === "running") return { ok: false, message: "มีการตรวจอื่นกำลังทำงานอยู่ ลองใหม่อีกครั้งในอีกสักครู่" };
+  const [[latest], auto] = await Promise.all([listCheckRuns(1), latestCheckRunFor("auto")]);
+  if (latest?.status === "running" || auto?.status === "running") {
+    return { ok: false, message: "มีการตรวจอื่นกำลังทำงานอยู่ (อาจเป็นรอบอัตโนมัติประจำวัน) ลองใหม่อีกครั้งในอีกสักครู่" };
+  }
   const scope = `tool:${toolId}`;
   const before = await latestCheckRunFor(scope);
   startToolCheck(toolId, user);

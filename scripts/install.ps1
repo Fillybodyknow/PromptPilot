@@ -19,6 +19,8 @@ param(
     [string]$ServiceName = "PromptPilot",
     # เวลาดึงข่าวทุกวัน (HH:mm)
     [string]$FetchTime = "06:00",
+    # ตรวจข้อมูลเครื่องมือด้วย AI — ควรหลังดึงข่าว เพื่อใช้ข่าวที่เพิ่งอนุมัติ
+    [string]$CheckTime = "07:00",
     # โฟลเดอร์เก็บไฟล์สำรองฐานข้อมูลรายคืน
     [string]$BackupDir = "C:\Apps\backup",
     [string]$BackupTime = "02:00",
@@ -31,7 +33,7 @@ Import-MachineEnv
 # ---------------------------------------------------------------- 1. ตรวจเครื่อง
 Write-Step "Checking prerequisites"
 Assert-Admin
-if ($FetchTime -notmatch '^\d{2}:\d{2}$' -or $BackupTime -notmatch '^\d{2}:\d{2}$') { Stop-WithError "-FetchTime / -BackupTime must look like 06:00" }
+if ($FetchTime -notmatch '^\d{2}:\d{2}$' -or $BackupTime -notmatch '^\d{2}:\d{2}$' -or $CheckTime -notmatch '^\d{2}:\d{2}$') { Stop-WithError "-FetchTime / -CheckTime / -BackupTime must look like 06:00" }
 if ($SqlDump -and -not (Test-Path $SqlDump)) { Stop-WithError "SQL dump not found: $SqlDump" }
 
 $nodeCmd = Get-Command node.exe -ErrorAction SilentlyContinue
@@ -150,17 +152,10 @@ try {
 
 # ---------------------------------------------------------------- 9. งานตามเวลา
 Write-Step "Scheduling tasks"
-# ใช้ cmdlet แทน schtasks.exe — PowerShell 5.1 ส่งอาร์กิวเมนต์ที่มีเครื่องหมาย " ให้โปรแกรมภายนอกผิดรูป
-function Register-DailyTask([string]$Name, [string]$At, [string]$Arguments) {
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass $Arguments" -WorkingDirectory $Repo
-    $trigger = New-ScheduledTaskTrigger -Daily -At $At
-    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-    # StartWhenAvailable: ถ้าเครื่องปิดอยู่ตอนถึงเวลา ให้รันทันทีที่เปิด
-    $taskSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 1)
-    Register-ScheduledTask -TaskName $Name -Action $action -Trigger $trigger -Principal $principal -Settings $taskSettings -Force | Out-Null
-}
 Register-DailyTask "PromptPilot News Fetch" $FetchTime "-File `"$Repo\scripts\news-task.ps1`""
 Write-Ok "News fetch daily at $FetchTime (task: PromptPilot News Fetch)"
+Register-DailyTask "PromptPilot Content Check" $CheckTime "-File `"$Repo\scripts\content-task.ps1`""
+Write-Ok "AI content check daily at $CheckTime (task: PromptPilot Content Check)"
 if ($MysqlBin) {
     Register-DailyTask "PromptPilot DB Backup" $BackupTime "-File `"$Repo\scripts\backup-db.ps1`" -OutDir `"$BackupDir`" -MysqlBin `"$MysqlBin`""
     Write-Ok "Database backup daily at $BackupTime to $BackupDir (task: PromptPilot DB Backup)"

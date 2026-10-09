@@ -38,12 +38,16 @@ async function assertHttp(url: string): Promise<URL> {
  */
 export async function fetchText(
   url: string,
-  opts: { signal: AbortSignal; maxBytes: number; userAgent: string; accept?: string },
+  opts: { signal: AbortSignal; maxBytes: number; userAgent: string; accept?: string; acceptLanguage?: string },
 ): Promise<{ text: string; finalUrl: string; contentType: string }> {
   let current = await assertHttp(url);
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
     const res = await fetch(current, {
-      headers: { "User-Agent": opts.userAgent, ...(opts.accept ? { Accept: opts.accept } : {}) },
+      headers: {
+        "User-Agent": opts.userAgent,
+        ...(opts.accept ? { Accept: opts.accept } : {}),
+        ...(opts.acceptLanguage ? { "Accept-Language": opts.acceptLanguage } : {}),
+      },
       signal: opts.signal,
       redirect: "manual",
     });

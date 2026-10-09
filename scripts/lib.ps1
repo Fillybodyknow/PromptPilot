@@ -114,3 +114,13 @@ function Protect-Folder([string]$Path) {
     $code = Invoke-NativeCode "icacls.exe" @($Path, "/inheritance:r", "/grant:r", "*S-1-5-32-544:(OI)(CI)F", "*S-1-5-18:(OI)(CI)F", "/T", "/C", "/Q")
     if ($code -ne 0) { Stop-WithError "Could not set permissions on $Path (icacls exit code $code)" }
 }
+
+# ใช้ cmdlet แทน schtasks.exe — PowerShell 5.1 ส่งอาร์กิวเมนต์ที่มีเครื่องหมาย " ให้โปรแกรมภายนอกผิดรูป
+function Register-DailyTask([string]$Name, [string]$At, [string]$Arguments) {
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass $Arguments" -WorkingDirectory $Repo
+    $trigger = New-ScheduledTaskTrigger -Daily -At $At
+    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    # StartWhenAvailable: ถ้าเครื่องปิดอยู่ตอนถึงเวลา ให้รันทันทีที่เปิด
+    $taskSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 1)
+    Register-ScheduledTask -TaskName $Name -Action $action -Trigger $trigger -Principal $principal -Settings $taskSettings -Force | Out-Null
+}

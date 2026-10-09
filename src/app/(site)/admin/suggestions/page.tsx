@@ -12,11 +12,14 @@ import {
   countSuggestionsByStatus,
   listCheckRuns,
   listSuggestions,
+  latestCheckRunFor,
+  listNeedsManualCheck,
   type CheckRunRow,
   type SuggestionRow,
   type SuggestionStatus,
 } from "@/lib/content/repo";
-import { FIELD_LABEL, type ToolField } from "@/lib/content/toolCheck";
+import { STALE_AFTER_DAYS } from "@/lib/content/schedule";
+import { FIELD_LABEL, MANUAL_MARK, type ToolField } from "@/lib/content/toolCheck";
 import { one, type SearchParams } from "@/lib/params";
 import { accessMethodEnum, sourceLabelEnum, statusEnum } from "@/lib/schema";
 import { acceptSuggestion, rejectSuggestion } from "./actions";
@@ -69,6 +72,44 @@ const label = (field: string) => FIELD_LABEL[field as ToolField] ?? field;
 const inputCls =
   "w-full rounded-lg border border-line bg-background px-3 py-2 text-sm";
 
+/** ใครสั่งตรวจ — รอบอัตโนมัติแสดงเป็นคำอธิบายแทนรหัส */
+const runBy = (by: string) =>
+  ({ "auto:news": "อัตโนมัติ: มีข่าวใหม่", "auto:stale": "อัตโนมัติ: ข้อมูลเก่า", ตั้งเวลา: "ตรวจอัตโนมัติประจำวัน" })[by] ?? by.replace(/^manual:/, "");
+
+/** เครื่องมือที่ผลตรวจล่าสุดบอกว่า AI ตรวจแทนไม่ได้ — ต้องให้คนตั้งหน้าทางการที่ตรงกว่า หรือตรวจเอง */
+function NeedsManualPanel({ items, tools }: { items: { toolId: number; message: string; at: Date }[]; tools: Map<string, ToolRow> }) {
+  const rows = items.flatMap((i) => {
+    const t = tools.get(String(i.toolId));
+    return t ? [{ ...i, tool: t }] : [];
+  });
+  if (rows.length === 0) return null;
+  return (
+    <details className="mt-10 rounded-2xl border border-warn/50 bg-warn-bg">
+      <summary className="flex min-h-12 cursor-pointer items-center px-5 font-semibold text-warn">
+        AI ตรวจแทนไม่ได้ {rows.length} เครื่องมือ — ต้องตั้งหน้าทางการที่ตรงกว่า หรือตรวจเอง
+      </summary>
+      <div className="border-t border-warn/30 px-5 pb-5 pt-3 text-sm">
+        <p className="text-ink">
+          หน้าที่ใช้ตรวจของเครื่องมือเหล่านี้เปิดไม่ได้ (กันบอท/โหลดด้วย JavaScript) หรือไม่มีข้อมูลของเครื่องมือนั้นโดยตรง กดชื่อแล้วใส่ลิงก์หน้าราคา/หน้าเอกสารของผู้ให้บริการในช่อง
+          &quot;หน้าที่ใช้ตรวจ&quot; (ลองเปิดแบบไม่ login ดูก่อนว่าเห็นข้อความ) แล้วกด &quot;ให้ AI ตรวจตัวนี้&quot;
+        </p>
+        <ul className="mt-3 divide-y divide-warn/20">
+          {rows.map((r) => (
+            <li key={r.toolId} className="flex flex-col gap-0.5 py-2.5">
+              <Link href={`/admin/tools/${r.toolId}`} className="font-semibold text-brand hover:underline">
+                {r.tool.name}
+              </Link>
+              <span className="min-w-0 break-all text-[13px] text-muted">
+                {fmtDate(r.at)} — {r.message.replace(`${r.tool.name}: `, "")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </details>
+  );
+}
+
 function RunPanel({ runs }: { runs: CheckRunRow[] }) {
   if (runs.length === 0) return null;
   const running = runs.some((r) => r.status === "running");
@@ -97,9 +138,11 @@ function RunPanel({ runs }: { runs: CheckRunRow[] }) {
                 ]
               }
             </span>{" "}
-            · {fmtDate(r.startedAt)} · {r.triggeredBy.replace(/^manual:/, "")} —{" "}
+            · {fmtDate(r.startedAt)} · {runBy(r.triggeredBy)} —{" "}
             {r.status === "running"
-              ? "ใช้เวลาประมาณ 1 นาที หน้านี้รีเฟรชเองทุก 10 วินาที"
+              ? r.scope === "auto"
+                ? "ตรวจหลายเครื่องมือ อาจใช้เวลาหลายนาที หน้านี้โหลดผลใหม่เองทุก 10 วินาที"
+                : "ใช้เวลาประมาณ 1 นาที หน้านี้โหลดผลใหม่เองทุก 10 วินาที"
               : r.message}
           </li>
         ))}
@@ -326,18 +369,28 @@ export default async function SuggestionsPage({
   await requireAdminPage();
   const wanted = one((await searchParams).status);
   const status = TABS.find((t) => t.key === wanted)?.key ?? "pending";
-  const [suggestions, counts, runs, toolRows] = await Promise.all([
+  const [suggestions, counts, recentRuns, autoRun, toolRows, needsManual] = await Promise.all([
     listSuggestions(status),
     countSuggestionsByStatus(),
-    listCheckRuns(5),
+    listCheckRuns(8),
+    latestCheckRunFor("auto"),
     listToolRows(),
+    listNeedsManualCheck(MANUAL_MARK),
   ]);
+  // รอบอัตโนมัติล่าสุดขึ้นก่อนเสมอ — ระหว่างรอบ ผลของแต่ละเครื่องมือถูกบันทึกเป็นแถวใหม่ จะดันแถวของรอบออกจากรายการล่าสุด
+  const runs = [...(autoRun ? [autoRun] : []), ...recentRuns.filter((r) => r.id !== autoRun?.id && r.scope !== "auto:stale")].slice(0, 8);
   const tools = new Map(toolRows.map((t) => [String(t.id), t]));
 
   return (
     <AdminPage
       title="ข้อเสนอแก้ไขจาก AI"
-      description="AI เทียบข้อมูลเครื่องมือกับหน้าทางการของผู้ให้บริการ แล้วเสนอสิ่งที่ควรแก้พร้อมหลักฐาน ข้อมูลบนเว็บจะเปลี่ยนเมื่อผู้ดูแลกดใช้เท่านั้น · สั่งตรวจได้จากหน้าแก้ไขเครื่องมือ"
+      description={
+        <>
+          AI เทียบข้อมูลเครื่องมือกับหน้าทางการของผู้ให้บริการ แล้วเสนอสิ่งที่ควรแก้พร้อมหลักฐาน ข้อมูลบนเว็บจะเปลี่ยนเมื่อผู้ดูแลกดใช้เท่านั้น
+          <br />
+          ตรวจอัตโนมัติทุกเช้าสำหรับเครื่องมือที่มีข่าวใหม่ และสัปดาห์ละครั้งสำหรับเครื่องมือที่ข้อมูลเก่ากว่า {STALE_AFTER_DAYS} วัน · สั่งตรวจเองได้จากหน้าแก้ไขเครื่องมือ
+        </>
+      }
     >
       <FilterTabs
         label="สถานะข้อเสนอ"
@@ -357,6 +410,8 @@ export default async function SuggestionsPage({
           suggestions.map((s) => <SuggestionCard key={s.id} s={s} tool={tools.get(s.targetKey)} />)
         )}
       </div>
+
+      <NeedsManualPanel items={needsManual} tools={tools} />
 
       {/* ประวัติการตรวจอยู่ท้ายหน้า — งานหลักของหน้านี้คือรายการข้อเสนอ */}
       <RunPanel runs={runs} />
